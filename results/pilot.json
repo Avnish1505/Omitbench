@@ -1,0 +1,75 @@
+{
+  "frozen_at": "week2-pilot, before any detector tuning",
+  "n_instances": 310,
+  "n_repos": 8,
+  "base_rate": 0.2802,
+  "detectors": {
+    "B0 flag-nothing": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "mcc": 0.0,
+      "fpr": 0.0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 607,
+      "tn": 1559
+    },
+    "B1 flag-everything": {
+      "precision": 0.2802,
+      "recall": 1.0,
+      "f1": 0.4378,
+      "mcc": 0.0,
+      "fpr": 1.0,
+      "tp": 607,
+      "fp": 1559,
+      "fn": 0,
+      "tn": 0
+    },
+    "B3 line-grep (no AST)": {
+      "precision": 0.7552,
+      "recall": 0.2998,
+      "f1": 0.4292,
+      "mcc": 0.3742,
+      "fpr": 0.0378,
+      "tp": 182,
+      "fp": 59,
+      "fn": 425,
+      "tn": 1500
+    },
+    "P1 defined": {
+      "precision": 0.8088,
+      "recall": 0.453,
+      "f1": 0.5808,
+      "mcc": 0.5079,
+      "fpr": 0.0417,
+      "tp": 275,
+      "fp": 65,
+      "fn": 332,
+      "tn": 1494
+    },
+    "P2 defined+reachable": {
+      "precision": 0.2964,
+      "recall": 0.9028,
+      "f1": 0.4463,
+      "mcc": 0.0868,
+      "fpr": 0.8345,
+      "tp": 548,
+      "fp": 1301,
+      "fn": 59,
+      "tn": 258
+    },
+    "P3 defined+reachable+body": {
+      "precision": 0.3131,
+      "recall": 0.9868,
+      "f1": 0.4754,
+      "mcc": 0.2013,
+      "fpr": 0.8428,
+      "tp": 599,
+      "fp": 1314,
+      "fn": 8,
+      "tn": 245
+    }
+  },
+  "note": "Targets for later work are deltas from THESE numbers. Do not edit."
+}

@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+.venv/
+corpus/                 # 93MB of clones; rebuild with scripts/fetch_corpus.sh
+results/shards/*.log
+results/*.log
+results/smoke.jsonl
+.pytest_cache/
