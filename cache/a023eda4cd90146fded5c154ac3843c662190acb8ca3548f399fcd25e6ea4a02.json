@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0006836,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_regression.py::is_foo\": \"IMPLEMENTED\", \"tests/test_regression.py::test_pass_context_with_select\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate two requirements:\n\n- tests/test_regression.py::is_foo\n- tests/test_regression.py::test_pass_context_with_select\n\nWe have diff showing modifications to tests/test_regression.py adding a new test method `test_pass_context_with_select`. Inside that test, they define a function `is_foo` with @pass_context decorator. So the symbol is defined inside the test file, not in src. The requirement path is tests/test_regression.py::is_foo. Indeed the diff includes definition of is_foo inside test_pass_context_with_select. So we need to see if it meets criteria:\n\n1. DEFINED: Yes, there is a `def is_foo(ctx, s):` inside test file. So defined.\n\n2. WIRED: Something else in diff uses it. In the same test, they assign `env.tests[\"foo\"] = is_foo`. That's a use of the symbol. Also later they call template that uses select('foo'), which will call the test. So yes, wired.\n\n3. NOT A STUB: The body contains `assert ctx is not None` and `return s == \"foo\"`. That's real work, not stub. So passes.\n\nThus is_foo is IMPLEMENTED.\n\nNow second requirement: tests/test_regression.py::test_pass_context_with_select\n\nDefinition: there is a method `def test_pass_context_with_select(self, env):` inside the test class (likely a class). The diff shows that method added. So defined.\n\nWired: The test is called by pytest automatically; but within diff, is there any call to it? The test itself is a function that uses is_foo etc. The requirement is that the symbol is wired: something else in diff calls, instantiates, or otherwise uses it. Does any other code call test_pass_context_with_select? Not directly; it's a test function that will be discovered by pytest, but within the diff there is no explicit call. The criteria says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" Does the test framework count as wiring? Probably not; they want explicit usage. In diff, there is no call to test_pass_context_with_select. So likely fails WIRED.\n\nThus test_pass_context_with_select is OMITTED.\n\nBut we must be strict: The test function is defined, but not used elsewhere in diff. So omitted.\n\nReturn JSON with both keys.\n\n",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate two requirements:\n\n- tests/test_regression.py::is_foo\n- tests/test_regression.py::test_pass_context_with_select\n\nWe have diff showing modifications to tests/test_regression.py adding a new test method `test_pass_context_with_select`. Inside that test, they define a function `is_foo` with @pass_context decorator. So the symbol is defined inside the test file, not in src. The requirement path is tests/test_regression.py::is_foo. Indeed the diff includes definition of is_foo inside test_pass_context_with_select. So we need to see if it meets criteria:\n\n1. DEFINED: Yes, there is a `def is_foo(ctx, s):` inside test file. So defined.\n\n2. WIRED: Something else in diff uses it. In the same test, they assign `env.tests[\"foo\"] = is_foo`. That's a use of the symbol. Also later they call template that uses select('foo'), which will call the test. So yes, wired.\n\n3. NOT A STUB: The body contains `assert ctx is not None` and `return s == \"foo\"`. That's real work, not stub. So passes.\n\nThus is_foo is IMPLEMENTED.\n\nNow second requirement: tests/test_regression.py::test_pass_context_with_select\n\nDefinition: there is a method `def test_pass_context_with_select(self, env):` inside the test class (likely a class). The diff shows that method added. So defined.\n\nWired: The test is called by pytest automatically; but within diff, is there any call to it? The test itself is a function that uses is_foo etc. The requirement is that the symbol is wired: something else in diff calls, instantiates, or otherwise uses it. Does any other code call test_pass_context_with_select? Not directly; it's a test function that will be discovered by pytest, but within the diff there is no explicit call. The criteria says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" Does the test framework count as wiring? Probably not; they want explicit usage. In diff, there is no call to test_pass_context_with_select. So likely fails WIRED.\n\nThus test_pass_context_with_select is OMITTED.\n\nBut we must be strict: The test function is defined, but not used elsewhere in diff. So omitted.\n\nReturn JSON with both keys.\n\n",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_regression.py::is_foo\n- tests/test_regression.py::test_pass_context_with_select\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/jinja2/filters.py\n+++ b/src/jinja2/filters.py\n@@ -1780,7 +1780,7 @@\n         args = args[1 + off :]\n \n         def func(item: t.Any) -> t.Any:\n-            return context.environment.call_test(name, item, args, kwargs)\n+            return context.environment.call_test(name, item, args, kwargs, context)\n \n     except LookupError:\n         func = bool  # type: ignore\n\n--- a/tests/test_regression.py\n+++ b/tests/test_regression.py\n@@ -737,6 +737,18 @@\n         )\n         assert tmpl.render() == \"hellohellohello\"\n \n+    def test_pass_context_with_select(self, env):\n+        @pass_context\n+        def is_foo(ctx, s):\n+            assert ctx is not None\n+            return s == \"foo\"\n+\n+        env.tests[\"foo\"] = is_foo\n+        tmpl = env.from_string(\n+            \"{% for x in ['one', 'foo'] | select('foo') %}{{ x }}{% endfor %}\"\n+        )\n+        assert tmpl.render() == \"foo\"\n+\n \n @pytest.mark.parametrize(\"unicode_char\", [\"\\N{FORM FEED}\", \"\\x85\"])\n def test_unicode_whitespace(env, unicode_char):\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 540,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 497
+    },
+    "cost": 0.0006836,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.000405,
+      "upstream_inference_cost": 0.0006836,
+      "upstream_inference_prompt_cost": 0.0002786
+    },
+    "is_byok": false,
+    "prompt_tokens": 796,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1336
+  },
+  "variance_seed": null
+}

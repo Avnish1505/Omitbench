@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00064995,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_testing.py::test_session_transaction_ipv6\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate requirement: tests/test_testing.py::test_session_transaction_ipv6\n\nWe need to see if this symbol (function) is defined in the target file tests/test_testing.py and is wired (called elsewhere) and not a stub.\n\nThe diff shows modifications to tests/test_testing.py: added code for test_session_transaction_ipv6 function. Let's examine diff:\n\nIn tests/test_testing.py, after existing code, they added:\n\n+def test_session_transaction_ipv6(app):\n+    base_url = \"http://[::1]:8000/\"\n+    client = app.test_client()\n+\n+    @app.get(\"/\")\n+    def index():\n+        return str(flask.session.get(\"value\"))\n+\n+    with client.session_transaction(base_url=base_url) as sess:\n+        sess[\"value\"] = 42\n+\n+    assert client.get(\"/\", base_url=base_url).text == \"42\"\n+\n\nThus the function is defined. It is a test function. It is used by test runner, but within diff we need to see if it's wired: \"something else in the diff actually calls, instantiates, or otherwise uses it.\" In test files, test functions are not called directly in code; they are discovered by pytest. Does that count as wired? The requirement says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" In this diff, there is no explicit call to test_session_transaction_ipv6. However, test functions are used by test runner, but that is external. The diff does not show any call. So likely not wired. But maybe they consider that test functions are automatically used by pytest, but the rule says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" Since there is no call in the diff, it's not wired. So requirement would be OMITTED.\n\nBut we need to be careful: The requirement is about a test function. Usually they consider definition enough? The spec says must be defined, wired, not stub. For test functions, they are not called elsewhere in code, but they are executed by test runner. However, the spec explicitly says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" That suggests they need a call site in the diff. Since there is none, it's omitted.\n\nThus answer: {\"tests/test_testing.py::test_session_transaction_ipv6\": \"OMITTED\"}",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate requirement: tests/test_testing.py::test_session_transaction_ipv6\n\nWe need to see if this symbol (function) is defined in the target file tests/test_testing.py and is wired (called elsewhere) and not a stub.\n\nThe diff shows modifications to tests/test_testing.py: added code for test_session_transaction_ipv6 function. Let's examine diff:\n\nIn tests/test_testing.py, after existing code, they added:\n\n+def test_session_transaction_ipv6(app):\n+    base_url = \"http://[::1]:8000/\"\n+    client = app.test_client()\n+\n+    @app.get(\"/\")\n+    def index():\n+        return str(flask.session.get(\"value\"))\n+\n+    with client.session_transaction(base_url=base_url) as sess:\n+        sess[\"value\"] = 42\n+\n+    assert client.get(\"/\", base_url=base_url).text == \"42\"\n+\n\nThus the function is defined. It is a test function. It is used by test runner, but within diff we need to see if it's wired: \"something else in the diff actually calls, instantiates, or otherwise uses it.\" In test files, test functions are not called directly in code; they are discovered by pytest. Does that count as wired? The requirement says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" In this diff, there is no explicit call to test_session_transaction_ipv6. However, test functions are used by test runner, but that is external. The diff does not show any call. So likely not wired. But maybe they consider that test functions are automatically used by pytest, but the rule says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" Since there is no call in the diff, it's not wired. So requirement would be OMITTED.\n\nBut we need to be careful: The requirement is about a test function. Usually they consider definition enough? The spec says must be defined, wired, not stub. For test functions, they are not called elsewhere in code, but they are executed by test runner. However, the spec explicitly says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" That suggests they need a call site in the diff. Since there is none, it's omitted.\n\nThus answer: {\"tests/test_testing.py::test_session_transaction_ipv6\": \"OMITTED\"}",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_testing.py::test_session_transaction_ipv6\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/flask/testing.py\n+++ b/src/flask/testing.py\n@@ -177,7 +177,7 @@\n             app.session_interface.save_session(app, sess, resp)\n \n         self._update_cookies_from_response(\n-            ctx.request.host.partition(\":\")[0],\n+            urlsplit(ctx.request.host_url).hostname or \"localhost\",\n             ctx.request.path,\n             resp.headers.getlist(\"Set-Cookie\"),\n         )\n\n--- a/tests/test_testing.py\n+++ b/tests/test_testing.py\n@@ -171,6 +171,20 @@\n             assert sess[\"foo\"] == [42]\n \n \n+def test_session_transaction_ipv6(app):\n+    base_url = \"http://[::1]:8000/\"\n+    client = app.test_client()\n+\n+    @app.get(\"/\")\n+    def index():\n+        return str(flask.session.get(\"value\"))\n+\n+    with client.session_transaction(base_url=base_url) as sess:\n+        sess[\"value\"] = 42\n+\n+    assert client.get(\"/\", base_url=base_url).text == \"42\"\n+\n+\n def test_session_transactions_no_null_sessions():\n     app = flask.Flask(__name__)\n \n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 518,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 491
+    },
+    "cost": 0.00064995,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.0003885,
+      "upstream_inference_cost": 0.00064995,
+      "upstream_inference_prompt_cost": 0.00026145
+    },
+    "is_byok": false,
+    "prompt_tokens": 747,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1265
+  },
+  "variance_seed": null
+}

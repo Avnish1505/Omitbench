@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00041065,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"requests/utils.py::atomic_open\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate requirement: requests/utils.py::atomic_open\n\nWe have diff of utils.py. Let's examine diff.\n\nOriginal lines around 256 etc. The diff shows modifications: they changed extracted_path assignment, added a block using atomic_open, and added a contextmanager decorator after function definitions.\n\nSpecifically, after the function (maybe from earlier) they added:\n\n+@contextlib.contextmanager\n\nBut we need to see if atomic_open is defined in this file. The diff does not show a definition of atomic_open. It only shows a call to atomic_open in the new code:\n\nwith atomic_open(extracted_path) as file_handler:\n\nBut there is no definition of atomic_open in this diff. The requirement is that the symbol atomic_open must be defined in requests/utils.py. Since diff does not contain a def atomic_open or class atomic_open, it's not defined. So fails condition 1. Therefore requirement is OMITMED.\n\nEven though it's used (wired) but not defined. So answer: OMITTED.\n\nReturn JSON with that key.\n\n",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate requirement: requests/utils.py::atomic_open\n\nWe have diff of utils.py. Let's examine diff.\n\nOriginal lines around 256 etc. The diff shows modifications: they changed extracted_path assignment, added a block using atomic_open, and added a contextmanager decorator after function definitions.\n\nSpecifically, after the function (maybe from earlier) they added:\n\n+@contextlib.contextmanager\n\nBut we need to see if atomic_open is defined in this file. The diff does not show a definition of atomic_open. It only shows a call to atomic_open in the new code:\n\nwith atomic_open(extracted_path) as file_handler:\n\nBut there is no definition of atomic_open in this diff. The requirement is that the symbol atomic_open must be defined in requests/utils.py. Since diff does not contain a def atomic_open or class atomic_open, it's not defined. So fails condition 1. Therefore requirement is OMITMED.\n\nEven though it's used (wired) but not defined. So answer: OMITTED.\n\nReturn JSON with that key.\n\n",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- requests/utils.py::atomic_open\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/requests/utils.py\n+++ b/requests/utils.py\n@@ -256,11 +256,15 @@\n \n     # we have a valid zip archive and a valid member of that archive\n     tmp = tempfile.gettempdir()\n-    extracted_path = os.path.join(tmp, *member.split('/'))\n+    extracted_path = os.path.join(tmp, member.split('/')[-1])\n     if not os.path.exists(extracted_path):\n-        extracted_path = zip_file.extract(member, path=tmp)\n-\n+        # use read + write to avoid the creating nested folders, we only want the file, avoids mkdir racing condition\n+        with atomic_open(extracted_path) as file_handler:\n+            file_handler.write(zip_file.read(member))\n     return extracted_path\n+\n+\n+@contextlib.contextmanager\n \n \n def from_key_val_list(value):\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 233,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 210
+    },
+    "cost": 0.00041065,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.00017475,
+      "upstream_inference_cost": 0.00041065,
+      "upstream_inference_prompt_cost": 0.0002359
+    },
+    "is_byok": false,
+    "prompt_tokens": 674,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 907
+  },
+  "variance_seed": null
+}

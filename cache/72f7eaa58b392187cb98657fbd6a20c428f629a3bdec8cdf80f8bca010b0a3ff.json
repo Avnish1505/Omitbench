@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00062455,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"src/flask/sessions.py::get_cookie_partitioned\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate requirement: src/flask/sessions.py::get_cookie_partitioned\n\nWe have diff showing modifications in src/flask/sessions.py. Let's examine.\n\nIn the diff, we see:\n\n@@ -223,6 +223,9 @@\n         the :data:`SESSION_COOKIE_SAMESITE` setting.\n         \"\"\"\n         return app.config[\"SESSION_COOKIE_SAMESITE\"]  # type: ignore[no-any-return]\n+\n+    def get_cookie_partitioned(self, app: Flask) -> bool:\n+        raise NotImplementedError\n\nSo definition of get_cookie_partitioned is added. It is a method inside a class (likely a SessionInterface subclass). The definition is present, but its body is raise NotImplementedError, which is a stub per rule 3: NOT A STUB. Body consisting only of raise NotImplementedError is considered a stub, not an implementation. So fails condition 3.\n\nAlso we need to see if it's wired: later in same file, they call self.get_cookie_partitioned(app) in code that sets cookie. Indeed we see:\n\npartitioned = self.get_cookie_partitioned(app)\n\nand later used in response.set_cookie(..., partitioned=partitioned). So it's wired.\n\nDefinition exists, wired, but stub. So requirement is omitted.\n\nThus output: {\"src/flask/sessions.py::get_cookie_partitioned\": \"OMITTED\"}",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate requirement: src/flask/sessions.py::get_cookie_partitioned\n\nWe have diff showing modifications in src/flask/sessions.py. Let's examine.\n\nIn the diff, we see:\n\n@@ -223,6 +223,9 @@\n         the :data:`SESSION_COOKIE_SAMESITE` setting.\n         \"\"\"\n         return app.config[\"SESSION_COOKIE_SAMESITE\"]  # type: ignore[no-any-return]\n+\n+    def get_cookie_partitioned(self, app: Flask) -> bool:\n+        raise NotImplementedError\n\nSo definition of get_cookie_partitioned is added. It is a method inside a class (likely a SessionInterface subclass). The definition is present, but its body is raise NotImplementedError, which is a stub per rule 3: NOT A STUB. Body consisting only of raise NotImplementedError is considered a stub, not an implementation. So fails condition 3.\n\nAlso we need to see if it's wired: later in same file, they call self.get_cookie_partitioned(app) in code that sets cookie. Indeed we see:\n\npartitioned = self.get_cookie_partitioned(app)\n\nand later used in response.set_cookie(..., partitioned=partitioned). So it's wired.\n\nDefinition exists, wired, but stub. So requirement is omitted.\n\nThus output: {\"src/flask/sessions.py::get_cookie_partitioned\": \"OMITTED\"}",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- src/flask/sessions.py::get_cookie_partitioned\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/flask/app.py\n+++ b/src/flask/app.py\n@@ -189,6 +189,7 @@\n             \"SESSION_COOKIE_PATH\": None,\n             \"SESSION_COOKIE_HTTPONLY\": True,\n             \"SESSION_COOKIE_SECURE\": False,\n+            \"SESSION_COOKIE_PARTITIONED\": False,\n             \"SESSION_COOKIE_SAMESITE\": None,\n             \"SESSION_REFRESH_EACH_REQUEST\": True,\n             \"MAX_CONTENT_LENGTH\": None,\n\n--- a/src/flask/sessions.py\n+++ b/src/flask/sessions.py\n@@ -223,6 +223,9 @@\n         the :data:`SESSION_COOKIE_SAMESITE` setting.\n         \"\"\"\n         return app.config[\"SESSION_COOKIE_SAMESITE\"]  # type: ignore[no-any-return]\n+\n+    def get_cookie_partitioned(self, app: Flask) -> bool:\n+        raise NotImplementedError\n \n     def get_expiration_time(self, app: Flask, session: SessionMixin) -> datetime | None:\n         \"\"\"A helper method that returns an expiration date for the session\n@@ -338,6 +341,7 @@\n         domain = self.get_cookie_domain(app)\n         path = self.get_cookie_path(app)\n         secure = self.get_cookie_secure(app)\n+        partitioned = self.get_cookie_partitioned(app)\n         samesite = self.get_cookie_samesite(app)\n         httponly = self.get_cookie_httponly(app)\n \n@@ -354,6 +358,7 @@\n                     domain=domain,\n                     path=path,\n                     secure=secure,\n+                    partitioned=partitioned,\n                     samesite=samesite,\n                     httponly=httponly,\n                 )\n@@ -374,6 +379,7 @@\n             domain=domain,\n             path=path,\n             secure=secure,\n+            partitioned=partitioned,\n             samesite=samesite,\n         )\n         response.vary.add(\"Cookie\")\n\n--- a/tests/test_basic.py\n+++ b/tests/test_basic.py\n@@ -293,6 +293,7 @@\n         SESSION_COOKIE_DOMAIN=\".example.com\",\n         SESSION_COOKIE_HTTPONLY=False,\n         SESSION_COOKIE_SECURE=True,\n+        SESSION_COOKIE_PARTITIONED=True,\n         SESSION_COOKIE_SAMESITE=\"Lax\",\n         SESSION_COOKIE_PATH=\"/\",\n     )\n@@ -315,6 +316,7 @@\n     assert \"secure\" in cookie\n     assert \"httponly\" not in cookie\n     assert \"samesite\" in cookie\n+    assert \"partitioned\" in cookie\n \n     rv = client.get(\"/clear\", \"http://www.example.com:8080/test/\")\n     cookie = rv.headers[\"set-cookie\"].lower()\n@@ -324,6 +326,7 @@\n     assert \"path=/\" in cookie\n     assert \"secure\" in cookie\n     assert \"samesite\" in cookie\n+    assert \"partitioned\" in cookie\n \n \n def test_session_using_samesite_attribute(app, client):\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 311,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 283
+    },
+    "cost": 0.00062455,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.00023325,
+      "upstream_inference_cost": 0.00062455,
+      "upstream_inference_prompt_cost": 0.0003913
+    },
+    "is_byok": false,
+    "prompt_tokens": 1118,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 256,
+      "video_tokens": 0
+    },
+    "total_tokens": 1429
+  },
+  "variance_seed": null
+}

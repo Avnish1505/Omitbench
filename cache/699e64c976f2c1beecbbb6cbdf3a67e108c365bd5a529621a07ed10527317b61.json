@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00054265,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/conftest.py::clean_proxy_environ\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate requirement: tests/conftest.py::clean_proxy_environ\n\nWe have diff showing addition of a fixture function clean_proxy_environ defined with @pytest.fixture(autouse=True). So definition exists. Need to check if it's wired: something else in diff calls/uses it. The diff includes only this file; we need to see if any other code in diff uses clean_proxy_environ. The diff shows only addition of fixture; no other code referencing it. However, pytest automatically uses fixtures with autouse=True without explicit calls. Does that count as \"wired\"? The requirement says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" Autouse fixture is used by pytest automatically, but there is no explicit call in code. Does that count as wired? The test says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" Autouse fixture is used by pytest runtime, not by code in diff. Likely not considered wired because no explicit usage. However, the fixture is defined with autouse=True, which means pytest will automatically apply it to each test. That could be considered \"wired\" because the fixture is used by pytest automatically, but the requirement expects explicit usage in code. The diff does not show any other reference. So likely considered not wired, thus requirement is OMITTED.\n\nBut we need to consider if the presence of @pytest.fixture(autouse=True) qualifies as wiring. The spec: \"something else in the diff actually calls, instantiates, or otherwise uses it.\" The fixture is used by pytest, but that's not \"something else in the diff\". So not wired.\n\nThus result: \"OMITTED\".\n\nCheck stub: body does real work: it loops over proxy_vars and deletes env vars. That's real work, not stub. So passes stub check.\n\nDefinition exists: yes.\n\nWiring: no.\n\nThus overall OMITTED.\n\nReturn JSON with that key.\n\n",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate requirement: tests/conftest.py::clean_proxy_environ\n\nWe have diff showing addition of a fixture function clean_proxy_environ defined with @pytest.fixture(autouse=True). So definition exists. Need to check if it's wired: something else in diff calls/uses it. The diff includes only this file; we need to see if any other code in diff uses clean_proxy_environ. The diff shows only addition of fixture; no other code referencing it. However, pytest automatically uses fixtures with autouse=True without explicit calls. Does that count as \"wired\"? The requirement says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" Autouse fixture is used by pytest automatically, but there is no explicit call in code. Does that count as wired? The test says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" Autouse fixture is used by pytest runtime, not by code in diff. Likely not considered wired because no explicit usage. However, the fixture is defined with autouse=True, which means pytest will automatically apply it to each test. That could be considered \"wired\" because the fixture is used by pytest automatically, but the requirement expects explicit usage in code. The diff does not show any other reference. So likely considered not wired, thus requirement is OMITTED.\n\nBut we need to consider if the presence of @pytest.fixture(autouse=True) qualifies as wiring. The spec: \"something else in the diff actually calls, instantiates, or otherwise uses it.\" The fixture is used by pytest, but that's not \"something else in the diff\". So not wired.\n\nThus result: \"OMITTED\".\n\nCheck stub: body does real work: it loops over proxy_vars and deletes env vars. That's real work, not stub. So passes stub check.\n\nDefinition exists: yes.\n\nWiring: no.\n\nThus overall OMITTED.\n\nReturn JSON with that key.\n\n",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/conftest.py::clean_proxy_environ\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/tests/conftest.py\n+++ b/tests/conftest.py\n@@ -20,6 +20,15 @@\n         return urljoin(httpbin_url, \"/\".join(suffix))\n \n     return inner\n+\n+\n+@pytest.fixture(autouse=True)\n+def clean_proxy_environ(monkeypatch):\n+    \"\"\"Remove proxy related environment variables for every test.\"\"\"\n+    proxy_vars = (\"http_proxy\", \"https_proxy\", \"no_proxy\", \"ftp_proxy\", \"all_proxy\")\n+    for var in proxy_vars:\n+        monkeypatch.delenv(var, raising=False)\n+        monkeypatch.delenv(var.upper(), raising=False)\n \n \n @pytest.fixture\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 423,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 396
+    },
+    "cost": 0.00054265,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.00031725,
+      "upstream_inference_cost": 0.00054265,
+      "upstream_inference_prompt_cost": 0.0002254
+    },
+    "is_byok": false,
+    "prompt_tokens": 644,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1067
+  },
+  "variance_seed": null
+}

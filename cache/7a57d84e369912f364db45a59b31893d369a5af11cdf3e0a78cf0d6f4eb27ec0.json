@@ -1,0 +1,41 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0008064,
+  "cost_source": "reported",
+  "judge_id": "B5 LLM judge (mid-tier)",
+  "message": {
+    "content": "```json\n{\"tests/test_options.py::test_choice_usage_rendering\": \"IMPLEMENTED\"}\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_options.py::test_choice_usage_rendering\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/tests/test_options.py\n+++ b/tests/test_options.py\n@@ -1667,8 +1667,9 @@\n \n \n class HashType(enum.Enum):\n-    MD5 = enum.auto()\n-    SHA1 = enum.auto()\n+    MD5 = \"MD5\"\n+    SHA1 = \"SHA1\"\n+    SHA256 = \"SHA-256\"\n \n \n class Number(enum.IntEnum):\n@@ -1677,8 +1678,9 @@\n \n \n class Letter(enum.StrEnum):\n-    A = enum.auto()\n-    B = enum.auto()\n+    NAME_1 = \"Value-1\"\n+    NAME_2 = \"Value_2\"\n+    NAME_3 = \"42_value\"\n \n \n class Color(enum.Flag):\n@@ -1694,23 +1696,27 @@\n \n \n @pytest.mark.parametrize(\n-    (\"choices\", \"metavars\"),\n+    (\"choices\", \"metavar\"),\n     [\n-        pytest.param([\"foo\", \"bar\"], \"[TEXT]\", id=\"text choices\"),\n-        pytest.param([1, 2], \"[INTEGER]\", id=\"int choices\"),\n-        pytest.param([1.0, 2.0], \"[FLOAT]\", id=\"float choices\"),\n-        pytest.param([True, False], \"[BOOLEAN]\", id=\"bool choices\"),\n-        pytest.param([\"foo\", 1], \"[TEXT|INTEGER]\", id=\"text/int choices\"),\n-        pytest.param(HashType, \"[HASHTYPE]\", id=\"enum choices\"),\n-        pytest.param(Number, \"[NUMBER]\", id=\"int enum choices\"),\n-        pytest.param(Letter, \"[LETTER]\", id=\"str enum choices\"),\n-        pytest.param(Color, \"[COLOR]\", id=\"flag enum choices\"),\n-        pytest.param(ColorInt, \"[COLORINT]\", id=\"int flag enum choices\"),\n+        ([\"foo\", \"bar\"], \"[TEXT]\"),\n+        ([1, 2], \"[INTEGER]\"),\n+        ([1.0, 2.0], \"[FLOAT]\"),\n+        ([True, False], \"[BOOLEAN]\"),\n+        ([\"foo\", 1], \"[TEXT|INTEGER]\"),\n+        (HashType, \"[HASHTYPE]\"),\n+        (Number, \"[NUMBER]\"),\n+        (Letter, \"[LETTER]\"),\n+        (Color, \"[COLOR]\"),\n+        (ColorInt, \"[COLORINT]\"),\n     ],\n )\n-def test_usage_show_choices(runner, choices, metavars):\n-    \"\"\"When show_choices=False is set, the --help output\n-    should print choice metavars instead of values.\n+def test_choice_usage_rendering(runner, choices, metavar):\n+    \"\"\"BY default ``--help`` prints choice's values in the usage message.\n+\n+    But ``show_choices=False`` makes ``--help`` prints choice's METAVAR instead of\n+    values.\n+\n+    Also check that usage error message always suggests the actual values.\n     \"\"\"\n \n     @click.command()\n@@ -1723,14 +1729,31 @@\n     def cli_without_choices(g):\n         pass\n \n+    display_values = tuple(\n+        i.name if isinstance(i, enum.Enum) else str(i) for i in choices\n+    )\n+\n+    # Check that the choices values are rendered as-is in the usage message.\n     result = runner.invoke(cli_with_choices, [\"--help\"])\n-    assert (\n-        f\"[{'|'.join(i.name if isinstance(i, enum.Enum) else str(i) for i in choices)}]\"\n-        in result.output\n-    )\n-\n+    assert f\"[{'|'.join(display_values)}]\" in result.stdout\n+    assert not result.stderr\n+    assert result.exit_code == 0\n+\n+    # Check that the metavar is rendered instead of the choices values themselves.\n     result = runner.invoke(cli_without_choices, [\"--help\"])\n-    assert metavars in result.output\n+    assert metavar in result.stdout\n+    assert not result.stderr\n+    assert result.exit_code == 0\n+\n+    # Check the usage error message suggests the actual accepted values.\n+    for cli in (cli_with_choices, cli_without_choices):\n+        result = runner.invoke(cli, [\"-g\", \"random\"])\n+        assert (\n+            \"\\n\\nError: Invalid value for '-g': 'random' is not one of \"\n+            f\"{', '.join(map(repr, display_values))}.\\n\" in result.stderr\n+        )\n+        assert not result.stdout\n+        assert result.exit_code == 2\n \n \n @pytest.mark.parametrize(\n@@ -1751,15 +1774,24 @@\n         ([True, False], False, \"False\"),\n         ([\"foo\", 1], \"foo\", \"foo\"),\n         ([\"foo\", 1], 1, \"1\"),\n-        # Enum choices are rendered as their names.\n+        # Enum choices are rendered as their names, not values.\n         # See: https://github.com/pallets/click/issues/2911\n         (HashType, HashType.SHA1, \"SHA1\"),\n         # Enum choices allow defaults strings that are their names.\n-        (HashType, \"SHA1\", \"SHA1\"),\n+        (HashType, HashType.SHA256, \"SHA256\"),\n+        (HashType, \"SHA256\", \"SHA256\"),\n         (Number, Number.TWO, \"TWO\"),\n-        (Letter, Letter.B, \"B\"),\n+        (Number, \"TWO\", \"TWO\"),\n+        (Letter, Letter.NAME_1, \"NAME_1\"),\n+        (Letter, Letter.NAME_2, \"NAME_2\"),\n+        (Letter, Letter.NAME_3, \"NAME_3\"),\n+        (Letter, \"NAME_1\", \"NAME_1\"),\n+        (Letter, \"NAME_2\", \"NAME_2\"),\n+        (Letter, \"NAME_3\", \"NAME_3\"),\n         (Color, Color.GREEN, \"GREEN\"),\n+        (Color, \"GREEN\", \"GREEN\"),\n         (ColorInt, ColorInt.GREEN, \"GREEN\"),\n+        (ColorInt, \"GREEN\", \"GREEN\"),\n     ],\n )\n def test_choice_default_rendering(runner, choices, default, default_string):\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 23,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.0008064,
+    "cost_details": {
+      "upstream_inference_completions_cost": 4.6e-05,
+      "upstream_inference_cost": 0.0008064,
+      "upstream_inference_prompt_cost": 0.0007604
+    },
+    "is_byok": false,
+    "prompt_tokens": 1901,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1924
+  },
+  "variance_seed": null
+}

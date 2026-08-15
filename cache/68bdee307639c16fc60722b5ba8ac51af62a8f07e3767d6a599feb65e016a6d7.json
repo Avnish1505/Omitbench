@@ -1,0 +1,41 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00045912,
+  "cost_source": "reported",
+  "judge_id": "B5 LLM judge (mid-tier)",
+  "message": {
+    "content": "```json\n{\"src/flask/app.py::url_for\": \"OMITTED\"}\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- src/flask/app.py::url_for\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/flask/app.py\n+++ b/src/flask/app.py\n@@ -23,6 +23,7 @@\n from werkzeug.routing import RequestRedirect\n from werkzeug.routing import RoutingException\n from werkzeug.routing import Rule\n+from werkzeug.urls import url_quote\n from werkzeug.utils import redirect as _wz_redirect\n from werkzeug.wrappers import Response as BaseResponse\n \n@@ -1661,6 +1662,15 @@\n \n         return asgiref_async_to_sync(func)\n \n+    def url_for(\n+        self,\n+        endpoint: str,\n+        external: bool,\n+        url_adapter,\n+        **values: t.Any,\n+    ) -> str:\n+        raise NotImplementedError\n+\n     def redirect(self, location: str, code: int = 302) -> BaseResponse:\n         \"\"\"Create a redirect response object.\n \n\n--- a/src/flask/helpers.py\n+++ b/src/flask/helpers.py\n@@ -11,8 +11,6 @@\n \n import werkzeug.utils\n from werkzeug.exceptions import abort as _wz_abort\n-from werkzeug.routing import BuildError\n-from werkzeug.urls import url_quote\n from werkzeug.utils import redirect as _wz_redirect\n \n from .globals import _app_ctx_stack\n@@ -307,41 +305,7 @@\n \n         external = values.pop(\"_external\", True)\n \n-    anchor = values.pop(\"_anchor\", None)\n-    method = values.pop(\"_method\", None)\n-    scheme = values.pop(\"_scheme\", None)\n-    appctx.app.inject_url_defaults(endpoint, values)\n-\n-    # This is not the best way to deal with this but currently the\n-    # underlying Werkzeug router does not support overriding the scheme on\n-    # a per build call basis.\n-    old_scheme = None\n-    if scheme is not None:\n-        if not external:\n-            raise ValueError(\"When specifying _scheme, _external must be True\")\n-        old_scheme = url_adapter.url_scheme\n-        url_adapter.url_scheme = scheme\n-\n-    try:\n-        try:\n-            rv = url_adapter.build(\n-                endpoint, values, method=method, force_external=external\n-            )\n-        finally:\n-            if old_scheme is not None:\n-                url_adapter.url_scheme = old_scheme\n-    except BuildError as error:\n-        # We need to inject the values again so that the app callback can\n-        # deal with that sort of stuff.\n-        values[\"_external\"] = external\n-        values[\"_anchor\"] = anchor\n-        values[\"_method\"] = method\n-        values[\"_scheme\"] = scheme\n-        return appctx.app.handle_url_build_error(error, endpoint, values)\n-\n-    if anchor is not None:\n-        rv += f\"#{url_quote(anchor)}\"\n-    return rv\n+    return current_app.url_for(endpoint, external, url_adapter, **values)\n \n \n def redirect(\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 22,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.00045912,
+    "cost_details": {
+      "upstream_inference_completions_cost": 4.4e-05,
+      "upstream_inference_cost": 0.00045912,
+      "upstream_inference_prompt_cost": 0.00041512
+    },
+    "is_byok": false,
+    "prompt_tokens": 1153,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 128,
+      "video_tokens": 0
+    },
+    "total_tokens": 1175
+  },
+  "variance_seed": null
+}

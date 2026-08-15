@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00040405,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_utils.py::test_empty_default_credentials_ignored\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate requirement: tests/test_utils.py::test_empty_default_credentials_ignored\n\nWe need to see if this symbol (function) is defined and wired and not a stub.\n\nIn diff, we see in tests/test_utils.py added lines:\n\n+    def test_empty_default_credentials_ignored(self, tmp_path, monkeypatch):\n+        raise NotImplementedError\n\nThus definition exists (def). It's a test method inside a class (likely TestGetNetrcAuth). The body is raise NotImplementedError, which is a stub. According to criteria, NOT A STUB required. Since body is raise NotImplementedError, it's a stub, so requirement is OMITTED.\n\nAlso need to check wiring: is it used elsewhere? It's a test method, likely not called elsewhere in diff. But even if not wired, fails. So overall OMITTED.\n\nThus output JSON with that key mapping to \"OMITTED\".",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate requirement: tests/test_utils.py::test_empty_default_credentials_ignored\n\nWe need to see if this symbol (function) is defined and wired and not a stub.\n\nIn diff, we see in tests/test_utils.py added lines:\n\n+    def test_empty_default_credentials_ignored(self, tmp_path, monkeypatch):\n+        raise NotImplementedError\n\nThus definition exists (def). It's a test method inside a class (likely TestGetNetrcAuth). The body is raise NotImplementedError, which is a stub. According to criteria, NOT A STUB required. Since body is raise NotImplementedError, it's a stub, so requirement is OMITTED.\n\nAlso need to check wiring: is it used elsewhere? It's a test method, likely not called elsewhere in diff. But even if not wired, fails. So overall OMITTED.\n\nThus output JSON with that key mapping to \"OMITTED\".",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_utils.py::test_empty_default_credentials_ignored\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/requests/utils.py\n+++ b/src/requests/utils.py\n@@ -231,7 +231,7 @@\n \n         try:\n             _netrc = netrc(netrc_path).authenticators(host)\n-            if _netrc:\n+            if _netrc and any(_netrc):\n                 # Return with login / password\n                 login_i = 0 if _netrc[0] else 1\n                 return (_netrc[login_i], _netrc[2])\n\n--- a/tests/test_utils.py\n+++ b/tests/test_utils.py\n@@ -170,6 +170,9 @@\n         auth = get_netrc_auth(\"http://example.com:@evil.com/&apos;\")\n         assert auth is None\n \n+    def test_empty_default_credentials_ignored(self, tmp_path, monkeypatch):\n+        raise NotImplementedError\n+\n \n class TestToKeyValList:\n     @pytest.mark.parametrize(\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 213,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 185
+    },
+    "cost": 0.00040405,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.00015975,
+      "upstream_inference_cost": 0.00040405,
+      "upstream_inference_prompt_cost": 0.0002443
+    },
+    "is_byok": false,
+    "prompt_tokens": 698,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 256,
+      "video_tokens": 0
+    },
+    "total_tokens": 911
+  },
+  "variance_seed": null
+}

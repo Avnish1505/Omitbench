@@ -1,0 +1,41 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00032376,
+  "cost_source": "reported",
+  "judge_id": "B5 LLM judge (mid-tier)",
+  "message": {
+    "content": "```json\n{\"tests/test_options.py::test_string_show_default_shows_custom_string_in_prompt\": \"IMPLEMENTED\", \"tests/test_termui.py::test_string_show_default_shows_custom_string_in_prompt\": \"OMITTED\"}\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_options.py::test_string_show_default_shows_custom_string_in_prompt\n- tests/test_termui.py::test_string_show_default_shows_custom_string_in_prompt\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/click/core.py\n+++ b/src/click/core.py\n@@ -3164,10 +3164,10 @@\n                 default = bool(default)\n             return confirm(self.prompt, default)\n \n-        # If show_default is set to True/False, provide this to `prompt` as well. For\n-        # non-bool values of `show_default`, we use `prompt`'s default behavior\n+        # If show_default is given, provide this to `prompt` as well,\n+        # otherwise we use `prompt`'s default behavior\n         prompt_kwargs: t.Any = {}\n-        if isinstance(self.show_default, bool):\n+        if self.show_default is not None:\n             prompt_kwargs[\"show_default\"] = self.show_default\n \n         return prompt(\n\n--- a/src/click/termui.py\n+++ b/src/click/termui.py\n@@ -60,7 +60,7 @@\n def _build_prompt(\n     text: str,\n     suffix: str,\n-    show_default: bool = False,\n+    show_default: bool | str = False,\n     default: t.Any | None = None,\n     show_choices: bool = True,\n     type: ParamType | None = None,\n@@ -68,6 +68,8 @@\n     prompt = text\n     if type is not None and show_choices and isinstance(type, Choice):\n         prompt += f\" ({', '.join(map(str, type.choices))})\"\n+    if isinstance(show_default, str):\n+        default = f\"({show_default})\"\n     if default is not None and show_default:\n         prompt = f\"{prompt} [{_format_default(default)}]\"\n     return f\"{prompt}{suffix}\"\n@@ -88,7 +90,7 @@\n     type: ParamType | t.Any | None = None,\n     value_proc: t.Callable[[str], t.Any] | None = None,\n     prompt_suffix: str = \": \",\n-    show_default: bool = True,\n+    show_default: bool | str = True,\n     err: bool = False,\n     show_choices: bool = True,\n ) -> t.Any:\n@@ -112,12 +114,17 @@\n                        convert a value.\n     :param prompt_suffix: a suffix that should be added to the prompt.\n     :param show_default: shows or hides the default value in the prompt.\n+                         If this value is a string, it shows that string\n+                         in parentheses instead of the actual value.\n     :param err: if set to true the file defaults to ``stderr`` instead of\n                 ``stdout``, the same as with echo.\n     :param show_choices: Show or hide choices if the passed type is a Choice.\n                          For example if type is a Choice of either day or week,\n                          show_choices is true and text is \"Group by\" then the\n                          prompt will be \"Group by (day, week): \".\n+\n+    .. versionadded:: 8.2\n+        ``show_default`` can be a custom string.\n \n     .. versionchanged:: 8.3.1\n         A space is no longer appended to the prompt.\n\n--- a/tests/test_options.py\n+++ b/tests/test_options.py\n@@ -1257,6 +1257,19 @@\n     assert opt.get_help_extra(ctx) == {\"default\": \"(unlimited)\"}\n     message = opt.get_help_record(ctx)[1]\n     assert \"[default: (unlimited)]\" in message\n+\n+\n+def test_string_show_default_shows_custom_string_in_prompt(runner):\n+    @click.command()\n+    @click.option(\n+        \"--arg1\", show_default=\"custom\", prompt=True, default=\"my-default-value\"\n+    )\n+    def cmd(arg1):\n+        pass\n+\n+    result = runner.invoke(cmd, input=\"my-input\", standalone_mode=False)\n+    assert \"(custom)\" in result.output\n+    assert \"my-default-value\" not in result.output\n \n \n class _StrictEq:\n\n--- a/tests/test_termui.py\n+++ b/tests/test_termui.py\n@@ -715,6 +715,10 @@\n     # is False\n     result = runner.invoke(cmd, input=\"my-input\", standalone_mode=False)\n     assert \"my-default-value\" not in result.output\n+\n+\n+def test_string_show_default_shows_custom_string_in_prompt(runner):\n+    raise NotImplementedError\n \n \n REPEAT = object()\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 53,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.00032376,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.000106,
+      "upstream_inference_cost": 0.00032376,
+      "upstream_inference_prompt_cost": 0.00021776
+    },
+    "is_byok": false,
+    "prompt_tokens": 1466,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 1024,
+      "video_tokens": 0
+    },
+    "total_tokens": 1519
+  },
+  "variance_seed": null
+}

@@ -1,0 +1,41 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00027184,
+  "cost_source": "reported",
+  "judge_id": "B5 LLM judge (mid-tier)",
+  "message": {
+    "content": "```json\n{\"tests/test_requests.py::test_different_connection_pool_for_tls_settings\": \"OMITTED\"}\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_requests.py::test_different_connection_pool_for_tls_settings\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/requests/adapters.py\n+++ b/src/requests/adapters.py\n@@ -8,6 +8,7 @@\n \n import os.path\n import socket  # noqa: F401\n+import typing\n \n from urllib3.exceptions import ClosedPoolError, ConnectTimeoutError\n from urllib3.exceptions import HTTPError as _HTTPError\n@@ -61,10 +62,36 @@\n         raise InvalidSchema(\"Missing dependencies for SOCKS support.\")\n \n \n+if typing.TYPE_CHECKING:\n+    from .models import PreparedRequest\n+\n+\n DEFAULT_POOLBLOCK = False\n DEFAULT_POOLSIZE = 10\n DEFAULT_RETRIES = 0\n DEFAULT_POOL_TIMEOUT = None\n+\n+\n+def _urllib3_request_context(\n+    request: \"PreparedRequest\", verify: \"bool | str | None\"\n+) -> \"(typing.Dict[str, typing.Any], typing.Dict[str, typing.Any])\":\n+    host_params = {}\n+    pool_kwargs = {}\n+    parsed_request_url = urlparse(request.url)\n+    scheme = parsed_request_url.scheme.lower()\n+    port = parsed_request_url.port\n+    cert_reqs = \"CERT_REQUIRED\"\n+    if verify is False:\n+        cert_reqs = \"CERT_NONE\"\n+    if isinstance(verify, str):\n+        pool_kwargs[\"ca_certs\"] = verify\n+    pool_kwargs[\"cert_reqs\"] = cert_reqs\n+    host_params = {\n+        \"scheme\": scheme,\n+        \"host\": parsed_request_url.hostname,\n+        \"port\": port,\n+    }\n+    return host_params, pool_kwargs\n \n \n class BaseAdapter:\n@@ -327,6 +354,35 @@\n \n         return response\n \n+    def _get_connection(self, request, verify, proxies=None):\n+        # Replace the existing get_connection without breaking things and\n+        # ensure that TLS settings are considered when we interact with\n+        # urllib3 HTTP Pools\n+        proxy = select_proxy(request.url, proxies)\n+        try:\n+            host_params, pool_kwargs = _urllib3_request_context(request, verify)\n+        except ValueError as e:\n+            raise InvalidURL(e, request=request)\n+        if proxy:\n+            proxy = prepend_scheme_if_needed(proxy, \"http\")\n+            proxy_url = parse_url(proxy)\n+            if not proxy_url.host:\n+                raise InvalidProxyURL(\n+                    \"Please check proxy URL. It is malformed \"\n+                    \"and could be missing the host.\"\n+                )\n+            proxy_manager = self.proxy_manager_for(proxy)\n+            conn = proxy_manager.connection_from_host(\n+                **host_params, pool_kwargs=pool_kwargs\n+            )\n+        else:\n+            # Only scheme should be lower case\n+            conn = self.poolmanager.connection_from_host(\n+                **host_params, pool_kwargs=pool_kwargs\n+            )\n+\n+        return conn\n+\n     def get_connection(self, url, proxies=None):\n         \"\"\"Returns a urllib3 connection for the given URL. This should not be\n         called from user code, and is only exposed for use when subclassing the\n@@ -453,7 +509,7 @@\n         \"\"\"\n \n         try:\n-            conn = self.get_connection(request.url, proxies)\n+            conn = self._get_connection(request, verify, proxies)\n         except LocationValueError as e:\n             raise InvalidURL(e, request=request)\n \n\n--- a/tests/test_requests.py\n+++ b/tests/test_requests.py\n@@ -2828,6 +2828,9 @@\n         assert r5 == 425\n         assert r6 == 425\n \n+    def test_different_connection_pool_for_tls_settings(self):\n+        raise NotImplementedError\n+\n \n def test_json_decode_errors_are_serializable_deserializable():\n     json_decode_error = requests.exceptions.JSONDecodeError(\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 28,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.00027184,
+    "cost_details": {
+      "upstream_inference_completions_cost": 5.6e-05,
+      "upstream_inference_cost": 0.00027184,
+      "upstream_inference_prompt_cost": 0.00021584
+    },
+    "is_byok": false,
+    "prompt_tokens": 1346,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 896,
+      "video_tokens": 0
+    },
+    "total_tokens": 1374
+  },
+  "variance_seed": null
+}

@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0006626,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_runtime.py::Calc\": \"IMPLEMENTED\", \"tests/test_runtime.py::test_mock_not_contextfunction\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate each requirement.\n\nRequirements:\n\n- tests/test_runtime.py::Calc\n- tests/test_runtime.py::test_mock_not_contextfunction\n\nWe have diff of tests/test_runtime.py. The diff adds a new test function test_mock_not_contextfunction, and within it defines a class Calc (local class). So we need to see if the symbol Calc is defined in the target file tests/test_runtime.py. Yes, inside the new test function, there is a class Calc defined. So definition exists.\n\nNow \"wired\": something else in the diff actually calls, instantiates, or otherwise uses it. In the test, they instantiate Calc() and pass as calc to Template. They also call t.render(calc=Calc()). So they use it. So wired.\n\n\"Not a stub\": The class body has __getattr__ returning object(), __call__ returning len(args)+len(kwargs). That's real work (not pass). So not a stub.\n\nThus requirement tests/test_runtime.py::Calc is IMPLEMENTED.\n\nNow requirement tests/test_runtime.py::test_mock_not_contextfunction. The diff adds a function definition def test_mock_not_contextfunction(): ... So definition exists. Wired: The test function is called by test runner; but within diff, is there any usage of the function? The function itself is defined, but is it used elsewhere? The requirement says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" For a test function, being defined is enough? Usually test functions are discovered by pytest, not called directly in code. Does that count as wired? The rule: \"something else in the diff actually calls, instantiates, or otherwise uses it.\" For a test function, there is no explicit call in diff. However, the test runner will call it, but that's not in diff. So maybe not wired. But we need to interpret. The requirement is about a function symbol; they want to see if it's defined and used. In test files, test functions are not called explicitly; they are discovered. The diff does not contain any call to test_mock_not_contextfunction. So according to strict rule, it's not wired. However, maybe they consider the test function being defined as being used by test runner, but that's external. The rule says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" Since there is no call in diff, it's omitted.\n\nThus test_mock_not_contextfunction is OMITTED.\n\nReturn JSON accordingly.",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate each requirement.\n\nRequirements:\n\n- tests/test_runtime.py::Calc\n- tests/test_runtime.py::test_mock_not_contextfunction\n\nWe have diff of tests/test_runtime.py. The diff adds a new test function test_mock_not_contextfunction, and within it defines a class Calc (local class). So we need to see if the symbol Calc is defined in the target file tests/test_runtime.py. Yes, inside the new test function, there is a class Calc defined. So definition exists.\n\nNow \"wired\": something else in the diff actually calls, instantiates, or otherwise uses it. In the test, they instantiate Calc() and pass as calc to Template. They also call t.render(calc=Calc()). So they use it. So wired.\n\n\"Not a stub\": The class body has __getattr__ returning object(), __call__ returning len(args)+len(kwargs). That's real work (not pass). So not a stub.\n\nThus requirement tests/test_runtime.py::Calc is IMPLEMENTED.\n\nNow requirement tests/test_runtime.py::test_mock_not_contextfunction. The diff adds a function definition def test_mock_not_contextfunction(): ... So definition exists. Wired: The test function is called by test runner; but within diff, is there any usage of the function? The function itself is defined, but is it used elsewhere? The requirement says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" For a test function, being defined is enough? Usually test functions are discovered by pytest, not called directly in code. Does that count as wired? The rule: \"something else in the diff actually calls, instantiates, or otherwise uses it.\" For a test function, there is no explicit call in diff. However, the test runner will call it, but that's not in diff. So maybe not wired. But we need to interpret. The requirement is about a function symbol; they want to see if it's defined and used. In test files, test functions are not called explicitly; they are discovered. The diff does not contain any call to test_mock_not_contextfunction. So according to strict rule, it's not wired. However, maybe they consider the test function being defined as being used by test runner, but that's external. The rule says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" Since there is no call in diff, it's omitted.\n\nThus test_mock_not_contextfunction is OMITTED.\n\nReturn JSON accordingly.",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_runtime.py::Calc\n- tests/test_runtime.py::test_mock_not_contextfunction\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/tests/test_runtime.py\n+++ b/tests/test_runtime.py\n@@ -55,3 +55,22 @@\n     # it was advanced early, the lists would appear empty.\n     assert out == \"1 [(1, 'a'), (1, 'b')]\\n2 [(2, 'c')]\\n3 [(3, 'd')]\\n\"\n \n+\n+def test_mock_not_contextfunction():\n+    \"\"\"If a callable class has a ``__getattr__`` that returns True-like\n+    values for arbitrary attrs, it should not be incorrectly identified\n+    as a ``contextfunction``.\n+    \"\"\"\n+\n+    class Calc(object):\n+        def __getattr__(self, item):\n+            return object()\n+\n+        def __call__(self, *args, **kwargs):\n+            return len(args) + len(kwargs)\n+\n+    t = Template(\"{{ calc() }}\")\n+    out = t.render(calc=Calc())\n+    # Would be \"1\" if context argument was passed.\n+    assert out == \"0\"\n+\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 540,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 501
+    },
+    "cost": 0.0006626,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.000405,
+      "upstream_inference_cost": 0.0006626,
+      "upstream_inference_prompt_cost": 0.0002576
+    },
+    "is_byok": false,
+    "prompt_tokens": 736,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1276
+  },
+  "variance_seed": null
+}

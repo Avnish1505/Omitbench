@@ -1,0 +1,41 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0004308,
+  "cost_source": "reported",
+  "judge_id": "B5 LLM judge (mid-tier)",
+  "message": {
+    "content": "```json\n{\"tests/test_requests.py::AttrProxy\": \"IMPLEMENTED\", \"tests/test_requests.py::test_getattr_proxy_stream_follows_redirect\": \"IMPLEMENTED\"}\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_requests.py::AttrProxy\n- tests/test_requests.py::test_getattr_proxy_stream_follows_redirect\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/requests/models.py\n+++ b/src/requests/models.py\n@@ -596,9 +596,9 @@\n             if not isinstance(body, bytes):\n                 body = body.encode(\"utf-8\")\n \n-        if isinstance(data, Iterable) and not isinstance(\n-            data, (str, bytes, list, tuple, Mapping)\n-        ):\n+        # data that proxies attributes to underlying objects needs hasattr\n+        is_iterable = isinstance(data, Iterable) or hasattr(data, \"__iter__\")\n+        if is_iterable and not isinstance(data, (str, bytes, list, tuple, Mapping)):\n             try:\n                 length = super_len(data)\n             except (TypeError, AttributeError, UnsupportedOperation):\n\n--- a/tests/test_requests.py\n+++ b/tests/test_requests.py\n@@ -2072,6 +2072,21 @@\n             requests.utils.rewind_body(prep)\n \n         assert \"Unable to rewind request body\" in str(e)\n+\n+    def test_getattr_proxy_stream_follows_redirect(self, httpbin):\n+        \"\"\"Ensure stream wrappers that don't implement __iter__ directly are still detected.\"\"\"\n+\n+        class AttrProxy:\n+            def __init__(self):\n+                self._file = io.BytesIO(b\"data\")\n+\n+            def __getattr__(self, name):\n+                return getattr(self._file, name)\n+\n+        r = requests.post(\n+            httpbin(\"redirect-to?url=/post&status_code=307\"), data=AttrProxy()\n+        )\n+        assert r.json()[\"data\"] == \"data\"\n \n     def _patch_adapter_gzipped_redirect(self, session, url):\n         adapter = session.get_adapter(url=url)\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 43,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.0004308,
+    "cost_details": {
+      "upstream_inference_completions_cost": 8.6e-05,
+      "upstream_inference_cost": 0.0004308,
+      "upstream_inference_prompt_cost": 0.0003448
+    },
+    "is_byok": false,
+    "prompt_tokens": 862,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 905
+  },
+  "variance_seed": null
+}

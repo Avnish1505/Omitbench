@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0005155,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_utils.py::TestGetNetrcAuth\": \"OMITTED\", \"tests/test_utils.py::test_not_vulnerable_to_bad_url_parsing\": \"OMITTED\", \"tests/test_utils.py::test_works\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate three requirements:\n\n- tests/test_utils.py::TestGetNetrcAuth\n- tests/test_utils.py::test_not_vulnerable_to_bad_url_parsing\n- tests/test_utils.py::test_works\n\nWe have diff showing changes in src/requests/utils.py and tests/test_utils.py. The diff adds import of get_netrc_auth in tests file, and adds blank lines etc. No definitions of TestGetNetrcAuth class or test_not_vulnerable_to_bad_url_parsing function or test_works appear in diff. The diff only shows modifications to utils and test file import list.\n\nThus we need to see if those symbols are defined and wired in diff.\n\nRequirement 1: tests/test_utils.py::TestGetNetrcAuth. Is there a class TestGetNetrcAuth defined in diff? Not shown. The diff only shows part of file around imports and later some blank lines. No definition. So omitted.\n\nRequirement 2: tests/test_utils.py::test_not_vulnerable_to_bad_url_parsing. No function definition appears. Omitted.\n\nRequirement 3: tests/test_utils.py::test_works. No definition. Omitted.\n\nThus all three are OMITTED.\n\nReturn JSON with those keys mapping to \"OMITTED\".",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate three requirements:\n\n- tests/test_utils.py::TestGetNetrcAuth\n- tests/test_utils.py::test_not_vulnerable_to_bad_url_parsing\n- tests/test_utils.py::test_works\n\nWe have diff showing changes in src/requests/utils.py and tests/test_utils.py. The diff adds import of get_netrc_auth in tests file, and adds blank lines etc. No definitions of TestGetNetrcAuth class or test_not_vulnerable_to_bad_url_parsing function or test_works appear in diff. The diff only shows modifications to utils and test file import list.\n\nThus we need to see if those symbols are defined and wired in diff.\n\nRequirement 1: tests/test_utils.py::TestGetNetrcAuth. Is there a class TestGetNetrcAuth defined in diff? Not shown. The diff only shows part of file around imports and later some blank lines. No definition. So omitted.\n\nRequirement 2: tests/test_utils.py::test_not_vulnerable_to_bad_url_parsing. No function definition appears. Omitted.\n\nRequirement 3: tests/test_utils.py::test_works. No definition. Omitted.\n\nThus all three are OMITTED.\n\nReturn JSON with those keys mapping to \"OMITTED\".",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_utils.py::TestGetNetrcAuth\n- tests/test_utils.py::test_not_vulnerable_to_bad_url_parsing\n- tests/test_utils.py::test_works\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/requests/utils.py\n+++ b/src/requests/utils.py\n@@ -219,14 +219,7 @@\n         netrc_path = None\n \n         for f in netrc_locations:\n-            try:\n-                loc = os.path.expanduser(f)\n-            except KeyError:\n-                # os.path.expanduser can fail when $HOME is undefined and\n-                # getpwuid fails. See https://bugs.python.org/issue20164 &\n-                # https://github.com/psf/requests/issues/1846\n-                return\n-\n+            loc = os.path.expanduser(f)\n             if os.path.exists(loc):\n                 netrc_path = loc\n                 break\n\n--- a/tests/test_utils.py\n+++ b/tests/test_utils.py\n@@ -23,6 +23,7 @@\n     get_encoding_from_headers,\n     get_encodings_from_content,\n     get_environ_proxies,\n+    get_netrc_auth,\n     guess_filename,\n     guess_json_utf,\n     is_ipv4_address,\n@@ -152,6 +153,8 @@\n         assert super_len(object()) == 0\n \n \n+\n+\n class TestToKeyValList:\n     @pytest.mark.parametrize(\n         \"value, expected\",\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 321,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 257
+    },
+    "cost": 0.0005155,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.00024075,
+      "upstream_inference_cost": 0.0005155,
+      "upstream_inference_prompt_cost": 0.00027475
+    },
+    "is_byok": false,
+    "prompt_tokens": 785,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 384,
+      "video_tokens": 0
+    },
+    "total_tokens": 1106
+  },
+  "variance_seed": null
+}

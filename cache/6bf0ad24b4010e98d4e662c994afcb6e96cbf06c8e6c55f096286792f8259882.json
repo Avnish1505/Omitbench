@@ -1,0 +1,41 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0004108,
+  "cost_source": "reported",
+  "judge_id": "B5 LLM judge (mid-tier)",
+  "message": {
+    "content": "```json\n{\"tests/test_filters.py::test_indent_width_string\": \"IMPLEMENTED\"}\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_filters.py::test_indent_width_string\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/jinja2/filters.py\n+++ b/src/jinja2/filters.py\n@@ -748,20 +748,29 @@\n     return rv\n \n \n-def do_indent(s: str, width: int = 4, first: bool = False, blank: bool = False) -> str:\n+def do_indent(\n+    s: str, width: t.Union[int, str] = 4, first: bool = False, blank: bool = False\n+) -> str:\n     \"\"\"Return a copy of the string with each line indented by 4 spaces. The\n     first line and blank lines are not indented by default.\n \n-    :param width: Number of spaces to indent by.\n+    :param width: Number of spaces, or a string, to indent by.\n     :param first: Don't skip indenting the first line.\n     :param blank: Don't skip indenting empty lines.\n \n+    .. versionchanged:: 3.0\n+        ``width`` can be a string.\n+\n     .. versionchanged:: 2.10\n         Blank lines are not indented by default.\n \n         Rename the ``indentfirst`` argument to ``first``.\n     \"\"\"\n-    indention = \" \" * width\n+    if isinstance(width, str):\n+        indention = width\n+    else:\n+        indention = \" \" * width\n+\n     newline = \"\\n\"\n \n     if isinstance(s, Markup):\n\n--- a/tests/test_filters.py\n+++ b/tests/test_filters.py\n@@ -184,6 +184,10 @@\n         Tests cases where the filter input is a Markup type\n         \"\"\"\n         self._test_indent_multiline_template(env, markup=True)\n+\n+    def test_indent_width_string(self, env):\n+        t = env.from_string(\"{{ 'jinja\\nflask'|indent(width='>>> ', first=True) }}\")\n+        assert t.render() == \">>> jinja\\n>>> flask\"\n \n     @pytest.mark.parametrize(\n         (\"value\", \"expect\"),\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 22,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.0004108,
+    "cost_details": {
+      "upstream_inference_completions_cost": 4.4e-05,
+      "upstream_inference_cost": 0.0004108,
+      "upstream_inference_prompt_cost": 0.0003668
+    },
+    "is_byok": false,
+    "prompt_tokens": 917,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 939
+  },
+  "variance_seed": null
+}

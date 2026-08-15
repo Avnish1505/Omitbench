@@ -1,0 +1,41 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0003812,
+  "cost_source": "reported",
+  "judge_id": "B5 LLM judge (mid-tier)",
+  "message": {
+    "content": "```json\n{\"tests/test_utils.py::test_tarfile_member\": \"IMPLEMENTED\"}\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_utils.py::test_tarfile_member\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/requests/utils.py\n+++ b/requests/utils.py\n@@ -124,7 +124,10 @@\n     elif hasattr(o, 'fileno'):\n         try:\n             fileno = o.fileno()\n-        except io.UnsupportedOperation:\n+        except (io.UnsupportedOperation, AttributeError):\n+            # AttributeError is a surprising exception, seeing as how we've just checked\n+            # that `hasattr(o, 'fileno')`.  It happens for objects obtained via\n+            # `Tarfile.extractfile()`, per issue 5229.\n             pass\n         else:\n             total_length = os.fstat(fileno).st_size\n\n--- a/tests/test_utils.py\n+++ b/tests/test_utils.py\n@@ -4,6 +4,7 @@\n import copy\n import filecmp\n from io import BytesIO\n+import tarfile\n import zipfile\n from collections import deque\n \n@@ -86,6 +87,18 @@\n             assert super_len(fd) == 4\n         assert len(recwarn) == warnings_num\n \n+    def test_tarfile_member(self, tmpdir):\n+        file_obj = tmpdir.join('test.txt')\n+        file_obj.write('Test')\n+\n+        tar_obj = str(tmpdir.join('test.tar'))\n+        with tarfile.open(tar_obj, 'w') as tar:\n+            tar.add(str(file_obj), arcname='test.txt')\n+\n+        with tarfile.open(tar_obj) as tar:\n+            member = tar.extractfile('test.txt')\n+            assert super_len(member) == 4\n+\n     def test_super_len_with__len__(self):\n         foo = [1,2,3,4]\n         len_foo = super_len(foo)\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 22,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.0003812,
+    "cost_details": {
+      "upstream_inference_completions_cost": 4.4e-05,
+      "upstream_inference_cost": 0.0003812,
+      "upstream_inference_prompt_cost": 0.0003372
+    },
+    "is_byok": false,
+    "prompt_tokens": 843,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 865
+  },
+  "variance_seed": null
+}

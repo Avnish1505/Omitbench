@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00045125,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_http.py::test_authorization_basic_incorrect_padding\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate requirement: tests/test_http.py::test_authorization_basic_incorrect_padding\n\nWe need to see if this test function is defined and wired and not a stub.\n\nIn diff, we see modifications to tests/test_http.py: added lines:\n\n```\n    def test_authorization_basic_incorrect_padding(self):\n        raise NotImplementedError\n```\n\nThus the function is defined (def). It appears in the test class (presumably a subclass of unittest.TestCase). It is defined, but its body raises NotImplementedError, which is a stub. According to criteria: NOT A STUB \u2013 body consisting only of raise NotImplementedError is a stub, not an implementation. So fails condition 3. Also need to be wired: something else calls it? In tests, test runner will call it, but within diff there is no call. The requirement says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" The test runner is external, not in diff. So not wired. So requirement is OMITTED.\n\nThus output JSON with that key mapping to \"OMITTED\".",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate requirement: tests/test_http.py::test_authorization_basic_incorrect_padding\n\nWe need to see if this test function is defined and wired and not a stub.\n\nIn diff, we see modifications to tests/test_http.py: added lines:\n\n```\n    def test_authorization_basic_incorrect_padding(self):\n        raise NotImplementedError\n```\n\nThus the function is defined (def). It appears in the test class (presumably a subclass of unittest.TestCase). It is defined, but its body raises NotImplementedError, which is a stub. According to criteria: NOT A STUB \u2013 body consisting only of raise NotImplementedError is a stub, not an implementation. So fails condition 3. Also need to be wired: something else calls it? In tests, test runner will call it, but within diff there is no call. The requirement says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" The test runner is external, not in diff. So not wired. So requirement is OMITTED.\n\nThus output JSON with that key mapping to \"OMITTED\".",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_http.py::test_authorization_basic_incorrect_padding\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/werkzeug/datastructures/auth.py\n+++ b/src/werkzeug/datastructures/auth.py\n@@ -1,6 +1,7 @@\n from __future__ import annotations\n \n import base64\n+import binascii\n import typing as t\n import warnings\n from functools import wraps\n@@ -107,7 +108,7 @@\n         if scheme == \"basic\":\n             try:\n                 username, _, password = base64.b64decode(rest).decode().partition(\":\")\n-            except UnicodeError:\n+            except (binascii.Error, UnicodeError):\n                 return None\n \n             return cls(scheme, {\"username\": username, \"password\": password})\n\n--- a/tests/test_http.py\n+++ b/tests/test_http.py\n@@ -215,6 +215,9 @@\n         a = Authorization.from_header(f\"Token {token}\")\n         assert a.type == \"token\"\n         assert a.token == token\n+\n+    def test_authorization_basic_incorrect_padding(self):\n+        raise NotImplementedError\n \n     def test_bad_authorization_header_encoding(self):\n         \"\"\"If the base64 encoded bytes can't be decoded as UTF-8\"\"\"\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 254,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 225
+    },
+    "cost": 0.00045125,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.0001905,
+      "upstream_inference_cost": 0.00045125,
+      "upstream_inference_prompt_cost": 0.00026075
+    },
+    "is_byok": false,
+    "prompt_tokens": 745,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 256,
+      "video_tokens": 0
+    },
+    "total_tokens": 999
+  },
+  "variance_seed": null
+}

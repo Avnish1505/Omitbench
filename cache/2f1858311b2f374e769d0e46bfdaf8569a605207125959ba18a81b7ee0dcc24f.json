@@ -1,0 +1,41 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0003372,
+  "cost_source": "reported",
+  "judge_id": "B5 LLM judge (mid-tier)",
+  "message": {
+    "content": "```json\n{\"src/itsdangerous/serializer.py::secret_key\": \"IMPLEMENTED\", \"src/itsdangerous/signer.py::secret_key\": \"OMITTED\"}\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- src/itsdangerous/serializer.py::secret_key\n- src/itsdangerous/signer.py::secret_key\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/itsdangerous/serializer.py\n+++ b/src/itsdangerous/serializer.py\n@@ -83,10 +83,16 @@\n         fallback_signers=None,\n     ):\n         if isinstance(secret_key, list):\n-            self.secret_keys = [want_bytes(s) for s in secret_key]\n+            secret_keys = [want_bytes(s) for s in secret_key]\n         else:\n-            self.secret_keys = [want_bytes(secret_key)]\n-\n+            secret_keys = [want_bytes(secret_key)]\n+\n+        #: The list of secret keys to try for verifying signatures, from\n+        #: oldest to newest. The newest (last) key is used for signing.\n+        #:\n+        #: This allows a key rotation system to keep a list of allowed\n+        #: keys and remove expired ones.\n+        self.secret_keys = secret_keys\n         self.salt = want_bytes(salt)\n \n         if serializer is None:\n@@ -106,6 +112,13 @@\n \n         self.fallback_signers = fallback_signers\n         self.serializer_kwargs = serializer_kwargs or {}\n+\n+    @property\n+    def secret_key(self):\n+        \"\"\"The newest (last) entry in the :attr:`secret_keys` list. This\n+        is for compatibility from before key rotation support was added.\n+        \"\"\"\n+        return self.secret_keys[-1]\n \n     def load_payload(self, payload, serializer=None):\n         \"\"\"Loads the encoded object. This function raises\n\n--- a/src/itsdangerous/signer.py\n+++ b/src/itsdangerous/signer.py\n@@ -98,10 +98,16 @@\n         algorithm=None,\n     ):\n         if isinstance(secret_key, list):\n-            self.secret_keys = [want_bytes(s) for s in secret_key]\n+            secret_keys = [want_bytes(s) for s in secret_key]\n         else:\n-            self.secret_keys = [want_bytes(secret_key)]\n-\n+            secret_keys = [want_bytes(secret_key)]\n+\n+        #: The list of secret keys to try for verifying signatures, from\n+        #: oldest to newest. The newest (last) key is used for signing.\n+        #:\n+        #: This allows a key rotation system to keep a list of allowed\n+        #: keys and remove expired ones.\n+        self.secret_keys = secret_keys\n         self.sep = want_bytes(sep)\n \n         if self.sep in _base64_alphabet:\n@@ -127,6 +133,10 @@\n             algorithm = HMACAlgorithm(self.digest_method)\n \n         self.algorithm = algorithm\n+\n+    @property\n+    def secret_key(self):\n+        raise NotImplementedError\n \n     def derive_key(self, secret_key=None):\n         \"\"\"This method is called to derive the key. The default key\n@@ -173,7 +183,7 @@\n         except Exception:\n             return False\n \n-        for secret_key in self.secret_keys[::-1]:\n+        for secret_key in reversed(self.secret_keys):\n             key = self.derive_key(secret_key)\n \n             if self.algorithm.verify_signature(key, value, sig):\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 43,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.0003372,
+    "cost_details": {
+      "upstream_inference_completions_cost": 8.6e-05,
+      "upstream_inference_cost": 0.0003372,
+      "upstream_inference_prompt_cost": 0.0002512
+    },
+    "is_byok": false,
+    "prompt_tokens": 1204,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 640,
+      "video_tokens": 0
+    },
+    "total_tokens": 1247
+  },
+  "variance_seed": null
+}

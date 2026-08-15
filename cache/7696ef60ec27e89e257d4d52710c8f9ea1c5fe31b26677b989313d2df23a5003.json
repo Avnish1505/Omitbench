@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00042745,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_requests.py::test_basicauth_with_netrc_leak\": \"OMITTED\"}",
+    "reasoning": "We need to determine if the requirement \"tests/test_requests.py::test_basicauth_with_netrc_leak\" is implemented.\n\nWe have a diff of tests/test_requests.py. The diff shows modifications: added import tempfile, added a blank line after restoring requests.sessions.get_netrc_auth = old_auth, and a blank line before test_DIGEST_HTTP_200_OK_GET.\n\nWe need to see if the symbol test_basicauth_with_netrc_leak is defined in this file and wired etc. The diff only shows part of file around line 703. We need to see if test_basicauth_with_netrc_leak appears. The diff does not show any addition of that test. It only shows import addition and blank lines. The test may already exist before change, but we need to see if diff defines it. The requirement is to judge if the change implements the requirement. The diff is the entire change; we only have this diff. If the test function is not defined in diff, then it's omitted. The diff does not show any definition of test_basicauth_with_netrc_leak. So it's omitted.\n\nThus output: {\"tests/test_requests.py::test_basicauth_with_netrc_leak\": \"OMITTED\"}",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to determine if the requirement \"tests/test_requests.py::test_basicauth_with_netrc_leak\" is implemented.\n\nWe have a diff of tests/test_requests.py. The diff shows modifications: added import tempfile, added a blank line after restoring requests.sessions.get_netrc_auth = old_auth, and a blank line before test_DIGEST_HTTP_200_OK_GET.\n\nWe need to see if the symbol test_basicauth_with_netrc_leak is defined in this file and wired etc. The diff only shows part of file around line 703. We need to see if test_basicauth_with_netrc_leak appears. The diff does not show any addition of that test. It only shows import addition and blank lines. The test may already exist before change, but we need to see if diff defines it. The requirement is to judge if the change implements the requirement. The diff is the entire change; we only have this diff. If the test function is not defined in diff, then it's omitted. The diff does not show any definition of test_basicauth_with_netrc_leak. So it's omitted.\n\nThus output: {\"tests/test_requests.py::test_basicauth_with_netrc_leak\": \"OMITTED\"}",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_requests.py::test_basicauth_with_netrc_leak\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/tests/test_requests.py\n+++ b/tests/test_requests.py\n@@ -7,6 +7,7 @@\n import os\n import pickle\n import re\n+import tempfile\n import threading\n import warnings\n from unittest import mock\n@@ -703,6 +704,7 @@\n             assert r.status_code == 401\n         finally:\n             requests.sessions.get_netrc_auth = old_auth\n+\n \n     def test_DIGEST_HTTP_200_OK_GET(self, httpbin):\n         for authtype in self.digest_auth_algo:\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 282,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 251
+    },
+    "cost": 0.00042745,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.0002115,
+      "upstream_inference_cost": 0.00042745,
+      "upstream_inference_prompt_cost": 0.00021595
+    },
+    "is_byok": false,
+    "prompt_tokens": 617,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 899
+  },
+  "variance_seed": null
+}

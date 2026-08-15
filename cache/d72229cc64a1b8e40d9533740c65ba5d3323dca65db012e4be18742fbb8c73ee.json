@@ -1,0 +1,41 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0006036,
+  "cost_source": "reported",
+  "judge_id": "B5 LLM judge (mid-tier)",
+  "message": {
+    "content": "```json\n{\"tests/test_defaults.py::prefers_green\": \"IMPLEMENTED\", \"tests/test_defaults.py::prefers_red\": \"IMPLEMENTED\", \"tests/test_defaults.py::test_shared_param_prefers_first_default\": \"IMPLEMENTED\"}\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_defaults.py::prefers_green\n- tests/test_defaults.py::prefers_red\n- tests/test_defaults.py::test_shared_param_prefers_first_default\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/click/core.py\n+++ b/src/click/core.py\n@@ -1226,6 +1226,12 @@\n         for param in iter_params_for_processing(param_order, self.get_params(ctx)):\n             _, args = param.handle_parse_result(ctx, opts, args)\n \n+        # after handling *all* parameters, do a pass over the params to rewrite\n+        # `UNSET`\n+        for name, value in ctx.params.items():\n+            if value is UNSET:\n+                ctx.params[name] = None\n+\n         if args and not ctx.allow_extra_args and not ctx.resilient_parsing:\n             ctx.fail(\n                 ngettext(\n@@ -2538,17 +2544,17 @@\n             # We skip adding the value if it was previously set by another parameter\n             # targeting the same variable name. This prevents parameters competing for\n             # the same name to override each other.\n-            and self.name not in ctx.params\n+            and (self.name not in ctx.params or ctx.params[self.name] is UNSET)\n         ):\n             # Click is logically enforcing that the name is None if the parameter is\n             # not to be exposed. We still assert it here to please the type checker.\n             assert self.name is not None, (\n                 f\"{self!r} parameter's name should not be None when exposing value.\"\n             )\n-            # Normalize UNSET values to None, as we're about to pass them to the\n-            # command function and move them to the pure-Python realm of user-written\n-            # code.\n-            ctx.params[self.name] = value if value is not UNSET else None\n+            # Do not normalize UNSET values to None at this point\n+            # It needs to be done, but doing so too early impacts multiple parameters\n+            # targeting the same variable name\n+            ctx.params[self.name] = value\n \n         return value, args\n \n\n--- a/tests/test_defaults.py\n+++ b/tests/test_defaults.py\n@@ -85,3 +85,29 @@\n     result = runner.invoke(cli, [\"foo\", \"--help\"], default_map={\"foo\": {\"name\": True}})\n     assert \"default: name\" in result.output\n \n+\n+def test_shared_param_prefers_first_default(runner):\n+    \"\"\"test that the first default is chosen when multiple flags share a param name\"\"\"\n+\n+    @click.command\n+    @click.option(\"--red\", \"color\", flag_value=\"red\")\n+    @click.option(\"--green\", \"color\", flag_value=\"green\", default=True)\n+    def prefers_green(color):\n+        click.echo(color)\n+\n+    @click.command\n+    @click.option(\"--red\", \"color\", flag_value=\"red\", default=True)\n+    @click.option(\"--green\", \"color\", flag_value=\"green\")\n+    def prefers_red(color):\n+        click.echo(color)\n+\n+    result = runner.invoke(prefers_green, [])\n+    assert \"green\" in result.output\n+    result = runner.invoke(prefers_green, [\"--red\"])\n+    assert \"red\" in result.output\n+\n+    result = runner.invoke(prefers_red, [])\n+    assert \"red\" in result.output\n+    result = runner.invoke(prefers_red, [\"--green\"])\n+    assert \"green\" in result.output\n+\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 58,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.0006036,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.000116,
+      "upstream_inference_cost": 0.0006036,
+      "upstream_inference_prompt_cost": 0.0004876
+    },
+    "is_byok": false,
+    "prompt_tokens": 1219,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1277
+  },
+  "variance_seed": null
+}

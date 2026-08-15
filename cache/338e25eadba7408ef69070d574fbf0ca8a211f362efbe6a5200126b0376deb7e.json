@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00072905,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_context.py::test_with_resource_nested_exception\": \"OMITTED\"}",
+    "reasoning": "We need to determine if the requirement tests/test_context.py::test_with_resource_nested_exception is implemented.\n\nThe diff shows modifications to tests/test_context.py, removing a large block of code (the test code) and leaving only a blank line before next test function. The requirement is a test function named test_with_resource_nested_exception in tests/test_context.py. The diff removed that test's body. The diff does not define any new function; it only deletes code. So the symbol test_with_resource_nested_exception is not defined in the diff (maybe it existed before, but the diff shows removal of its body? Let's examine context.\n\nThe diff shows lines around line 478. It shows removal of many lines, but we need to see if the function definition line is present. The diff snippet starts with:\n\n@@ -478,42 +478,7 @@\n             )\n             raise TestException()\n\n-    base_val_nested = 11\n-    with ctx.scope():\n...\n\nSo before the diff, there is code inside the test function. The diff shows removal of many lines, but not the function definition line. The function definition line likely appears earlier, not shown. The diff only shows removal of the body lines. The function definition still exists (maybe unchanged). However, the requirement is that the test function must be implemented (i.e., defined and wired). The diff does not add any definition; it only removes code. The function still exists (definition unchanged) but its body is now empty (maybe only a pass). Actually after removal, the function body now only contains maybe a blank line? The diff shows after removal, there is a blank line before next test function. So the function now has no code (maybe just a docstring?). The requirement: we need to see if the symbol is defined and wired and not a stub. The function definition still exists (maybe unchanged). But its body now is empty (no code). That would be considered a stub? For a test function, \"wired\" means something else calls it? In tests, the test runner calls it. But within the diff, there is no call to the function. However, the requirement is about the symbol being defined, wired, and not a stub. For a test function, being wired might be that pytest discovers it; but the diff does not show any call. The definition exists but its body is empty, which is effectively a stub (does nothing). That likely fails the NOT A STUB condition. So the requirement is omitted.\n\nThus output: {\"tests/test_context.py::test_with_resource_nested_exception\": \"OMITTED\"}",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to determine if the requirement tests/test_context.py::test_with_resource_nested_exception is implemented.\n\nThe diff shows modifications to tests/test_context.py, removing a large block of code (the test code) and leaving only a blank line before next test function. The requirement is a test function named test_with_resource_nested_exception in tests/test_context.py. The diff removed that test's body. The diff does not define any new function; it only deletes code. So the symbol test_with_resource_nested_exception is not defined in the diff (maybe it existed before, but the diff shows removal of its body? Let's examine context.\n\nThe diff shows lines around line 478. It shows removal of many lines, but we need to see if the function definition line is present. The diff snippet starts with:\n\n@@ -478,42 +478,7 @@\n             )\n             raise TestException()\n\n-    base_val_nested = 11\n-    with ctx.scope():\n...\n\nSo before the diff, there is code inside the test function. The diff shows removal of many lines, but not the function definition line. The function definition line likely appears earlier, not shown. The diff only shows removal of the body lines. The function definition still exists (maybe unchanged). However, the requirement is that the test function must be implemented (i.e., defined and wired). The diff does not add any definition; it only removes code. The function still exists (definition unchanged) but its body is now empty (maybe only a pass). Actually after removal, the function body now only contains maybe a blank line? The diff shows after removal, there is a blank line before next test function. So the function now has no code (maybe just a docstring?). The requirement: we need to see if the symbol is defined and wired and not a stub. The function definition still exists (maybe unchanged). But its body now is empty (no code). That would be considered a stub? For a test function, \"wired\" means something else calls it? In tests, the test runner calls it. But within the diff, there is no call to the function. However, the requirement is about the symbol being defined, wired, and not a stub. For a test function, being wired might be that pytest discovers it; but the diff does not show any call. The definition exists but its body is empty, which is effectively a stub (does nothing). That likely fails the NOT A STUB condition. So the requirement is omitted.\n\nThus output: {\"tests/test_context.py::test_with_resource_nested_exception\": \"OMITTED\"}",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_context.py::test_with_resource_nested_exception\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/tests/test_context.py\n+++ b/tests/test_context.py\n@@ -478,42 +478,7 @@\n             )\n             raise TestException()\n \n-    base_val_nested = 11\n-    with ctx.scope():\n-        rv = ctx.with_resource(TestContext(base_val=base_val))\n-        rv_nested = ctx.with_resource(TestContext(base_val=base_val_nested))\n-        assert rv[0] == base_val\n-        assert rv_nested[0] == base_val_nested\n-\n-    assert rv == [base_val - 1]\n-    assert rv_nested == [base_val_nested - 1]\n-\n-    with ctx.scope():\n-        rv = ctx.with_resource(TestContext(base_val=base_val))\n-        rv_nested = ctx.with_resource(TestContext(base_val=base_val_nested))\n-        raise TestException()\n-\n-    # If one of the context \"eats\" the exceptions they will not be forwarded to other\n-    # parts. This is due to how ExitStack unwinding works\n-    assert rv_nested == [base_val_nested + 1]\n-    assert rv == [base_val - 1]\n-\n-    with ctx.scope():\n-        rv = ctx.with_resource(TestContext(base_val=base_val))\n-        rv_nested = ctx.with_resource(\n-            TestContext(base_val=base_val_nested, handle_exception=False)\n-        )\n-        raise TestException()\n-\n-    assert rv_nested == [base_val_nested + 1]\n-    assert rv == [base_val + 1]\n-\n-    with pytest.raises(TestException):\n-        rv = ctx.with_resource(TestContext(base_val=base_val, handle_exception=False))\n-        rv_nested = ctx.with_resource(\n-            TestContext(base_val=base_val_nested, handle_exception=False)\n-        )\n-        raise TestException()\n+\n \n \n def test_make_pass_decorator_args(runner):\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 553,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 526
+    },
+    "cost": 0.00072905,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.00041475,
+      "upstream_inference_cost": 0.00072905,
+      "upstream_inference_prompt_cost": 0.0003143
+    },
+    "is_byok": false,
+    "prompt_tokens": 898,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 128,
+      "video_tokens": 0
+    },
+    "total_tokens": 1451
+  },
+  "variance_seed": null
+}

@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00078425,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_init_subclass.py::Sub1\": \"OMITTED\", \"tests/test_init_subclass.py::Sub2\": \"IMPLEMENTED\", \"tests/test_init_subclass.py::test_init_subclass_slots_workaround\": \"OMITTED\"}",
+    "reasoning": "We need to examine diff. The file is tests/test_init_subclass.py. Requirements:\n\n- tests/test_init_subclass.py::Sub1\n- tests/test_init_subclass.py::Sub2\n- tests/test_init_subclass.py::test_init_subclass_slots_workaround\n\nWe need to see if each symbol is defined, wired, not stub.\n\nFrom diff, we see new test function test_init_subclass_slots_workaround defined. Inside it, there are class definitions for Base, Sub1, Sub2. Let's examine.\n\nThe diff shows:\n\n+def test_init_subclass_slots_workaround():\n+    \"\"\"\n+    `__init_subclass__` works with modern APIs if care is taken around classes\n+    existing twice.\n+    \"\"\"\n+    subs = {}\n+\n+    @attr.define\n+    class Base:\n+        def __init_subclass__(cls):\n+            subs[cls.__qualname__] = cls\n+\n+    @attr.define\n+    class Sub1(Base):\n+        raise NotImplementedError\n+\n+    @attr.define\n+    class Sub2(Base):\n+        y: int\n+\n+    assert (Sub1, Sub2) == tuple(subs.values())\n\nThus Sub1 and Sub2 are defined as classes inside the function. They are defined. Are they \"wired\"? They are used later in the assert: tuple(subs.values()) compared to (Sub1, Sub2). So they are referenced. That's usage. So they are wired.\n\nAre they stubs? Sub1's body is just \"raise NotImplementedError\". That's a stub according to rule: body consisting only of raise NotImplementedError is a stub, not an implementation. So Sub1 is a stub, thus requirement omitted.\n\nSub2's body is \"y: int\". That's a type annotation, no methods. That's not a stub? The rule: body consisting only of pass, ..., a bare docstring, or raise NotImplementedError is a stub. Here body has a variable annotation, which is not a stub. It does have some content (annotation). However does it count as \"real work\"? Probably yes, it's not a stub. So Sub2 passes stub test.\n\nBut also need to check wiring: Sub2 is used in assert. So wired.\n\nThus Sub2 is IMPLEMENTED.\n\nNow test_init_subclass_slots_workaround function: defined, used? It's a test function; it's defined and not called elsewhere in diff. But test functions are discovered by pytest; but within diff, is there any call? The requirement says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" The test function is not called elsewhere in diff. However, in test files, the function is used by test runner, but that is external. The diff does not show any usage. So according to strict rule, it's not wired. So it's omitted.\n\nThus results:\n\n- Sub1: OMITTED (stub)\n- Sub2: IMPLEMENTED\n- test_init_subclass_slots_workaround: OMITTED (not wired)\n\nReturn JSON accordingly.",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to examine diff. The file is tests/test_init_subclass.py. Requirements:\n\n- tests/test_init_subclass.py::Sub1\n- tests/test_init_subclass.py::Sub2\n- tests/test_init_subclass.py::test_init_subclass_slots_workaround\n\nWe need to see if each symbol is defined, wired, not stub.\n\nFrom diff, we see new test function test_init_subclass_slots_workaround defined. Inside it, there are class definitions for Base, Sub1, Sub2. Let's examine.\n\nThe diff shows:\n\n+def test_init_subclass_slots_workaround():\n+    \"\"\"\n+    `__init_subclass__` works with modern APIs if care is taken around classes\n+    existing twice.\n+    \"\"\"\n+    subs = {}\n+\n+    @attr.define\n+    class Base:\n+        def __init_subclass__(cls):\n+            subs[cls.__qualname__] = cls\n+\n+    @attr.define\n+    class Sub1(Base):\n+        raise NotImplementedError\n+\n+    @attr.define\n+    class Sub2(Base):\n+        y: int\n+\n+    assert (Sub1, Sub2) == tuple(subs.values())\n\nThus Sub1 and Sub2 are defined as classes inside the function. They are defined. Are they \"wired\"? They are used later in the assert: tuple(subs.values()) compared to (Sub1, Sub2). So they are referenced. That's usage. So they are wired.\n\nAre they stubs? Sub1's body is just \"raise NotImplementedError\". That's a stub according to rule: body consisting only of raise NotImplementedError is a stub, not an implementation. So Sub1 is a stub, thus requirement omitted.\n\nSub2's body is \"y: int\". That's a type annotation, no methods. That's not a stub? The rule: body consisting only of pass, ..., a bare docstring, or raise NotImplementedError is a stub. Here body has a variable annotation, which is not a stub. It does have some content (annotation). However does it count as \"real work\"? Probably yes, it's not a stub. So Sub2 passes stub test.\n\nBut also need to check wiring: Sub2 is used in assert. So wired.\n\nThus Sub2 is IMPLEMENTED.\n\nNow test_init_subclass_slots_workaround function: defined, used? It's a test function; it's defined and not called elsewhere in diff. But test functions are discovered by pytest; but within diff, is there any call? The requirement says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" The test function is not called elsewhere in diff. However, in test files, the function is used by test runner, but that is external. The diff does not show any usage. So according to strict rule, it's not wired. So it's omitted.\n\nThus results:\n\n- Sub1: OMITTED (stub)\n- Sub2: IMPLEMENTED\n- test_init_subclass_slots_workaround: OMITTED (not wired)\n\nReturn JSON accordingly.",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_init_subclass.py::Sub1\n- tests/test_init_subclass.py::Sub2\n- tests/test_init_subclass.py::test_init_subclass_slots_workaround\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/tests/test_init_subclass.py\n+++ b/tests/test_init_subclass.py\n@@ -1,7 +1,7 @@\n # SPDX-License-Identifier: MIT\n \n \"\"\"\n-Tests for `__init_subclass__` related tests.\n+Tests for `__init_subclass__` related functionality.\n \"\"\"\n \n import attr\n@@ -42,3 +42,26 @@\n \n     assert \"foo\" == Attrs().param\n \n+\n+def test_init_subclass_slots_workaround():\n+    \"\"\"\n+    `__init_subclass__` works with modern APIs if care is taken around classes\n+    existing twice.\n+    \"\"\"\n+    subs = {}\n+\n+    @attr.define\n+    class Base:\n+        def __init_subclass__(cls):\n+            subs[cls.__qualname__] = cls\n+\n+    @attr.define\n+    class Sub1(Base):\n+        raise NotImplementedError\n+\n+    @attr.define\n+    class Sub2(Base):\n+        y: int\n+\n+    assert (Sub1, Sub2) == tuple(subs.values())\n+\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 691,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 629
+    },
+    "cost": 0.00078425,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.00051825,
+      "upstream_inference_cost": 0.00078425,
+      "upstream_inference_prompt_cost": 0.000266
+    },
+    "is_byok": false,
+    "prompt_tokens": 760,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 256,
+      "video_tokens": 0
+    },
+    "total_tokens": 1451
+  },
+  "variance_seed": null
+}

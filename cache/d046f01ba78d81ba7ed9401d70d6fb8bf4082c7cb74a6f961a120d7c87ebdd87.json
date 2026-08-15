@@ -1,0 +1,41 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0005036,
+  "cost_source": "reported",
+  "judge_id": "B5 LLM judge (mid-tier)",
+  "message": {
+    "content": "```json\n{\"tests/test_lowlevel.py::multiple_content_length_response_handler\": \"IMPLEMENTED\", \"tests/test_lowlevel.py::test_conflicting_content_lengths\": \"IMPLEMENTED\"}\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_lowlevel.py::multiple_content_length_response_handler\n- tests/test_lowlevel.py::test_conflicting_content_lengths\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/requests/adapters.py\n+++ b/requests/adapters.py\n@@ -19,6 +19,7 @@\n from urllib3.exceptions import ClosedPoolError\n from urllib3.exceptions import ConnectTimeoutError\n from urllib3.exceptions import HTTPError as _HTTPError\n+from urllib3.exceptions import InvalidHeader as _InvalidHeader\n from urllib3.exceptions import MaxRetryError\n from urllib3.exceptions import NewConnectionError\n from urllib3.exceptions import ProxyError as _ProxyError\n@@ -37,7 +38,7 @@\n from .cookies import extract_cookies_to_jar\n from .exceptions import (ConnectionError, ConnectTimeout, ReadTimeout, SSLError,\n                          ProxyError, RetryError, InvalidSchema, InvalidProxyURL,\n-                         InvalidURL)\n+                         InvalidURL, InvalidHeader)\n from .auth import _basic_auth_str\n \n try:\n@@ -527,6 +528,8 @@\n                 raise SSLError(e, request=request)\n             elif isinstance(e, ReadTimeoutError):\n                 raise ReadTimeout(e, request=request)\n+            elif isinstance(e, _InvalidHeader):\n+                raise InvalidHeader(e, request=request)\n             else:\n                 raise\n \n\n--- a/tests/test_lowlevel.py\n+++ b/tests/test_lowlevel.py\n@@ -44,6 +44,32 @@\n         with pytest.raises(requests.exceptions.ChunkedEncodingError):\n             r = requests.get(url)\n         close_server.set()  # release server block\n+\n+\n+def test_conflicting_content_lengths():\n+    \"\"\"Ensure we correctly throw an InvalidHeader error if multiple\n+    conflicting Content-Length headers are returned.\n+    \"\"\"\n+\n+    def multiple_content_length_response_handler(sock):\n+        request_content = consume_socket_content(sock, timeout=0.5)\n+\n+        sock.send(b\"HTTP/1.1 200 OK\\r\\n\" +\n+                  b\"Content-Type: text/plain\\r\\n\" +\n+                  b\"Content-Length: 16\\r\\n\" +\n+                  b\"Content-Length: 32\\r\\n\\r\\n\" +\n+                  b\"-- Bad Actor -- Original Content\\r\\n\")\n+\n+        return request_content\n+\n+    close_server = threading.Event()\n+    server = Server(multiple_content_length_response_handler)\n+\n+    with server as (host, port):\n+        url = 'http://{}:{}/'.format(host, port)\n+        with pytest.raises(requests.exceptions.InvalidHeader):\n+            r = requests.get(url)\n+        close_server.set()\n \n \n def test_digestauth_401_count_reset_on_redirect():\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 43,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.0005036,
+    "cost_details": {
+      "upstream_inference_completions_cost": 8.6e-05,
+      "upstream_inference_cost": 0.0005036,
+      "upstream_inference_prompt_cost": 0.0004176
+    },
+    "is_byok": false,
+    "prompt_tokens": 1044,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1087
+  },
+  "variance_seed": null
+}

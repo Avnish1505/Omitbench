@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0003505,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_utils.py::test_invalid_unc_path\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate requirement: tests/test_utils.py::test_invalid_unc_path\n\nWe need to see if this symbol (function) is defined in tests/test_utils.py and wired etc. Look at diff for tests/test_utils.py. The diff shows only a small change: added a blank line before class TestContentEncodingDetection. No addition of test_invalid_unc_path. The diff snippet shows lines around 286 etc. No definition of test_invalid_unc_path. So the symbol is not defined. Therefore requirement is OMITTED.\n\nThus output JSON with that key mapping to \"OMITTED\".",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate requirement: tests/test_utils.py::test_invalid_unc_path\n\nWe need to see if this symbol (function) is defined in tests/test_utils.py and wired etc. Look at diff for tests/test_utils.py. The diff shows only a small change: added a blank line before class TestContentEncodingDetection. No addition of test_invalid_unc_path. The diff snippet shows lines around 286 etc. No definition of test_invalid_unc_path. So the symbol is not defined. Therefore requirement is OMITTED.\n\nThus output JSON with that key mapping to \"OMITTED\".",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_utils.py::test_invalid_unc_path\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/requests/utils.py\n+++ b/requests/utils.py\n@@ -251,6 +251,10 @@\n     archive, member = os.path.split(path)\n     while archive and not os.path.exists(archive):\n         archive, prefix = os.path.split(archive)\n+        if not prefix:\n+            # If we don't check for an empty prefix after the split (in other words, archive remains unchanged after the split),\n+            # we _can_ end up in an infinite loop on a rare corner case affecting a small number of users\n+            break\n         member = '/'.join([prefix, member])\n \n     if not zipfile.is_zipfile(archive):\n\n--- a/tests/test_utils.py\n+++ b/tests/test_utils.py\n@@ -286,6 +286,7 @@\n         assert filecmp.cmp(extracted_path, __file__)\n \n \n+\n class TestContentEncodingDetection:\n \n     def test_none(self):\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 143,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 117
+    },
+    "cost": 0.0003505,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.00010725,
+      "upstream_inference_cost": 0.0003505,
+      "upstream_inference_prompt_cost": 0.00024325
+    },
+    "is_byok": false,
+    "prompt_tokens": 695,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 838
+  },
+  "variance_seed": null
+}

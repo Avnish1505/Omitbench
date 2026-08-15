@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00060975,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_make.py::test_handler_non_attrs_instance\": \"OMITTED\"}",
+    "reasoning": "We need to judge requirement: tests/test_make.py::test_handler_non_attrs_instance\n\nWe need to see if this test function is defined and implemented (i.e., defined in tests/test_make.py, and wired, not stub). The diff shows modifications to tests/test_make.py, but we need to see if test_handler_non_attrs_instance appears. Let's search diff.\n\nIn tests/test_make.py diff, we see changes around test_instance, but not test_handler_non_attrs_instance. The diff snippet shows:\n\n@@ -1550,12 +1550,10 @@\n     @given(simple_classes())\n     def test_instance(self, C):\n         \"\"\"\n-        Raises `TypeError` on non-classes.\n-        \"\"\"\n-        with pytest.raises(TypeError) as e:\n-            fields(C())\n-\n-        assert \"Passed object must be a class.\" == e.value.args[0]\n+        Returns the class fields for *attrs* instances too.\n+        \"\"\"\n+        assert fields(C()) is fields(C)\n+\n \n     def test_handler_non_attrs_class(self):\n         \"\n\nSo test_handler_non_attrs_instance is not present in diff. It might be elsewhere in file but not changed. The diff only shows modifications; but the requirement is to see if the symbol is defined in the diff. The instruction: \"If a requirement is not visibly present anywhere in the diff, it is OMITED\". So we need to check if test_handler_non_attrs_instance appears. It does not appear. Therefore it's omitted.\n\nThus output: {\"tests/test_make.py::test_handler_non_attrs_instance\": \"OMITTED\"}",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to judge requirement: tests/test_make.py::test_handler_non_attrs_instance\n\nWe need to see if this test function is defined and implemented (i.e., defined in tests/test_make.py, and wired, not stub). The diff shows modifications to tests/test_make.py, but we need to see if test_handler_non_attrs_instance appears. Let's search diff.\n\nIn tests/test_make.py diff, we see changes around test_instance, but not test_handler_non_attrs_instance. The diff snippet shows:\n\n@@ -1550,12 +1550,10 @@\n     @given(simple_classes())\n     def test_instance(self, C):\n         \"\"\"\n-        Raises `TypeError` on non-classes.\n-        \"\"\"\n-        with pytest.raises(TypeError) as e:\n-            fields(C())\n-\n-        assert \"Passed object must be a class.\" == e.value.args[0]\n+        Returns the class fields for *attrs* instances too.\n+        \"\"\"\n+        assert fields(C()) is fields(C)\n+\n \n     def test_handler_non_attrs_class(self):\n         \"\n\nSo test_handler_non_attrs_instance is not present in diff. It might be elsewhere in file but not changed. The diff only shows modifications; but the requirement is to see if the symbol is defined in the diff. The instruction: \"If a requirement is not visibly present anywhere in the diff, it is OMITED\". So we need to check if test_handler_non_attrs_instance appears. It does not appear. Therefore it's omitted.\n\nThus output: {\"tests/test_make.py::test_handler_non_attrs_instance\": \"OMITTED\"}",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_make.py::test_handler_non_attrs_instance\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/attr/_make.py\n+++ b/src/attr/_make.py\n@@ -1890,16 +1890,16 @@\n \n def fields(cls):\n     \"\"\"\n-    Return the tuple of *attrs* attributes for a class.\n+    Return the tuple of *attrs* attributes for a class or instance.\n \n     The tuple also allows accessing the fields by their names (see below for\n     examples).\n \n     Args:\n-        cls (type): Class to introspect.\n+        cls (type): Class or instance to introspect.\n \n     Raises:\n-        TypeError: If *cls* is not a class.\n+        TypeError: If *cls* is neither a class nor an *attrs* instance.\n \n         attrs.exceptions.NotAnAttrsClassError:\n             If *cls* is not an *attrs* class.\n@@ -1910,12 +1910,17 @@\n     .. versionchanged:: 16.2.0 Returned tuple allows accessing the fields\n        by name.\n     .. versionchanged:: 23.1.0 Add support for generic classes.\n+    .. versionchanged:: 26.1.0 Add support for instances.\n     \"\"\"\n     generic_base = get_generic_base(cls)\n \n     if generic_base is None and not isinstance(cls, type):\n-        msg = \"Passed object must be a class.\"\n-        raise TypeError(msg)\n+        type_ = type(cls)\n+        if getattr(type_, \"__attrs_attrs__\", None) is None:\n+            msg = \"Passed object must be a class or attrs instance.\"\n+            raise TypeError(msg)\n+\n+        return fields(type_)\n \n     attrs = getattr(cls, \"__attrs_attrs__\", None)\n \n\n--- a/tests/test_make.py\n+++ b/tests/test_make.py\n@@ -1550,12 +1550,10 @@\n     @given(simple_classes())\n     def test_instance(self, C):\n         \"\"\"\n-        Raises `TypeError` on non-classes.\n-        \"\"\"\n-        with pytest.raises(TypeError) as e:\n-            fields(C())\n-\n-        assert \"Passed object must be a class.\" == e.value.args[0]\n+        Returns the class fields for *attrs* instances too.\n+        \"\"\"\n+        assert fields(C()) is fields(C)\n+\n \n     def test_handler_non_attrs_class(self):\n         \"\"\"\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 351,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 324
+    },
+    "cost": 0.00060975,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.00026325,
+      "upstream_inference_cost": 0.00060975,
+      "upstream_inference_prompt_cost": 0.0003465
+    },
+    "is_byok": false,
+    "prompt_tokens": 990,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 512,
+      "video_tokens": 0
+    },
+    "total_tokens": 1341
+  },
+  "variance_seed": null
+}

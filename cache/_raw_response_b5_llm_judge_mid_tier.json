@@ -1,0 +1,46 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "content": "```json\n{\n    \"src/click/types.py::ChoiceInfoDict\": \"IMPLEMENTED\",\n    \"src/click/types.py::DateTimeInfoDict\": \"IMPLEMENTED\",\n    \"src/click/types.py::FileInfoDict\": \"IMPLEMENTED\",\n    \"src/click/types.py::FuncParamTypeInfoDict\": \"IMPLEMENTED\",\n    \"src/click/types.py::NumberRangeInfoDict\": \"IMPLEMENTED\",\n    \"src/click/types.py::ParamTypeInfoDict\": \"IMPLEMENTED\",\n    \"src/click/types.py::PathInfoDict\": \"IMPLEMENTED\",\n    \"src/click/types.py::TupleInfoDict\": \"IMPLEMENTED\"\n}\n```",
+        "reasoning": null,
+        "refusal": null,
+        "role": "assistant"
+      },
+      "native_finish_reason": "stop"
+    }
+  ],
+  "created": 1786641686,
+  "id": "gen-1786641686-jazmzj3cBo1m07X3MobR",
+  "model": "mistralai/mistral-medium-3",
+  "object": "chat.completion",
+  "provider": "Mistral",
+  "service_tier": "default",
+  "system_fingerprint": null,
+  "usage": {
+    "completion_tokens": 148,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.0026532,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.000296,
+      "upstream_inference_cost": 0.0026532,
+      "upstream_inference_prompt_cost": 0.0023572
+    },
+    "is_byok": false,
+    "prompt_tokens": 5893,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 6041
+  }
+}

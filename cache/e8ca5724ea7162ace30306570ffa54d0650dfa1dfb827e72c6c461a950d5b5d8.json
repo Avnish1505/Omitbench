@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0007082,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_types.py::test_path_dash_no_byteswarning\": \"OMITTED\"}",
+    "reasoning": "We need to judge requirement: tests/test_types.py::test_path_dash_no_byteswarning\n\nWe need to see if the diff defines this test function, wires it, and not stub.\n\nIn diff, we see addition of test_path_dash_no_byteswarning function in tests/test_types.py. The diff shows its definition (def test_path_dash_no_byteswarning():) with body containing docstring, program string, subprocess.run, asserts. That's a real implementation, not stub. It is defined (def). It is used? The requirement is about the test function itself; we need to see if it's \"wired\" meaning something else calls it. Usually test functions are discovered by pytest, not called directly. The requirement's criteria: \"WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it.\" For a test function, is it considered wired? In typical code, test functions are not called directly; they are discovered by test runner. The requirement says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" Since there is no explicit call to test_path_dash_no_byteswarning in the diff, it's not wired. However, maybe they consider test functions as being used by pytest automatically, but the diff does not show any call. The criteria is strict: must be called somewhere else in diff. Since not, it's omitted.\n\nBut we need to consider the definition of \"wired\" for test functions. The requirement is about a test function; they might consider that being defined is enough, but the spec says must be used. In many previous similar tasks, test functions are considered implemented if they are defined and not stub, even if not called. However the spec explicitly says \"WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it.\" For a test function, there is no call. So likely it's considered omitted.\n\nBut maybe they treat the test function as being used by pytest, which is external, not in diff. The spec says \"something else in the diff\". So not.\n\nThus requirement is OMITTED.\n\nCheck also the file path: tests/test_types.py::test_path_dash_no_byteswarning. The diff shows addition of that function. So definition exists. But wiring fails. So overall OMITTED.\n\nReturn JSON with that key mapping to \"OMITTED\".",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to judge requirement: tests/test_types.py::test_path_dash_no_byteswarning\n\nWe need to see if the diff defines this test function, wires it, and not stub.\n\nIn diff, we see addition of test_path_dash_no_byteswarning function in tests/test_types.py. The diff shows its definition (def test_path_dash_no_byteswarning():) with body containing docstring, program string, subprocess.run, asserts. That's a real implementation, not stub. It is defined (def). It is used? The requirement is about the test function itself; we need to see if it's \"wired\" meaning something else calls it. Usually test functions are discovered by pytest, not called directly. The requirement's criteria: \"WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it.\" For a test function, is it considered wired? In typical code, test functions are not called directly; they are discovered by test runner. The requirement says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" Since there is no explicit call to test_path_dash_no_byteswarning in the diff, it's not wired. However, maybe they consider test functions as being used by pytest automatically, but the diff does not show any call. The criteria is strict: must be called somewhere else in diff. Since not, it's omitted.\n\nBut we need to consider the definition of \"wired\" for test functions. The requirement is about a test function; they might consider that being defined is enough, but the spec says must be used. In many previous similar tasks, test functions are considered implemented if they are defined and not stub, even if not called. However the spec explicitly says \"WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it.\" For a test function, there is no call. So likely it's considered omitted.\n\nBut maybe they treat the test function as being used by pytest, which is external, not in diff. The spec says \"something else in the diff\". So not.\n\nThus requirement is OMITTED.\n\nCheck also the file path: tests/test_types.py::test_path_dash_no_byteswarning. The diff shows addition of that function. So definition exists. But wiring fails. So overall OMITTED.\n\nReturn JSON with that key mapping to \"OMITTED\".",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_types.py::test_path_dash_no_byteswarning\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/click/types.py\n+++ b/src/click/types.py\n@@ -1104,7 +1104,8 @@\n     ) -> str | bytes | os.PathLike[str]:\n         rv = value\n \n-        is_dash = self.file_okay and self.allow_dash and rv in (b\"-\", \"-\")\n+        dash = b\"-\" if isinstance(rv, bytes) else \"-\"\n+        is_dash = self.file_okay and self.allow_dash and rv == dash\n \n         if not is_dash:\n             if self.resolve_path:\n\n--- a/tests/test_types.py\n+++ b/tests/test_types.py\n@@ -1,6 +1,8 @@\n import os.path\n import pathlib\n import platform\n+import subprocess\n+import sys\n import tempfile\n \n import pytest\n@@ -125,6 +127,29 @@\n     assert result.return_value == expect\n \n \n+def test_path_dash_no_byteswarning():\n+    \"\"\"Detecting the ``-`` dash sentinel must not compare ``bytes`` against\n+    ``str``, which raises a ``BytesWarning`` under ``python -bb``.\n+\n+    The warning is only emitted when the interpreter runs with ``-b``, so this\n+    has to be checked in a subprocess. ``-bb`` turns the warning into an error,\n+    so a clean exit means no mismatched comparison happened.\n+    \"\"\"\n+    program = (\n+        \"import click\\n\"\n+        \"convert = click.Path(allow_dash=True).convert\\n\"\n+        \"for value in ('-', '', b'-', b''):\\n\"\n+        \"    convert(value, None, None)\\n\"\n+    )\n+    result = subprocess.run(\n+        [sys.executable, \"-bb\", \"-c\", program],\n+        capture_output=True,\n+        text=True,\n+    )\n+    assert result.returncode == 0, result.stderr\n+    assert \"BytesWarning\" not in result.stderr\n+\n+\n def _symlinks_supported():\n     with tempfile.TemporaryDirectory(prefix=\"click-pytest-\") as tempdir:\n         target = os.path.join(tempdir, \"target\")\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 500,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 472
+    },
+    "cost": 0.0007082,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.000375,
+      "upstream_inference_cost": 0.0007082,
+      "upstream_inference_prompt_cost": 0.0003332
+    },
+    "is_byok": false,
+    "prompt_tokens": 952,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1452
+  },
+  "variance_seed": null
+}

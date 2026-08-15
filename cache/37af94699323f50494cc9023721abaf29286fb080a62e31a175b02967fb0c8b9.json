@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00018041,
+  "cost_source": "reported",
+  "judge_id": "B6 LLM judge (NVIDIA NIM)",
+  "message": {
+    "content": "{\"tests/test_arguments.py::test_envvar_flag_value\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate requirement: tests/test_arguments.py::test_envvar_flag_value\n\nWe need to see if the diff shows that symbol defined in that file, wired, not a stub.\n\nThe diff includes changes to src/click/core.py and tests/test_arguments.py.\n\nIn tests/test_arguments.py diff:\n\n--- a/tests/test_arguments.py\n+++ b/tests/test_arguments.py\n@@ -198,6 +198,8 @@\n         assert result.return_value == expect\n \n \n+\n+\n def test_nargs_envvar_only_if_values_empty(runner):\n     @click.command()\n     @click.argument(\"arg\", envvar=\"X\", nargs=-1)\n\nWe see added blank lines and then a function definition test_nargs_envvar_only_if_values_empty. No test_envvar_flag_value function appears.\n\nThus the symbol test_envvar_flag_value is not present anywhere in the diff. Therefore it's OMITTED.\n\nWe must output JSON mapping exactly that requirement string to \"OMITTED\".\n\nThus:\n\n{\"tests/test_arguments.py::test_envvar_flag_value\": \"OMITTED\"}\n\nCheck no extra keys.\n\nReturn only JSON.\n\n",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate requirement: tests/test_arguments.py::test_envvar_flag_value\n\nWe need to see if the diff shows that symbol defined in that file, wired, not a stub.\n\nThe diff includes changes to src/click/core.py and tests/test_arguments.py.\n\nIn tests/test_arguments.py diff:\n\n--- a/tests/test_arguments.py\n+++ b/tests/test_arguments.py\n@@ -198,6 +198,8 @@\n         assert result.return_value == expect\n \n \n+\n+\n def test_nargs_envvar_only_if_values_empty(runner):\n     @click.command()\n     @click.argument(\"arg\", envvar=\"X\", nargs=-1)\n\nWe see added blank lines and then a function definition test_nargs_envvar_only_if_values_empty. No test_envvar_flag_value function appears.\n\nThus the symbol test_envvar_flag_value is not present anywhere in the diff. Therefore it's OMITTED.\n\nWe must output JSON mapping exactly that requirement string to \"OMITTED\".\n\nThus:\n\n{\"tests/test_arguments.py::test_envvar_flag_value\": \"OMITTED\"}\n\nCheck no extra keys.\n\nReturn only JSON.\n\n",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "nvidia/nemotron-3-super-120b-a12b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_arguments.py::test_envvar_flag_value\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/click/core.py\n+++ b/src/click/core.py\n@@ -2430,15 +2430,19 @@\n     :param hidden: hide this option from help outputs.\n     :param attrs: Other command arguments described in :class:`Parameter`.\n \n-    .. versionchanged:: 8.1.0\n+    .. versionchanged:: 8.2\n+        ``envvar`` used with ``flag_value`` will always use the ``flag_value``,\n+        previously it would use the value of the environment variable.\n+\n+    .. versionchanged:: 8.1\n         Help text indentation is cleaned here instead of only in the\n         ``@option`` decorator.\n \n-    .. versionchanged:: 8.1.0\n+    .. versionchanged:: 8.1\n         The ``show_default`` parameter overrides\n         ``Context.show_default``.\n \n-    .. versionchanged:: 8.1.0\n+    .. versionchanged:: 8.1\n         The default of a single option boolean flag is not shown if the\n         default value is ``False``.\n \n@@ -2864,6 +2868,8 @@\n         rv = super().resolve_envvar_value(ctx)\n \n         if rv is not None:\n+            if self.is_flag and self.flag_value:\n+                return str(self.flag_value)\n             return rv\n \n         if (\n\n--- a/tests/test_arguments.py\n+++ b/tests/test_arguments.py\n@@ -198,6 +198,8 @@\n         assert result.return_value == expect\n \n \n+\n+\n def test_nargs_envvar_only_if_values_empty(runner):\n     @click.command()\n     @click.argument(\"arg\", envvar=\"X\", nargs=-1)\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "DeepInfra",
+  "provider_slug": "deepinfra/bf16",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 267,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 251
+    },
+    "cost": 0.00018041,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.0001068,
+      "upstream_inference_cost": 0.00018041,
+      "upstream_inference_prompt_cost": 7.361e-05
+    },
+    "is_byok": false,
+    "prompt_tokens": 866,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1133
+  },
+  "variance_seed": null
+}

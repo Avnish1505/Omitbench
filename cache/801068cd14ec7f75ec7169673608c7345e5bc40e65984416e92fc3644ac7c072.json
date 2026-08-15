@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00045025,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_utils.py::test_should_bypass_proxies_win_registry_ProxyOverride_value\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate requirement: tests/test_utils.py::test_should_bypass_proxies_win_registry_ProxyOverride_value\n\nWe need to see if this symbol (function) is defined in the target file (tests/test_utils.py) and wired (called elsewhere) and not a stub.\n\nIn diff, we see addition in tests/test_utils.py:\n\n+@pytest.mark.skipif(os.name != \"nt\", reason=\"Test only on Windows\")\n+def test_should_bypass_proxies_win_registry_ProxyOverride_value(monkeypatch):\n+    raise NotImplementedError\n\nThus definition exists (def). It's a function defined. Is it wired? It is a test function; test frameworks call it automatically, but within diff there is no other code calling it. The requirement says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" Does the test runner count? Usually not; we need explicit call in diff. There's no other reference. So not wired.\n\nAlso body is raise NotImplementedError, which is a stub. So fails both wired and not stub.\n\nThus requirement is OMITTED.\n\nReturn JSON with that key mapping to \"OMITTED\".",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate requirement: tests/test_utils.py::test_should_bypass_proxies_win_registry_ProxyOverride_value\n\nWe need to see if this symbol (function) is defined in the target file (tests/test_utils.py) and wired (called elsewhere) and not a stub.\n\nIn diff, we see addition in tests/test_utils.py:\n\n+@pytest.mark.skipif(os.name != \"nt\", reason=\"Test only on Windows\")\n+def test_should_bypass_proxies_win_registry_ProxyOverride_value(monkeypatch):\n+    raise NotImplementedError\n\nThus definition exists (def). It's a function defined. Is it wired? It is a test function; test frameworks call it automatically, but within diff there is no other code calling it. The requirement says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" Does the test runner count? Usually not; we need explicit call in diff. There's no other reference. So not wired.\n\nAlso body is raise NotImplementedError, which is a stub. So fails both wired and not stub.\n\nThus requirement is OMITTED.\n\nReturn JSON with that key mapping to \"OMITTED\".",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_utils.py::test_should_bypass_proxies_win_registry_ProxyOverride_value\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/requests/utils.py\n+++ b/src/requests/utils.py\n@@ -97,7 +97,7 @@\n         # '<local>' string by the localhost entry and the corresponding\n         # canonical entry.\n         proxyOverride = proxyOverride.split(\";\")\n-        # filter out empty strings to avoid re.match all true.\n+        # filter out empty strings to avoid re.match return true in the following code.\n         proxyOverride = filter(None, proxyOverride)\n         # now check if we match one of the registry values.\n         for test in proxyOverride:\n\n--- a/tests/test_utils.py\n+++ b/tests/test_utils.py\n@@ -925,3 +925,8 @@\n \n     assert \"Expected exception\" in str(exception.value)\n \n+\n+@pytest.mark.skipif(os.name != \"nt\", reason=\"Test only on Windows\")\n+def test_should_bypass_proxies_win_registry_ProxyOverride_value(monkeypatch):\n+    raise NotImplementedError\n+\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 269,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 235
+    },
+    "cost": 0.00045025,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.00020175,
+      "upstream_inference_cost": 0.00045025,
+      "upstream_inference_prompt_cost": 0.0002485
+    },
+    "is_byok": false,
+    "prompt_tokens": 710,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 256,
+      "video_tokens": 0
+    },
+    "total_tokens": 979
+  },
+  "variance_seed": null
+}

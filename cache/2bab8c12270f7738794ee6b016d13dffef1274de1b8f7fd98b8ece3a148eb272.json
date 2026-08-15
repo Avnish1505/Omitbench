@@ -1,0 +1,41 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00033656,
+  "cost_source": "reported",
+  "judge_id": "B5 LLM judge (mid-tier)",
+  "message": {
+    "content": "```json\n{\"tests/test_blueprints.py::test_child_and_parent_subdomain\": \"OMITTED\"}\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_blueprints.py::test_child_and_parent_subdomain\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/flask/blueprints.py\n+++ b/src/flask/blueprints.py\n@@ -358,6 +358,9 @@\n         :param options: Keyword arguments forwarded from\n             :meth:`~Flask.register_blueprint`.\n \n+        .. versionchanged:: 2.3\n+            Nested blueprints now correctly apply subdomains.\n+\n         .. versionchanged:: 2.0.1\n             Nested blueprints are registered with their dotted name.\n             This allows different blueprints with the same name to be\n@@ -458,10 +461,12 @@\n             if bp_subdomain is None:\n                 bp_subdomain = blueprint.subdomain\n \n-            if state.subdomain is not None and bp_subdomain is None:\n-                bp_options[\"subdomain\"] = state.subdomain\n+            if state.subdomain is not None and bp_subdomain is not None:\n+                bp_options[\"subdomain\"] = bp_subdomain + \".\" + state.subdomain\n             elif bp_subdomain is not None:\n                 bp_options[\"subdomain\"] = bp_subdomain\n+            elif state.subdomain is not None:\n+                bp_options[\"subdomain\"] = state.subdomain\n \n             if bp_url_prefix is None:\n                 bp_url_prefix = blueprint.url_prefix\n\n--- a/tests/test_blueprints.py\n+++ b/tests/test_blueprints.py\n@@ -971,30 +971,8 @@\n     assert response.status_code == 200\n \n \n-def test_child_overrides_parent_subdomain(app, client) -> None:\n-    child_subdomain = \"api\"\n-    parent_subdomain = \"parent\"\n-    parent = flask.Blueprint(\"parent\", __name__)\n-    child = flask.Blueprint(\"child\", __name__, subdomain=child_subdomain)\n-\n-    @child.route(\"/\")\n-    def index():\n-        return \"child\"\n-\n-    parent.register_blueprint(child)\n-    app.register_blueprint(parent, subdomain=parent_subdomain)\n-\n-    client.allow_subdomain_redirects = True\n-\n-    domain_name = \"domain.tld\"\n-    app.config[\"SERVER_NAME\"] = domain_name\n-    response = client.get(\"/\", base_url=f\"http://{child_subdomain}.{domain_name}\")\n-\n-    assert response.status_code == 200\n-\n-    response = client.get(\"/\", base_url=f\"http://{parent_subdomain}.{domain_name}\")\n-\n-    assert response.status_code == 404\n+def test_child_and_parent_subdomain(app, client) -> None:\n+    raise NotImplementedError\n \n \n def test_unique_blueprint_names(app, client) -> None:\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 26,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.00033656,
+    "cost_details": {
+      "upstream_inference_completions_cost": 5.2e-05,
+      "upstream_inference_cost": 0.00033656,
+      "upstream_inference_prompt_cost": 0.00028456
+    },
+    "is_byok": false,
+    "prompt_tokens": 1057,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 384,
+      "video_tokens": 0
+    },
+    "total_tokens": 1083
+  },
+  "variance_seed": null
+}

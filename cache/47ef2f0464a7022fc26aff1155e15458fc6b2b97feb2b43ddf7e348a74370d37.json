@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00023624,
+  "cost_source": "reported",
+  "judge_id": "B6 LLM judge (NVIDIA NIM)",
+  "message": {
+    "content": "{\"tests/test_defaults.py::test_unset_in_default_map\": \"OMITTED\"}",
+    "reasoning": "We need to check requirement: tests/test_defaults.py::test_unset_in_default_map\n\nWe need to see if the diff shows that symbol defined in that file, wired, not a stub.\n\nThe diff includes changes to tests/test_defaults.py. Let's examine.\n\nDiff for tests/test_defaults.py:\n\n--- a/tests/test_defaults.py\n+++ b/tests/test_defaults.py\n@@ -2,6 +2,7 @@\n \n import click\n from click import UNPROCESSED\n+from click._utils import UNSET\n \n \n @pytest.mark.parametrize(\n@@ -355,3 +356,5 @@\n     assert result.exit_code == 0\n     assert result.output == repr(expected)\n \n+\n+\n\nSo the diff shows addition of import line: from click._utils import UNSET\n\nAnd addition of two blank lines at end? Actually after the test function, there are two new blank lines.\n\nBut we need to see if there is a test function named test_unset_in_default_map defined in this file. The diff does not show any definition of that test. It only shows import changes and blank lines.\n\nThus the symbol test_unset_in_default_map is not defined in the diff. Therefore it's OMITTED.\n\nWe must output JSON with that key mapping to \"OMITTED\".\n\nCheck if any other changes define that test? No.\n\nThus answer: {\"tests/test_defaults.py::test_unset_in_default_map\": \"OMITTED\"}\n\n",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to check requirement: tests/test_defaults.py::test_unset_in_default_map\n\nWe need to see if the diff shows that symbol defined in that file, wired, not a stub.\n\nThe diff includes changes to tests/test_defaults.py. Let's examine.\n\nDiff for tests/test_defaults.py:\n\n--- a/tests/test_defaults.py\n+++ b/tests/test_defaults.py\n@@ -2,6 +2,7 @@\n \n import click\n from click import UNPROCESSED\n+from click._utils import UNSET\n \n \n @pytest.mark.parametrize(\n@@ -355,3 +356,5 @@\n     assert result.exit_code == 0\n     assert result.output == repr(expected)\n \n+\n+\n\nSo the diff shows addition of import line: from click._utils import UNSET\n\nAnd addition of two blank lines at end? Actually after the test function, there are two new blank lines.\n\nBut we need to see if there is a test function named test_unset_in_default_map defined in this file. The diff does not show any definition of that test. It only shows import changes and blank lines.\n\nThus the symbol test_unset_in_default_map is not defined in the diff. Therefore it's OMITTED.\n\nWe must output JSON with that key mapping to \"OMITTED\".\n\nCheck if any other changes define that test? No.\n\nThus answer: {\"tests/test_defaults.py::test_unset_in_default_map\": \"OMITTED\"}\n\n",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "nvidia/nemotron-3-super-120b-a12b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_defaults.py::test_unset_in_default_map\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/click/core.py\n+++ b/src/click/core.py\n@@ -685,6 +685,20 @@\n             self.obj = rv = object_type()\n         return rv\n \n+    def _default_map_has(self, name: str | None) -> bool:\n+        \"\"\"Check if :attr:`default_map` contains a real value for ``name``.\n+\n+        Returns ``False`` when the key is absent, the map is ``None``,\n+        ``name`` is ``None``, or the stored value is the internal\n+        :data:`UNSET` sentinel.\n+        \"\"\"\n+        return (\n+            name is not None\n+            and self.default_map is not None\n+            and name in self.default_map\n+            and self.default_map[name] is not UNSET\n+        )\n+\n     @t.overload\n     def lookup_default(\n         self, name: str, call: t.Literal[True] = True\n@@ -705,15 +719,17 @@\n         .. versionchanged:: 8.0\n             Added the ``call`` parameter.\n         \"\"\"\n-        if self.default_map is not None:\n-            value = self.default_map.get(name)\n-\n-            if call and callable(value):\n-                return value()\n-\n-            return value\n-\n-        return None\n+        if not self._default_map_has(name):\n+            return None\n+\n+        # Assert to make the type checker happy.\n+        assert self.default_map is not None\n+        value = self.default_map[name]\n+\n+        if call and callable(value):\n+            return value()\n+\n+        return value\n \n     def fail(self, message: str) -> t.NoReturn:\n         \"\"\"Aborts the execution of the program with a specific error\n@@ -2281,9 +2297,7 @@\n         name = self.name\n         value = ctx.lookup_default(name, call=False) if name is not None else None\n \n-        if value is None and not (\n-            ctx.default_map is not None and name is not None and name in ctx.default_map\n-        ):\n+        if value is None and not ctx._default_map_has(name):\n             value = self.default\n \n         if call and callable(value):\n@@ -2325,9 +2339,7 @@\n \n         if value is UNSET:\n             default_map_value = ctx.lookup_default(self.name)  # type: ignore[arg-type]\n-            if default_map_value is not None or (\n-                ctx.default_map is not None and self.name in ctx.default_map\n-            ):\n+            if default_map_value is not None or ctx._default_map_has(self.name):\n                 value = default_map_value\n                 source = ParameterSource.DEFAULT_MAP\n \n\n--- a/tests/test_defaults.py\n+++ b/tests/test_defaults.py\n@@ -2,6 +2,7 @@\n \n import click\n from click import UNPROCESSED\n+from click._utils import UNSET\n \n \n @pytest.mark.parametrize(\n@@ -355,3 +356,5 @@\n     assert result.exit_code == 0\n     assert result.output == repr(expected)\n \n+\n+\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "DeepInfra",
+  "provider_slug": "deepinfra/bf16",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 339,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 316
+    },
+    "cost": 0.00023624,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.0001356,
+      "upstream_inference_cost": 0.00023624,
+      "upstream_inference_prompt_cost": 0.00010064
+    },
+    "is_byok": false,
+    "prompt_tokens": 1184,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1523
+  },
+  "variance_seed": null
+}

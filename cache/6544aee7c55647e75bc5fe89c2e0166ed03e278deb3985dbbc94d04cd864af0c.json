@@ -1,0 +1,41 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0005348,
+  "cost_source": "reported",
+  "judge_id": "B5 LLM judge (mid-tier)",
+  "message": {
+    "content": "```json\n{\"src/jinja2/filters.py::do_items\": \"IMPLEMENTED\", \"tests/test_filters.py::test_items\": \"IMPLEMENTED\", \"tests/test_filters.py::test_items_undefined\": \"IMPLEMENTED\"}\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- src/jinja2/filters.py::do_items\n- tests/test_filters.py::test_items\n- tests/test_filters.py::test_items_undefined\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/jinja2/filters.py\n+++ b/src/jinja2/filters.py\n@@ -216,6 +216,36 @@\n def do_lower(s: str) -> str:\n     \"\"\"Convert a value to lowercase.\"\"\"\n     return soft_str(s).lower()\n+\n+\n+def do_items(value: t.Union[t.Mapping[K, V], Undefined]) -> t.Iterator[t.Tuple[K, V]]:\n+    \"\"\"Return an iterator over the ``(key, value)`` items of a mapping.\n+\n+    ``x|items`` is the same as ``x.items()``, except if ``x`` is\n+    undefined an empty iterator is returned.\n+\n+    This filter is useful if you expect the template to be rendered with\n+    an implementation of Jinja in another programming language that does\n+    not have a ``.items()`` method on its mapping type.\n+\n+    .. code-block:: html+jinja\n+\n+        <dl>\n+        {% for key, value in my_dict|items %}\n+            <dt>{{ key }}\n+            <dd>{{ value }}\n+        {% endfor %}\n+        </dl>\n+\n+    .. versionadded:: 3.1\n+    \"\"\"\n+    if isinstance(value, Undefined):\n+        return\n+\n+    if not isinstance(value, abc.Mapping):\n+        raise TypeError(\"Can only get item pairs from a mapping.\")\n+\n+    yield from value.items()\n \n \n @pass_eval_context\n@@ -1739,6 +1769,7 @@\n     \"length\": len,\n     \"list\": do_list,\n     \"lower\": do_lower,\n+    \"items\": do_items,\n     \"map\": do_map,\n     \"min\": do_min,\n     \"max\": do_max,\n\n--- a/tests/test_filters.py\n+++ b/tests/test_filters.py\n@@ -250,6 +250,17 @@\n         tmpl = env.from_string(\"\"\"{{ \"FOO\"|lower }}\"\"\")\n         out = tmpl.render()\n         assert out == \"foo\"\n+\n+    def test_items(self, env):\n+        d = {i: c for i, c in enumerate(\"abc\")}\n+        tmpl = env.from_string(\"\"\"{{ d|items|list }}\"\"\")\n+        out = tmpl.render(d=d)\n+        assert out == \"[(0, 'a'), (1, 'b'), (2, 'c')]\"\n+\n+    def test_items_undefined(self, env):\n+        tmpl = env.from_string(\"\"\"{{ d|items|list }}\"\"\")\n+        out = tmpl.render()\n+        assert out == \"[]\"\n \n     def test_pprint(self, env):\n         from pprint import pformat\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 52,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.0005348,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.000104,
+      "upstream_inference_cost": 0.0005348,
+      "upstream_inference_prompt_cost": 0.0004308
+    },
+    "is_byok": false,
+    "prompt_tokens": 1077,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1129
+  },
+  "variance_seed": null
+}

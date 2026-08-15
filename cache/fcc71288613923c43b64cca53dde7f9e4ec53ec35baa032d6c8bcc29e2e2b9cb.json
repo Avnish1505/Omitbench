@@ -1,0 +1,41 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.000478,
+  "cost_source": "reported",
+  "judge_id": "B5 LLM judge (mid-tier)",
+  "message": {
+    "content": "```json\n{\"tests/test_make.py::echo_func\": \"IMPLEMENTED\", \"tests/test_make.py::test_additional_class_body\": \"IMPLEMENTED\"}\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_make.py::echo_func\n- tests/test_make.py::test_additional_class_body\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/attr/_make.py\n+++ b/src/attr/_make.py\n@@ -2867,7 +2867,9 @@\n Factory = _add_hash(_add_eq(_add_repr(Factory, attrs=_f), attrs=_f), attrs=_f)\n \n \n-def make_class(name, attrs, bases=(object,), **attributes_arguments):\n+def make_class(\n+    name, attrs, bases=(object,), class_body=None, **attributes_arguments\n+):\n     r\"\"\"\n     A quick way to create a new class called *name* with *attrs*.\n \n@@ -2883,6 +2885,8 @@\n \n     :param tuple bases: Classes that the new class will subclass.\n \n+    :param dict class_body: An optional dictionary of class attributes for the new class.\n+\n     :param attributes_arguments: Passed unmodified to `attr.s`.\n \n     :return: A new class with *attrs*.\n@@ -2890,6 +2894,7 @@\n \n     .. versionadded:: 17.1.0 *bases*\n     .. versionchanged:: 18.1.0 If *attrs* is ordered, the order is retained.\n+    .. versionchanged:: 23.2.0 *class_body*\n     \"\"\"\n     if isinstance(attrs, dict):\n         cls_dict = attrs\n@@ -2904,6 +2909,8 @@\n     user_init = cls_dict.pop(\"__init__\", None)\n \n     body = {}\n+    if class_body is not None:\n+        body.update(class_body)\n     if pre_init is not None:\n         body[\"__attrs_pre_init__\"] = pre_init\n     if post_init is not None:\n\n--- a/tests/test_make.py\n+++ b/tests/test_make.py\n@@ -1106,6 +1106,18 @@\n         assert D in cls.__mro__\n         assert isinstance(cls(), D)\n \n+    def test_additional_class_body(self):\n+        \"\"\"\n+        Additional class_body is added to newly created class.\n+        \"\"\"\n+\n+        def echo_func(cls, *args):\n+            return args\n+\n+        cls = make_class(\"C\", {}, class_body={\"echo\": classmethod(echo_func)})\n+\n+        assert (\"a\", \"b\") == cls.echo(\"a\", \"b\")\n+\n     def test_clean_class(self, slots):\n         \"\"\"\n         Attribute definitions do not appear on the class body.\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 36,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.000478,
+    "cost_details": {
+      "upstream_inference_completions_cost": 7.2e-05,
+      "upstream_inference_cost": 0.000478,
+      "upstream_inference_prompt_cost": 0.000406
+    },
+    "is_byok": false,
+    "prompt_tokens": 1015,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1051
+  },
+  "variance_seed": null
+}

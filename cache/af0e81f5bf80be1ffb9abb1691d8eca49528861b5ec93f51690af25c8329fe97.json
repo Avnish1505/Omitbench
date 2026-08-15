@@ -1,0 +1,41 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0003136,
+  "cost_source": "reported",
+  "judge_id": "B5 LLM judge (mid-tier)",
+  "message": {
+    "content": "```json\n{\"tests/test_itsdangerous/test_jws.py::factory\": \"IMPLEMENTED\"}\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_itsdangerous/test_jws.py::factory\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/itsdangerous/jws.py\n+++ b/src/itsdangerous/jws.py\n@@ -1,5 +1,6 @@\n import hashlib\n import time\n+import warnings\n from datetime import datetime\n from datetime import timezone\n from decimal import Decimal\n@@ -22,6 +23,9 @@\n class JSONWebSignatureSerializer(Serializer):\n     \"\"\"This serializer implements JSON Web Signature (JWS) support. Only\n     supports the JWS Compact Serialization.\n+\n+    .. deprecated:: 2.0\n+        Use a dedicated library such as authlib.\n     \"\"\"\n \n     jws_algorithms = {\n@@ -46,6 +50,12 @@\n         signer_kwargs=None,\n         algorithm_name=None,\n     ):\n+        warnings.warn(\n+            \"JWS support is deprecated and will be removed in 2.1. Use\"\n+            \" a dedicated JWS/JWT library such as authlib.\",\n+            DeprecationWarning,\n+            stacklevel=2,\n+        )\n         super().__init__(\n             secret_key=secret_key,\n             salt=salt,\n\n--- a/tests/test_itsdangerous/test_jws.py\n+++ b/tests/test_itsdangerous/test_jws.py\n@@ -1,5 +1,4 @@\n from datetime import timedelta\n-from functools import partial\n \n import pytest\n \n@@ -17,7 +16,11 @@\n class TestJWSSerializer(TestSerializer):\n     @pytest.fixture()\n     def serializer_factory(self):\n-        return partial(JSONWebSignatureSerializer, secret_key=\"secret-key\")\n+        def factory(secret_key=\"secret-key\", **kwargs):\n+            with pytest.deprecated_call():\n+                return JSONWebSignatureSerializer(secret_key=secret_key, **kwargs)\n+\n+        return factory\n \n     test_signer_cls = None\n     test_signer_kwargs = None\n@@ -68,9 +71,13 @@\n class TestTimedJWSSerializer(TestJWSSerializer, TestTimedSerializer):\n     @pytest.fixture()\n     def serializer_factory(self):\n-        return partial(\n-            TimedJSONWebSignatureSerializer, secret_key=\"secret-key\", expires_in=10\n-        )\n+        def factory(secret_key=\"secret-key\", expires_in=10, **kwargs):\n+            with pytest.deprecated_call():\n+                return TimedJSONWebSignatureSerializer(\n+                    secret_key=secret_key, expires_in=expires_in, **kwargs\n+                )\n+\n+        return factory\n \n     def test_default_expires_in(self, serializer_factory):\n         serializer = serializer_factory(expires_in=None)\n\n--- a/tests/test_itsdangerous/test_serializer.py\n+++ b/tests/test_itsdangerous/test_serializer.py\n@@ -167,9 +167,9 @@\n \n def test_digests():\n     factory = partial(Serializer, secret_key=\"dev key\", salt=\"dev salt\")\n-    default_value = factory(signer_kwargs={}).dumps([42])\n-    sha1_value = factory(signer_kwargs={\"digest_method\": hashlib.sha1}).dumps([42])\n-    sha512_value = factory(signer_kwargs={\"digest_method\": hashlib.sha512}).dumps([42])\n+    pass\n+    pass\n+    pass\n     assert default_value == sha1_value\n     assert sha1_value == \"[42].-9cNi0CxsSB3hZPNCe9a2eEs1ZM\"\n     assert sha512_value == (\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 24,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.0003136,
+    "cost_details": {
+      "upstream_inference_completions_cost": 4.8e-05,
+      "upstream_inference_cost": 0.0003136,
+      "upstream_inference_prompt_cost": 0.0002656
+    },
+    "is_byok": false,
+    "prompt_tokens": 1240,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 640,
+      "video_tokens": 0
+    },
+    "total_tokens": 1264
+  },
+  "variance_seed": null
+}

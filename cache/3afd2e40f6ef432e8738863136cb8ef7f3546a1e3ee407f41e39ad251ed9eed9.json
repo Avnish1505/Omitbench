@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.000338975,
+  "cost_source": "reported",
+  "judge_id": "B6 LLM judge (NVIDIA NIM)",
+  "message": {
+    "content": "{\"tests/test_termui.py::test_false_show_default_cause_no_default_display_in_prompt\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate the requirement: tests/test_termui.py::test_false_show_default_cause_no_default_display_in_prompt\n\nWe need to see if the diff shows that symbol defined, wired, not a stub.\n\nThe diff includes changes to src/click/core.py and tests/test_termui.py.\n\nThe requirement is about a test function in tests/test_termui.py named test_false_show_default_cause_no_default_display_in_prompt.\n\nWe need to see if that test function is defined in the diff, wired (i.e., something else calls it), and not a stub.\n\nLet's examine the diff for tests/test_termui.py:\n\n--- a/tests/test_termui.py\n+++ b/tests/test_termui.py\n@@ -448,3 +448,5 @@\n     if prompt == \"Confirm Password\":\n         assert \"Confirm Password: \" in result.output\n \n+\n+\n\nSo the diff shows that after line 448 (the end of file?), they added two blank lines? Actually the diff shows:\n\n@@ -448,3 +448,5 @@\n     if prompt == \"Confirm Password\":\n         assert \"Confirm Password: \" in result.output\n \n+\n+\n\nInterpretation: The original file had lines up to line 450? Actually -448,3 means starting at line 448, showing 3 lines. Those three lines are:\n\n    if prompt == \"Confirm Password\":\n        assert \"Confirm Password: \" in result.output\n        (maybe a blank line? Actually the three lines likely are: the if line, the assert line, and a blank line? Let's see.)\n\nThen after change, +448,5 means starting at line 448, showing 5 lines. They show:\n\n    if prompt == \"Confirm Password\":\n        assert \"Confirm Password: \" in result.output\n \n+\n+\n\nSo they added two blank lines after the assert line? Actually they added a blank line after the assert line (there was already a blank line maybe) and then another blank line? The diff shows a blank line after the assert line (the line with just a space? Actually they show a blank line after the assert line: there is a line with just a space? The diff shows:\n\n     if prompt == \"Confirm Password\":\n         assert \"Confirm Password: \" in result.output\n \n+\n+\n\nSo there is a blank line after the assert line (the line with just a space? Actually they show a blank line as an empty line). Then they added a '+' line (empty) and another '+' line (empty). So they added two empty lines at end of file.\n\nThus the diff does not show any definition of a test function named test_false_show_default_cause_no_default_display_in_prompt. It only shows some blank lines added at end of file.\n\nTherefore the symbol is not defined in the diff. So requirement is OMITTED.\n\nWe must output JSON mapping that requirement string to \"OMITTED\".\n\nThus final answer: {\"tests/test_termui.py::test_false_show_default_cause_no_default_display_in_prompt\": \"OMITTED\"}\n\n",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate the requirement: tests/test_termui.py::test_false_show_default_cause_no_default_display_in_prompt\n\nWe need to see if the diff shows that symbol defined, wired, not a stub.\n\nThe diff includes changes to src/click/core.py and tests/test_termui.py.\n\nThe requirement is about a test function in tests/test_termui.py named test_false_show_default_cause_no_default_display_in_prompt.\n\nWe need to see if that test function is defined in the diff, wired (i.e., something else calls it), and not a stub.\n\nLet's examine the diff for tests/test_termui.py:\n\n--- a/tests/test_termui.py\n+++ b/tests/test_termui.py\n@@ -448,3 +448,5 @@\n     if prompt == \"Confirm Password\":\n         assert \"Confirm Password: \" in result.output\n \n+\n+\n\nSo the diff shows that after line 448 (the end of file?), they added two blank lines? Actually the diff shows:\n\n@@ -448,3 +448,5 @@\n     if prompt == \"Confirm Password\":\n         assert \"Confirm Password: \" in result.output\n \n+\n+\n\nInterpretation: The original file had lines up to line 450? Actually -448,3 means starting at line 448, showing 3 lines. Those three lines are:\n\n    if prompt == \"Confirm Password\":\n        assert \"Confirm Password: \" in result.output\n        (maybe a blank line? Actually the three lines likely are: the if line, the assert line, and a blank line? Let's see.)\n\nThen after change, +448,5 means starting at line 448, showing 5 lines. They show:\n\n    if prompt == \"Confirm Password\":\n        assert \"Confirm Password: \" in result.output\n \n+\n+\n\nSo they added two blank lines after the assert line? Actually they added a blank line after the assert line (there was already a blank line maybe) and then another blank line? The diff shows a blank line after the assert line (the line with just a space? Actually they show a blank line after the assert line: there is a line with just a space? The diff shows:\n\n     if prompt == \"Confirm Password\":\n         assert \"Confirm Password: \" in result.output\n \n+\n+\n\nSo there is a blank line after the assert line (the line with just a space? Actually they show a blank line as an empty line). Then they added a '+' line (empty) and another '+' line (empty). So they added two empty lines at end of file.\n\nThus the diff does not show any definition of a test function named test_false_show_default_cause_no_default_display_in_prompt. It only shows some blank lines added at end of file.\n\nTherefore the symbol is not defined in the diff. So requirement is OMITTED.\n\nWe must output JSON mapping that requirement string to \"OMITTED\".\n\nThus final answer: {\"tests/test_termui.py::test_false_show_default_cause_no_default_display_in_prompt\": \"OMITTED\"}\n\n",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "nvidia/nemotron-3-super-120b-a12b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_termui.py::test_false_show_default_cause_no_default_display_in_prompt\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/click/core.py\n+++ b/src/click/core.py\n@@ -2795,6 +2795,12 @@\n         if self.is_bool_flag:\n             return confirm(self.prompt, default)\n \n+        # If show_default is set to True/False, provide this to `prompt` as well. For\n+        # non-bool values of `show_default`, we use `prompt`'s default behavior\n+        prompt_kwargs: t.Any = {}\n+        if isinstance(self.show_default, bool):\n+            prompt_kwargs[\"show_default\"] = self.show_default\n+\n         return prompt(\n             self.prompt,\n             default=default,\n@@ -2803,6 +2809,7 @@\n             show_choices=self.show_choices,\n             confirmation_prompt=self.confirmation_prompt,\n             value_proc=lambda x: self.process_value(ctx, x),\n+            **prompt_kwargs,\n         )\n \n     def resolve_envvar_value(self, ctx: Context) -> str | None:\n\n--- a/tests/test_termui.py\n+++ b/tests/test_termui.py\n@@ -448,3 +448,5 @@\n     if prompt == \"Confirm Password\":\n         assert \"Confirm Password: \" in result.output\n \n+\n+\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "DeepInfra",
+  "provider_slug": "deepinfra/bf16",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 687,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 679
+    },
+    "cost": 0.000338975,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.0002748,
+      "upstream_inference_cost": 0.000338975,
+      "upstream_inference_prompt_cost": 6.4175e-05
+    },
+    "is_byok": false,
+    "prompt_tokens": 755,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1442
+  },
+  "variance_seed": null
+}

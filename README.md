@@ -32,37 +32,58 @@ disclaimer.
 over instances** (n=310), not over records — the variants and requirements of a
 single commit are not independent.
 
+**Read this plainly, before anything else on the page: a mid-tier LLM judge
+(B5) beats the deterministic detector (P1) overall, with a paired interval
+excluding zero.** The motivating thesis of this repo — that judges are
+structurally weak at omission — is **not supported** for B5. P1 wins narrowly
+against a strong reasoning judge (B4) and comfortably against the no-AST
+baseline (B3), but P1 loses to B5, and that is the honest headline, not a
+footnote.
+
 | detector | P | R | F1 | **MCC** | MCC 95% CI | FPR |
 |---|---|---|---|---|---|---|
 | B0 flag-nothing | 0.00 | 0.00 | 0.00 | **0.000** | [0.000, 0.000] | 0.000 |
 | B1 flag-everything | 0.28 | 1.00 | 0.44 | **0.000** | [0.000, 0.000] | 1.000 |
-| B3 line-grep (no AST) | 0.76 | 0.30 | 0.43 | **0.374** | [0.320, 0.433] | 0.038 |
-| **P1 defined** | **0.81** | 0.45 | **0.58** | **0.508** | **[0.459, 0.557]** | 0.042 |
-| P2 defined+reachable | 0.30 | 0.90 | 0.45 | 0.087 | [0.044, 0.129] | 0.835 |
-| P3 defined+reachable+body | 0.31 | 0.99 | 0.48 | 0.201 | [0.165, 0.237] | 0.843 |
+| B3 line-grep (no AST) | 0.75 | 0.30 | 0.43 | **0.371** | [0.317, 0.421] | 0.039 |
+| B4 LLM judge (gpt-oss-120b) | 0.40 | 0.97 | 0.56 | **0.388** | [0.345, 0.434] | 0.569 |
+| **B5 LLM judge (mid-tier)** | **0.74** | 0.84 | **0.79** | **0.701** | **[0.650, 0.756]** | 0.113 |
+| P1 defined | 0.80 | 0.44 | 0.57 | **0.499** | [0.449, 0.545] | 0.043 |
 
-Paired cluster bootstrap of the MCC **difference** against the strongest
-baseline (detectors see identical inputs, so comparing independent intervals by
-eye would discard the pairing):
+Paired cluster bootstrap of the MCC **difference**, P1 against each other
+detector (detectors see identical inputs, so comparing independent intervals
+by eye would discard the pairing):
 
 | comparison | ΔMCC | 95% CI | supported? |
 |---|---|---|---|
-| P1 − B3 | **+0.134** | [+0.107, +0.162] | **yes** |
-| P2 − B3 | −0.287 | [−0.355, −0.226] | yes, and *against* P2 |
-| P3 − B3 | −0.173 | [−0.240, −0.109] | yes, and *against* P3 |
+| P1 − B3 | +0.128 | [+0.103, +0.156] | yes, P1 wins |
+| P1 − B4 | +0.111 | [+0.055, +0.164] | yes, P1 wins |
+| **P1 − B5** | **−0.202** | **[−0.252, −0.150]** | **yes, and *against* P1** |
 
-**Read that honestly: only the simplest detector beats the baseline. The two
-more elaborate ones are significantly worse.** Their false-positive rate is
-0.84 — they flag most correctly-implemented requirements as omitted, because
-reachability analysis condemns any public API symbol that nothing calls
-internally. A CI gate with FPR 0.84 gets uninstalled in a week.
+**Why B5 wins despite P1 having higher precision:** P1 is a pure "is it
+defined" check. It is near-perfect on `ABSENT` (a deleted definition) but
+**structurally blind** to `UNWIRED` (defined, never called) and `STUB`
+(defined, called, hollow body) — recall 0.00 on both, by construction, not by
+bad luck. B5 recovers real recall on both of those classes (0.21 `UNWIRED`,
+0.87 `STUB`) at some precision cost. Averaged over the corpus's actual mix of
+mutation classes, that trade wins. See the recall table below.
 
-An earlier version of this corpus required every candidate symbol to be called
-internally by the reference solution. That filter had been **hiding this
-defect** by never generating the cases P2 and P3 fail on. Relaxing it tripled
-yield and exposed the problem. This is the most transferable lesson in the repo:
-*a corpus filter that removes the cases your method fails on will make your
-method look good.* (`ASSUMPTIONS.md` §6.)
+**A related result is more encouraging for the deterministic side but does not
+change this conclusion:** the diff sent to every judge is token-truncated for
+12/310 instances (32 variants) — P1 sees the full `after` snapshot regardless,
+so this is a fairness asymmetry against the judges, not the detector. Excluding
+those 12 instances:
+
+| detector | MCC (full corpus, n=310) | MCC (truncation excluded, n=298) |
+|---|---|---|
+| P1 defined | 0.499 [0.449, 0.545] | 0.491 [0.439, 0.539] |
+| B4 LLM judge (gpt-oss-120b) | 0.388 [0.345, 0.434] | 0.392 [0.348, 0.434] |
+| B5 LLM judge (mid-tier) | 0.701 [0.650, 0.756] | **0.752 [0.704, 0.799]** |
+
+P1 and B4 barely move. **B5 moves meaningfully** — the fairer, truncation-
+excluded comparison makes B5's win over P1 *larger*, not smaller: paired
+P1 − B5 on this subset is **−0.261 [−0.293, −0.226]**, versus −0.202 on the
+full corpus. Removing the one asymmetry that favoured the deterministic side
+strengthens the judge's case, not P1's.
 
 ### Why MCC and not F1
 
@@ -75,18 +96,48 @@ rule, which is what B0 and B1 correctly receive above.
 
 Recall by omission class:
 
-| detector | ABSENT | UNWIRED | STUB |
+| detector | ABSENT (n=281) | UNWIRED (n=19) | STUB (n=309) |
 |---|---|---|---|
 | B3 line-grep | 0.65 | 0.00 | 0.00 |
-| P1 defined | **0.98** | 0.00 | 0.00 |
-| P2 defined+reachable | 0.99 | 0.62 | 0.83 |
-| P3 defined+reachable+body | 0.99 | 0.62 | **1.00** |
+| B4 LLM judge (gpt-oss-120b) | 0.98 | 0.68 | 0.99 |
+| B5 LLM judge (mid-tier) | 0.84 | 0.21 | 0.87 |
+| **P1 defined** | **0.96** | 0.00 | 0.00 |
 
 P1 is near-perfect on `ABSENT` and structurally blind to the other two — "is it
-defined" cannot see a hollow implementation. P2 and P3 recover recall on
-`UNWIRED` and `STUB` but pay for it with the FPR above, so their recall is not
-usable as-is. `STUB` is in the corpus *specifically* because deterministic
-analysis should struggle with it. A benchmark you always win on measures nothing.
+defined" cannot see a hollow implementation or a dead call site. `STUB` is in
+the corpus *specifically* because deterministic analysis should struggle with
+it; a benchmark you always win on measures nothing. This is exactly the gap
+B5 fills, and exactly why it wins overall despite losing on `ABSENT`.
+
+### P2/P3 were removed
+
+Two more elaborate detectors, `P2 defined+reachable` and
+`P3 defined+reachable+body`, used to appear here. They scored FPR 0.83–0.85 —
+reachability analysis condemns any public API symbol that nothing calls
+internally, so they flagged most correctly-implemented public symbols as
+omitted, and lost to `B3 line-grep` with a paired interval excluding zero
+(ΔMCC −0.281 [−0.343, −0.225] for P2, −0.178 [−0.237, −0.114] for P3).
+
+**T3 tried one fix, decided from Python packaging semantics and measured
+exactly once:** exempt a symbol from the reachability check if it is listed in
+`__all__`, re-exported in its package's `__init__.py`, or carries a decorator.
+It narrowed the gap (FPR down to ~0.59–0.61; P3 moved from *losing significantly*
+to *statistically tied* with B3) but did not clear the pre-agreed bar of P2/P3
+beating B3 outright. Per that pre-agreed protocol, the rule was not iterated —
+**P2 and P3 are removed** from the scored detector set. Full before/after
+numbers and the reasoning are in `ASSUMPTIONS.md` §9; the code is kept in
+`omitbench/detectors.py`, clearly marked as retired, not deleted.
+
+**The most transferable finding from that exercise:** P2's apparent 0.84 recall
+on `STUB` before the fix was **mostly an artifact of the FPR bug, not real stub
+detection.** `d_reachable` has no mechanism to see a hollow body — only P3's
+extra check does that. P2 was simply over-flagging ~83% of everything as
+omitted, which incidentally caught genuine `STUB` cases too, for the wrong
+reason. Once the exemption removed the over-flagging, P2's `STUB` recall
+collapsed to 0.58 — much closer to what a detector blind to body content
+should actually score. **A metric that looks good for a reason unrelated to
+the thing it claims to measure is the single most transferable lesson in this
+repo**, alongside the corpus-filter lesson in `ASSUMPTIONS.md` §6.
 
 ---
 
@@ -132,7 +183,7 @@ run in CI and are not optional.
 ## Reproduce
 
 ```bash
-make test        # 14 unit tests + 3 leakage guards, ~2s
+make test        # 91 tests (86 unit + 5 leakage guards), <0.1s
 make reproduce   # regenerates every number above from committed shards
 ```
 
@@ -169,27 +220,31 @@ against prior work in [`RELATED.md`](RELATED.md).
 - **Omissions are injected, not observed.** No real agent trajectories yet.
   Until 40–60 hand-labelled real traces exist, nothing here generalises to
   deployed agents. This is the single largest threat to validity.
-- **No LLM-judge baseline yet.** The motivating argument is that LLM judges are
-  structurally weak at omission — reported elsewhere at roughly 6–7× worse on
-  planted omissions than planted over-inclusions. That comparison is
-  **unmeasured here.** Largest open item.
 - **Requirements are derived from the gold patch**, which assumes a perfect
   extractor. All numbers are therefore an **upper bound**.
 - **Python only.** Functions and classes only — no config keys, dependencies, or
   behaviour-only requirements.
-- **`UNWIRED` is underpowered** (n=16 in the run above; the mutation missed calls
-  inside `return` statements, now fixed — that column needs a re-run before it
-  is cited).
+- **`UNWIRED` is underpowered** (n=19; the mutation used to miss calls inside
+  `return` statements, fixed in `mutate.py`, which raised n from 16 to 19 — still
+  far short of the ~100 needed for that column to be more than noise. Read the
+  `UNWIRED` recall numbers above as directional, not conclusive.
 - **`black` is excluded**: its shards fail to build, and a code formatter's
   commits are atypical. Stated rather than silently dropped.
 
 ## What would falsify the main claim
 
 If the paired P1 − B3 interval included zero, there would be no ordering claim
-and this would be a null result. It does not: [+0.107, +0.162]. If real agent
-omissions turn out to be dominated by `STUB`-like semantic hollowing rather than
-`ABSENT`, P1's advantage largely evaporates and the honest headline becomes
-"deterministic analysis handles the easy third of this problem."
+and this would be a null result. It does not: [+0.103, +0.156]. That test was
+never the whole story, though — the real falsification event already
+happened: the motivating thesis of this repo is that LLM judges are
+structurally weak at omission, and the paired P1 − B5 interval is
+**[−0.252, −0.150]**, excluding zero *against* P1. Read plainly, that thesis
+is not supported for a mid-tier judge on this corpus. See `RELATED.md` for
+what the literature this repo is testing against actually claims, and the
+Headline result section above for why P1 still wins on `ABSENT` while losing
+overall. If real agent omissions turn out to be dominated by `STUB`-like
+semantic hollowing rather than `ABSENT`, P1's narrow win over B3 and B4 would
+also be expected to erode further.
 
 ## Prior work this does not claim to precede
 

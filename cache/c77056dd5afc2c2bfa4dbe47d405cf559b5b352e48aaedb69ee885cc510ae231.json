@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0007601,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_filters.py::test_xmlattr_key_invalid\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate requirement: tests/test_filters.py::test_xmlattr_key_invalid\n\nWe need to see if this symbol (function) is defined and wired and not a stub.\n\nIn diff, we have modifications to tests/test_filters.py. The original test_xmlattr_key_invalid is being added (or changed). Let's examine diff for tests/test_filters.py.\n\nOriginal snippet:\n\n-    def test_xmlattr_key_with_spaces(self, env):\n-        with pytest.raises(ValueError, match=\"Spaces are not allowed\"):\n-            env.from_string(\n-                \"{{ {'src=1 onerror=alert(1)': 'my_class'}|xmlattr }}\"\n-            ).render()\n+    @pytest.mark.parametrize(\"sep\", (\"\\t\", \"\\n\", \"\\f\", \" \", \"/\", \">\", \"=\"))\n+    def test_xmlattr_key_invalid(self, env: Environment, sep: str) -> None:\n+        raise NotImplementedError\n\nSo they added a new test function test_xmlattr_key_invalid, but its body is raise NotImplementedError. That's a stub. Also, is it defined? Yes, there is a def test_xmlattr_key_invalid(...). So definition exists. Is it wired? In tests, the function is a test function; it's called by pytest automatically. That counts as being used? The requirement says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" In test files, test functions are not called explicitly in the diff; they are discovered by pytest. Does that count as wired? The definition is used by test runner, but within the diff, there is no call to it. The requirement says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" Since there is no explicit call in the diff, it's not wired. Also, the body is raise NotImplementedError, which is a stub. So fails both wired and not stub. So requirement is OMITTED.\n\nThus output: {\"tests/test_filters.py::test_xmlattr_key_invalid\": \"OMITTED\"}",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate requirement: tests/test_filters.py::test_xmlattr_key_invalid\n\nWe need to see if this symbol (function) is defined and wired and not a stub.\n\nIn diff, we have modifications to tests/test_filters.py. The original test_xmlattr_key_invalid is being added (or changed). Let's examine diff for tests/test_filters.py.\n\nOriginal snippet:\n\n-    def test_xmlattr_key_with_spaces(self, env):\n-        with pytest.raises(ValueError, match=\"Spaces are not allowed\"):\n-            env.from_string(\n-                \"{{ {'src=1 onerror=alert(1)': 'my_class'}|xmlattr }}\"\n-            ).render()\n+    @pytest.mark.parametrize(\"sep\", (\"\\t\", \"\\n\", \"\\f\", \" \", \"/\", \">\", \"=\"))\n+    def test_xmlattr_key_invalid(self, env: Environment, sep: str) -> None:\n+        raise NotImplementedError\n\nSo they added a new test function test_xmlattr_key_invalid, but its body is raise NotImplementedError. That's a stub. Also, is it defined? Yes, there is a def test_xmlattr_key_invalid(...). So definition exists. Is it wired? In tests, the function is a test function; it's called by pytest automatically. That counts as being used? The requirement says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" In test files, test functions are not called explicitly in the diff; they are discovered by pytest. Does that count as wired? The definition is used by test runner, but within the diff, there is no call to it. The requirement says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" Since there is no explicit call in the diff, it's not wired. Also, the body is raise NotImplementedError, which is a stub. So fails both wired and not stub. So requirement is OMITTED.\n\nThus output: {\"tests/test_filters.py::test_xmlattr_key_invalid\": \"OMITTED\"}",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_filters.py::test_xmlattr_key_invalid\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/jinja2/filters.py\n+++ b/src/jinja2/filters.py\n@@ -250,7 +250,9 @@\n     yield from value.items()\n \n \n-_space_re = re.compile(r\"\\s\", flags=re.ASCII)\n+# Check for characters that would move the parser state from key to value.\n+# https://html.spec.whatwg.org/#attribute-name-state\n+_attr_key_re = re.compile(r\"[\\s/>=]\", flags=re.ASCII)\n \n \n @pass_eval_context\n@@ -259,8 +261,14 @@\n ) -> str:\n     \"\"\"Create an SGML/XML attribute string based on the items in a dict.\n \n-    If any key contains a space, this fails with a ``ValueError``. Values that\n-    are neither ``none`` nor ``undefined`` are automatically escaped.\n+    **Values** that are neither ``none`` nor ``undefined`` are automatically\n+    escaped, safely allowing untrusted user input.\n+\n+    User input should not be used as **keys** to this filter. If any key\n+    contains a space, ``/`` solidus, ``>`` greater-than sign, or ``=`` equals\n+    sign, this fails with a ``ValueError``. Regardless of this, user input\n+    should never be used as keys to this filter, or must be separately validated\n+    first.\n \n     .. sourcecode:: html+jinja\n \n@@ -280,6 +288,10 @@\n     As you can see it automatically prepends a space in front of the item\n     if the filter returned something unless the second parameter is false.\n \n+    .. versionchanged:: 3.1.4\n+        Keys with ``/`` solidus, ``>`` greater-than sign, or ``=`` equals sign\n+        are not allowed.\n+\n     .. versionchanged:: 3.1.3\n         Keys with spaces are not allowed.\n     \"\"\"\n@@ -289,8 +301,8 @@\n         if value is None or isinstance(value, Undefined):\n             continue\n \n-        if _space_re.search(key) is not None:\n-            raise ValueError(f\"Spaces are not allowed in attributes: '{key}'\")\n+        if _attr_key_re.search(key) is not None:\n+            raise ValueError(f\"Invalid character in attribute name: {key!r}\")\n \n         items.append(f'{escape(key)}=\"{escape(value)}\"')\n \n\n--- a/tests/test_filters.py\n+++ b/tests/test_filters.py\n@@ -474,11 +474,9 @@\n         assert 'bar=\"23\"' in out\n         assert 'blub:blub=\"&lt;?&gt;\"' in out\n \n-    def test_xmlattr_key_with_spaces(self, env):\n-        with pytest.raises(ValueError, match=\"Spaces are not allowed\"):\n-            env.from_string(\n-                \"{{ {'src=1 onerror=alert(1)': 'my_class'}|xmlattr }}\"\n-            ).render()\n+    @pytest.mark.parametrize(\"sep\", (\"\\t\", \"\\n\", \"\\f\", \" \", \"/\", \">\", \"=\"))\n+    def test_xmlattr_key_invalid(self, env: Environment, sep: str) -> None:\n+        raise NotImplementedError\n \n     def test_sort1(self, env):\n         tmpl = env.from_string(\"{{ [2, 3, 1]|sort }}|{{ [2, 3, 1]|sort(true) }}\")\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 439,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 412
+    },
+    "cost": 0.0007601,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.00032925,
+      "upstream_inference_cost": 0.0007601,
+      "upstream_inference_prompt_cost": 0.00043085
+    },
+    "is_byok": false,
+    "prompt_tokens": 1231,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1670
+  },
+  "variance_seed": null
+}

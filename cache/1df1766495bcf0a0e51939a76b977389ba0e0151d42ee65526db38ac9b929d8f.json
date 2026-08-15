@@ -1,0 +1,41 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00027936,
+  "cost_source": "reported",
+  "judge_id": "B5 LLM judge (mid-tier)",
+  "message": {
+    "content": "```json\n{\"tests/test_security.py::test_invalid_method\": \"OMITTED\"}\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_security.py::test_invalid_method\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/werkzeug/security.py\n+++ b/src/werkzeug/security.py\n@@ -5,7 +5,6 @@\n import os\n import posixpath\n import secrets\n-import warnings\n \n SALT_CHARS = \"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\"\n DEFAULT_PBKDF2_ITERATIONS = 600000\n@@ -24,14 +23,6 @@\n \n \n def _hash_internal(method: str, salt: str, password: str) -> tuple[str, str]:\n-    if method == \"plain\":\n-        warnings.warn(\n-            \"The 'plain' password method is deprecated and will be removed in\"\n-            \" Werkzeug 3.0. Migrate to the 'scrypt' method.\",\n-            stacklevel=3,\n-        )\n-        return password, method\n-\n     method, *args = method.split(\":\")\n     salt = salt.encode(\"utf-8\")\n     password = password.encode(\"utf-8\")\n@@ -72,12 +63,7 @@\n             f\"pbkdf2:{hash_name}:{iterations}\",\n         )\n     else:\n-        warnings.warn(\n-            f\"The '{method}' password method is deprecated and will be removed in\"\n-            \" Werkzeug 3.0. Migrate to the 'scrypt' method.\",\n-            stacklevel=3,\n-        )\n-        return hmac.new(salt, password, method).hexdigest(), method\n+        raise ValueError(f\"Invalid hash method '{method}'.\")\n \n \n def generate_password_hash(\n\n--- a/tests/test_security.py\n+++ b/tests/test_security.py\n@@ -42,6 +42,10 @@\n         generate_password_hash(\"secret\", salt_length=0)\n \n \n+def test_invalid_method():\n+    raise NotImplementedError\n+\n+\n def test_safe_join():\n     assert safe_join(\"foo\", \"bar/baz\") == posixpath.join(\"foo\", \"bar/baz\")\n     assert safe_join(\"foo\", \"../bar/baz\") is None\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 22,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.00027936,
+    "cost_details": {
+      "upstream_inference_completions_cost": 4.4e-05,
+      "upstream_inference_cost": 0.00027936,
+      "upstream_inference_prompt_cost": 0.00023536
+    },
+    "is_byok": false,
+    "prompt_tokens": 934,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 384,
+      "video_tokens": 0
+    },
+    "total_tokens": 956
+  },
+  "variance_seed": null
+}

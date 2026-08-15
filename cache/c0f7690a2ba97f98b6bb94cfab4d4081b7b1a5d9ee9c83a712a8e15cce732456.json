@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0006344,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_formparser.py::test_x_www_urlencoded_max_form_parts\": \"OMITTED\"}",
+    "reasoning": "We need to determine if the requirement \"tests/test_formparser.py::test_x_www_urlencoded_max_form_parts\" is implemented.\n\nThe diff shows modifications to tests/test_formparser.py. The requirement is a test function named test_x_www_urlencoded_max_form_parts in that file. The diff snippet shows a part of the file around line 135, with a test that sets req.max_form_parts = 1 and expects RequestEntityTooLarge when accessing req.form[\"foo\"].\n\nWe need to see if the diff defines the symbol test_x_www_urlencoded_max_form_parts, wires it, and not a stub.\n\nThe diff shows only a snippet; we need to see if the test function is defined. The snippet shows code inside a test function, but we need to see the function definition line. The diff shows:\n\n@@ -135,6 +135,7 @@\n         )\n         req.max_form_parts = 1\n         pytest.raises(RequestEntityTooLarge, lambda: req.form[\"foo\"])\n+\n \n     def test_missing_multipart_boundary(self):\n         data = (\n\nSo after the added blank line, there is a new test function definition: def test_missing_multipart_boundary(self):. The snippet is inside a class? Probably a test class. The test_x_www_urlencoded_max_form_parts function is earlier, not shown fully. The diff shows modifications inside that test: adding a blank line after the pytest.raises line. That suggests the test function already existed; the diff adds a blank line (maybe to separate tests). The diff does not add the definition of test_x_www_urlencoded_max_form_parts; it already existed. The requirement is to implement that test. Since the diff does not define the test (definition already existed), but the diff shows the test body (the code inside). The requirement says the symbol must be defined in the target file. The diff does not show the definition line, but the test function is present in the file (outside diff). However, the diff only shows part of the file; we need to see if the definition appears in the diff. The diff snippet includes the body of the test but not the def line. The requirement: \"DEFINED -- its `def`/`class` statement exists in the target file.\" The diff must show the definition. Since the diff does not include the def line for test_x_www_urlencoded_max_form_parts, we cannot confirm it's defined in the diff. The rule: \"If a requirement is not visibly present anywhere in the diff, it is OMITTED.\" So because the diff does not contain the def line for that test, it's omitted.\n\nThus answer: OMITTED.\n\nReturn JSON with that key mapping to \"OMITTED\".",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to determine if the requirement \"tests/test_formparser.py::test_x_www_urlencoded_max_form_parts\" is implemented.\n\nThe diff shows modifications to tests/test_formparser.py. The requirement is a test function named test_x_www_urlencoded_max_form_parts in that file. The diff snippet shows a part of the file around line 135, with a test that sets req.max_form_parts = 1 and expects RequestEntityTooLarge when accessing req.form[\"foo\"].\n\nWe need to see if the diff defines the symbol test_x_www_urlencoded_max_form_parts, wires it, and not a stub.\n\nThe diff shows only a snippet; we need to see if the test function is defined. The snippet shows code inside a test function, but we need to see the function definition line. The diff shows:\n\n@@ -135,6 +135,7 @@\n         )\n         req.max_form_parts = 1\n         pytest.raises(RequestEntityTooLarge, lambda: req.form[\"foo\"])\n+\n \n     def test_missing_multipart_boundary(self):\n         data = (\n\nSo after the added blank line, there is a new test function definition: def test_missing_multipart_boundary(self):. The snippet is inside a class? Probably a test class. The test_x_www_urlencoded_max_form_parts function is earlier, not shown fully. The diff shows modifications inside that test: adding a blank line after the pytest.raises line. That suggests the test function already existed; the diff adds a blank line (maybe to separate tests). The diff does not add the definition of test_x_www_urlencoded_max_form_parts; it already existed. The requirement is to implement that test. Since the diff does not define the test (definition already existed), but the diff shows the test body (the code inside). The requirement says the symbol must be defined in the target file. The diff does not show the definition line, but the test function is present in the file (outside diff). However, the diff only shows part of the file; we need to see if the definition appears in the diff. The diff snippet includes the body of the test but not the def line. The requirement: \"DEFINED -- its `def`/`class` statement exists in the target file.\" The diff must show the definition. Since the diff does not include the def line for test_x_www_urlencoded_max_form_parts, we cannot confirm it's defined in the diff. The rule: \"If a requirement is not visibly present anywhere in the diff, it is OMITTED.\" So because the diff does not contain the def line for that test, it's omitted.\n\nThus answer: OMITTED.\n\nReturn JSON with that key mapping to \"OMITTED\".",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_formparser.py::test_x_www_urlencoded_max_form_parts\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/tests/test_formparser.py\n+++ b/tests/test_formparser.py\n@@ -135,6 +135,7 @@\n         )\n         req.max_form_parts = 1\n         pytest.raises(RequestEntityTooLarge, lambda: req.form[\"foo\"])\n+\n \n     def test_missing_multipart_boundary(self):\n         data = (\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 578,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 547
+    },
+    "cost": 0.0006344,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.0004335,
+      "upstream_inference_cost": 0.0006344,
+      "upstream_inference_prompt_cost": 0.0002009
+    },
+    "is_byok": false,
+    "prompt_tokens": 574,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1152
+  },
+  "variance_seed": null
+}

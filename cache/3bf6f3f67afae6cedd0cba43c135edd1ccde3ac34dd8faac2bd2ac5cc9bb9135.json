@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00060575,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_slots.py::test_slots_cached_property_raising_attributeerror\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate requirement: tests/test_slots.py::test_slots_cached_property_raising_attributeerror\n\nWe have diff showing modifications to src/attr/_make.py and tests/test_slots.py.\n\nIn tests/test_slots.py diff, we see:\n\n@@ -807,6 +807,11 @@\n \n \n @pytest.mark.skipif(not PY_3_8_PLUS, reason=\"cached_property is 3.8+\")\n+def test_slots_cached_property_raising_attributeerror():\n+    raise NotImplementedError\n+\n+\n+@pytest.mark.skipif(not PY_3_8_PLUS, reason=\"cached_property is 3.8+\")\n def test_slots_cached_property_with_getattr_calls_getattr_for_missing_attributes():\n ...\n\nThus the test function test_slots_cached_property_raising_attributeerror is defined (def) but its body raises NotImplementedError. According to criteria: 1. DEFINED: yes, definition exists. 2. WIRED: is it used elsewhere? The diff only adds definition; no other code calls it. The requirement is about test function; but wiring means something else calls it. In test suite, pytest will discover and run it, but within this diff, there is no call site. However, does the test function being a test count as being wired? The definition is a test function; pytest will call it automatically. The requirement says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" Since pytest runner is not part of diff, but the test function is used by test runner, but not explicitly called in diff. Usually we consider that test functions are not wired within code; they are entry points. The criteria: \"something else in the diff actually calls, instantiates, or otherwise uses it.\" The test function is not called elsewhere in diff. So fails wiring.\n\n3. NOT A STUB: body is raise NotImplementedError, which is a stub. So fails.\n\nThus requirement is OMITTED.\n\nReturn JSON with that key mapping to \"OMITTED\".",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate requirement: tests/test_slots.py::test_slots_cached_property_raising_attributeerror\n\nWe have diff showing modifications to src/attr/_make.py and tests/test_slots.py.\n\nIn tests/test_slots.py diff, we see:\n\n@@ -807,6 +807,11 @@\n \n \n @pytest.mark.skipif(not PY_3_8_PLUS, reason=\"cached_property is 3.8+\")\n+def test_slots_cached_property_raising_attributeerror():\n+    raise NotImplementedError\n+\n+\n+@pytest.mark.skipif(not PY_3_8_PLUS, reason=\"cached_property is 3.8+\")\n def test_slots_cached_property_with_getattr_calls_getattr_for_missing_attributes():\n ...\n\nThus the test function test_slots_cached_property_raising_attributeerror is defined (def) but its body raises NotImplementedError. According to criteria: 1. DEFINED: yes, definition exists. 2. WIRED: is it used elsewhere? The diff only adds definition; no other code calls it. The requirement is about test function; but wiring means something else calls it. In test suite, pytest will discover and run it, but within this diff, there is no call site. However, does the test function being a test count as being wired? The definition is a test function; pytest will call it automatically. The requirement says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" Since pytest runner is not part of diff, but the test function is used by test runner, but not explicitly called in diff. Usually we consider that test functions are not wired within code; they are entry points. The criteria: \"something else in the diff actually calls, instantiates, or otherwise uses it.\" The test function is not called elsewhere in diff. So fails wiring.\n\n3. NOT A STUB: body is raise NotImplementedError, which is a stub. So fails.\n\nThus requirement is OMITTED.\n\nReturn JSON with that key mapping to \"OMITTED\".",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_slots.py::test_slots_cached_property_raising_attributeerror\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/attr/_make.py\n+++ b/src/attr/_make.py\n@@ -619,8 +619,12 @@\n     else:\n         lines.extend(\n             [\n-                \"         if hasattr(super(), '__getattr__'):\",\n-                \"              return super().__getattr__(item)\",\n+                \"         try:\",\n+                \"             return super().__getattribute__(item)\",\n+                \"         except AttributeError:\",\n+                \"             if not hasattr(super(), '__getattr__'):\",\n+                \"                 raise\",\n+                \"             return super().__getattr__(item)\",\n                 \"         original_error = f\\\"'{self.__class__.__name__}' object has no attribute '{item}'\\\"\",\n                 \"         raise AttributeError(original_error)\",\n             ]\n\n--- a/tests/test_slots.py\n+++ b/tests/test_slots.py\n@@ -807,6 +807,11 @@\n \n \n @pytest.mark.skipif(not PY_3_8_PLUS, reason=\"cached_property is 3.8+\")\n+def test_slots_cached_property_raising_attributeerror():\n+    raise NotImplementedError\n+\n+\n+@pytest.mark.skipif(not PY_3_8_PLUS, reason=\"cached_property is 3.8+\")\n def test_slots_cached_property_with_getattr_calls_getattr_for_missing_attributes():\n     \"\"\"\n     Ensure __getattr__ implementation is maintained for non cached_properties.\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 439,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 409
+    },
+    "cost": 0.00060575,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.00032925,
+      "upstream_inference_cost": 0.00060575,
+      "upstream_inference_prompt_cost": 0.0002765
+    },
+    "is_byok": false,
+    "prompt_tokens": 790,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1229
+  },
+  "variance_seed": null
+}

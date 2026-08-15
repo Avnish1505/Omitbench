@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0003855,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_routing.py::test_bind_long_idna_name_with_port\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate requirement: tests/test_routing.py::test_bind_long_idna_name_with_port\n\nWe need to see if this test function is defined and wired etc. The diff shows modifications to src/werkzeug/routing/map.py and tests/test_routing.py. In tests file, we see only snippet around line 1045, showing addition of blank lines before test_converter_parser. No definition of test_bind_long_idna_name_with_port appears. The diff does not show any definition of that test. So requirement is omitted.\n\nBut we must check if the test function appears elsewhere in diff? Not present. So omitted.\n\nThus output JSON with that key mapping to \"OMITTED\".",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate requirement: tests/test_routing.py::test_bind_long_idna_name_with_port\n\nWe need to see if this test function is defined and wired etc. The diff shows modifications to src/werkzeug/routing/map.py and tests/test_routing.py. In tests file, we see only snippet around line 1045, showing addition of blank lines before test_converter_parser. No definition of test_bind_long_idna_name_with_port appears. The diff does not show any definition of that test. So requirement is omitted.\n\nBut we must check if the test function appears elsewhere in diff? Not present. So omitted.\n\nThus output JSON with that key mapping to \"OMITTED\".",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_routing.py::test_bind_long_idna_name_with_port\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/werkzeug/routing/map.py\n+++ b/src/werkzeug/routing/map.py\n@@ -251,6 +251,9 @@\n         if path_info is None:\n             path_info = \"/\"\n \n+        # Port isn't part of IDNA, and might push a name over the 63 octet limit.\n+        server_name, port_sep, port = server_name.partition(\":\")\n+\n         try:\n             server_name = server_name.encode(\"idna\").decode(\"ascii\")\n         except UnicodeError as e:\n@@ -258,7 +261,7 @@\n \n         return MapAdapter(\n             self,\n-            server_name,\n+            f\"{server_name}{port_sep}{port}\",\n             script_name,\n             subdomain,\n             url_scheme,\n\n--- a/tests/test_routing.py\n+++ b/tests/test_routing.py\n@@ -1045,6 +1045,8 @@\n     assert adapter.subdomain == \"<invalid>\"\n \n \n+\n+\n def test_converter_parser():\n     args, kwargs = r.parse_converter_args(\"test, a=1, b=3.0\")\n \n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 171,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 140
+    },
+    "cost": 0.0003855,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.00012825,
+      "upstream_inference_cost": 0.0003855,
+      "upstream_inference_prompt_cost": 0.00025725
+    },
+    "is_byok": false,
+    "prompt_tokens": 735,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 906
+  },
+  "variance_seed": null
+}

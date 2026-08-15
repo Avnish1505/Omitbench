@@ -1,0 +1,41 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.000306,
+  "cost_source": "reported",
+  "judge_id": "B5 LLM judge (mid-tier)",
+  "message": {
+    "content": "```json\n{\"tests/test_utils.py::echo\": \"OMITTED\", \"tests/test_utils.py::test_prompts_eof\": \"OMITTED\"}\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_utils.py::echo\n- tests/test_utils.py::test_prompts_eof\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/click/testing.py\n+++ b/src/click/testing.py\n@@ -115,6 +115,13 @@\n     @property\n     def mode(self) -> str:\n         return self._mode\n+\n+    def __next__(self) -> str:  # type: ignore\n+        try:\n+            line = super().__next__()\n+        except StopIteration as e:\n+            raise EOFError() from e\n+        return line\n \n \n def make_input_stream(\n@@ -341,7 +348,7 @@\n         @_pause_echo(echo_input)  # type: ignore\n         def visible_input(prompt: str | None = None) -> str:\n             sys.stdout.write(prompt or \"\")\n-            val = text_input.readline().rstrip(\"\\r\\n\")\n+            val = next(text_input).rstrip(\"\\r\\n\")\n             sys.stdout.write(f\"{val}\\n\")\n             sys.stdout.flush()\n             return val\n@@ -350,7 +357,7 @@\n         def hidden_input(prompt: str | None = None) -> str:\n             sys.stdout.write(f\"{prompt or ''}\\n\")\n             sys.stdout.flush()\n-            return text_input.readline().rstrip(\"\\r\\n\")\n+            return next(text_input).rstrip(\"\\r\\n\")\n \n         @_pause_echo(echo_input)  # type: ignore\n         def _getchar(echo: bool) -> str:\n\n--- a/tests/test_chain.py\n+++ b/tests/test_chain.py\n@@ -163,8 +163,8 @@\n         return processor\n \n     result = runner.invoke(cli, args, input=input)\n-    assert not result.exception\n-    assert result.output.splitlines() == expect\n+    # last two lines are '' and 'Aborted!'\n+    assert result.output.splitlines()[:-2] == expect\n \n \n def test_args_and_chain(runner):\n\n--- a/tests/test_termui.py\n+++ b/tests/test_termui.py\n@@ -242,7 +242,7 @@\n     def cli(f):\n         click.echo(f.name)\n \n-    result = runner.invoke(cli)\n+    result = runner.invoke(cli, input=\"\\n\")\n     assert result.output == f\"file [{__file__}]: \\n{__file__}\\n\"\n \n \n@@ -451,7 +451,7 @@\n     [\n         (True, \"password\\npassword\", None, \"password\"),\n         (\"Confirm Password\", \"password\\npassword\\n\", None, \"password\"),\n-        (True, \"\", \"\", \"\"),\n+        (True, \"\\n\\n\", \"\", \"\"),\n         (False, None, None, None),\n     ],\n )\n\n--- a/tests/test_utils.py\n+++ b/tests/test_utils.py\n@@ -179,6 +179,10 @@\n     assert out == \"Password:\\ninterrupted\\n\"\n \n \n+def test_prompts_eof(runner):\n+    raise NotImplementedError\n+\n+\n def _test_gen_func():\n     yield \"a\"\n     yield \"b\"\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 38,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.000306,
+    "cost_details": {
+      "upstream_inference_completions_cost": 7.6e-05,
+      "upstream_inference_cost": 0.000306,
+      "upstream_inference_prompt_cost": 0.00023
+    },
+    "is_byok": false,
+    "prompt_tokens": 1151,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 640,
+      "video_tokens": 0
+    },
+    "total_tokens": 1189
+  },
+  "variance_seed": null
+}

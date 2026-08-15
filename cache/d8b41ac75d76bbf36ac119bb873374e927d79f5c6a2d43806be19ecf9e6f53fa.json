@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0006545,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_requests.py::test_session_get_adapter_prefix_with_trailing_slash\": \"OMITTED\", \"tests/test_requests.py::test_session_get_adapter_prefix_without_trailing_slash\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate two requirements: tests/test_requests.py::test_session_get_adapter_prefix_with_trailing_slash and tests/test_requests.py::test_session_get_adapter_prefix_without_trailing_slash.\n\nWe have diff showing added code in tests/test_requests.py. The diff adds two test methods inside a class (presumably TestRequests?). The requirement is that the symbol (function) must be defined in that file. The diff shows definitions: `def test_session_get_adapter_prefix_with_trailing_slash(self):` and `def test_session_get_adapter_prefix_without_trailing_slash(self):`. So they are defined.\n\nNow we need to check \"wired\": something else in the diff calls, instantiates, or otherwise uses it. The requirement is about the symbol itself being used elsewhere? Actually the test says: \"A requirement is IMPLEMENTED only if the diff shows the symbol is: 1. DEFINED, 2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\"\n\nSo for a test function, does it need to be called somewhere else? Usually test functions are discovered by test runner, not called directly. In the diff, there is no other code that calls these test functions. So they are defined but not wired. According to the rule, they would be considered OMITTED because they are not used elsewhere in the diff.\n\nBut is that the intended interpretation? The requirement is about a function or class being defined and used. For test functions, they are not called directly. However the rule says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" Since test runner is external, not in diff, they are not wired. So they would be omitted.\n\nThus both requirements are OMITTED.\n\nCheck also \"NOT A STUB\": the bodies contain real code (asserts). So they are not stubs.\n\nBut wiring fails.\n\nThus output JSON with both keys mapping to \"OMITTED\".",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate two requirements: tests/test_requests.py::test_session_get_adapter_prefix_with_trailing_slash and tests/test_requests.py::test_session_get_adapter_prefix_without_trailing_slash.\n\nWe have diff showing added code in tests/test_requests.py. The diff adds two test methods inside a class (presumably TestRequests?). The requirement is that the symbol (function) must be defined in that file. The diff shows definitions: `def test_session_get_adapter_prefix_with_trailing_slash(self):` and `def test_session_get_adapter_prefix_without_trailing_slash(self):`. So they are defined.\n\nNow we need to check \"wired\": something else in the diff calls, instantiates, or otherwise uses it. The requirement is about the symbol itself being used elsewhere? Actually the test says: \"A requirement is IMPLEMENTED only if the diff shows the symbol is: 1. DEFINED, 2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\"\n\nSo for a test function, does it need to be called somewhere else? Usually test functions are discovered by test runner, not called directly. In the diff, there is no other code that calls these test functions. So they are defined but not wired. According to the rule, they would be considered OMITTED because they are not used elsewhere in the diff.\n\nBut is that the intended interpretation? The requirement is about a function or class being defined and used. For test functions, they are not called directly. However the rule says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" Since test runner is external, not in diff, they are not wired. So they would be omitted.\n\nThus both requirements are OMITTED.\n\nCheck also \"NOT A STUB\": the bodies contain real code (asserts). So they are not stubs.\n\nBut wiring fails.\n\nThus output JSON with both keys mapping to \"OMITTED\".",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_requests.py::test_session_get_adapter_prefix_with_trailing_slash\n- tests/test_requests.py::test_session_get_adapter_prefix_without_trailing_slash\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/tests/test_requests.py\n+++ b/tests/test_requests.py\n@@ -1662,6 +1662,32 @@\n         s.mount(mixed_case_prefix, my_adapter)\n \n         assert s.get_adapter(url_matching_prefix_with_different_case) is my_adapter\n+\n+    def test_session_get_adapter_prefix_with_trailing_slash(self):\n+        # from issue #6935\n+        prefix = \"https://example.com/\"  # trailing slash\n+        url_matching_prefix = \"https://example.com/some/path\"\n+        url_not_matching_prefix = \"https://example.com.other.com/some/path\"\n+\n+        s = requests.Session()\n+        adapter = HTTPAdapter()\n+        s.mount(prefix, adapter)\n+\n+        assert s.get_adapter(url_matching_prefix) is adapter\n+        assert s.get_adapter(url_not_matching_prefix) is not adapter\n+\n+    def test_session_get_adapter_prefix_without_trailing_slash(self):\n+        # from issue #6935\n+        prefix = \"https://example.com\"  # no trailing slash\n+        url_matching_prefix = \"https://example.com/some/path\"\n+        url_extended_hostname = \"https://example.com.other.com/some/path\"\n+\n+        s = requests.Session()\n+        adapter = HTTPAdapter()\n+        s.mount(prefix, adapter)\n+\n+        assert s.get_adapter(url_matching_prefix) is adapter\n+        assert s.get_adapter(url_extended_hostname) is adapter\n \n     def test_header_remove_is_case_insensitive(self, httpbin):\n         # From issue #1321\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 476,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 422
+    },
+    "cost": 0.0006545,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.000357,
+      "upstream_inference_cost": 0.0006545,
+      "upstream_inference_prompt_cost": 0.0002975
+    },
+    "is_byok": false,
+    "prompt_tokens": 850,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1326
+  },
+  "variance_seed": null
+}

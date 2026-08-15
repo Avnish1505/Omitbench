@@ -1,0 +1,41 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0002804,
+  "cost_source": "reported",
+  "judge_id": "B5 LLM judge (mid-tier)",
+  "message": {
+    "content": "```json\n{\"tests/test_testing.py::test_catch_exceptions_cli_runner\": \"OMITTED\"}\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_testing.py::test_catch_exceptions_cli_runner\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/click/testing.py\n+++ b/src/click/testing.py\n@@ -227,6 +227,11 @@\n                        to `<stdout>`.  This is useful for showing examples in\n                        some circumstances.  Note that regular prompts\n                        will automatically echo the input.\n+    :param catch_exceptions: Whether to catch any exceptions other than\n+                             ``SystemExit`` when running :meth:`~CliRunner.invoke`.\n+\n+    .. versionchanged:: 8.2\n+        Added the ``catch_exceptions`` parameter.\n \n     .. versionchanged:: 8.2\n         ``mix_stderr`` parameter has been removed.\n@@ -237,10 +242,12 @@\n         charset: str = \"utf-8\",\n         env: cabc.Mapping[str, str | None] | None = None,\n         echo_stdin: bool = False,\n+        catch_exceptions: bool = True,\n     ) -> None:\n         self.charset = charset\n         self.env: cabc.Mapping[str, str | None] = env or {}\n         self.echo_stdin = echo_stdin\n+        self.catch_exceptions = catch_exceptions\n \n     def get_default_prog_name(self, cli: Command) -> str:\n         \"\"\"Given a command object it will return the default program name\n@@ -410,7 +417,7 @@\n         args: str | cabc.Sequence[str] | None = None,\n         input: str | bytes | t.IO[t.Any] | None = None,\n         env: cabc.Mapping[str, str | None] | None = None,\n-        catch_exceptions: bool = True,\n+        catch_exceptions: bool | None = None,\n         color: bool = False,\n         **extra: t.Any,\n     ) -> Result:\n@@ -429,7 +436,8 @@\n         :param input: the input data for `sys.stdin`.\n         :param env: the environment overrides.\n         :param catch_exceptions: Whether to catch any other exceptions than\n-                                 ``SystemExit``.\n+                                 ``SystemExit``. If :data:`None`, the value\n+                                 from :class:`CliRunner` is used.\n         :param extra: the keyword arguments to pass to :meth:`main`.\n         :param color: whether the output should contain color codes. The\n                       application can still override this explicitly.\n@@ -457,6 +465,9 @@\n             traceback if available.\n         \"\"\"\n         exc_info = None\n+        if catch_exceptions is None:\n+            catch_exceptions = self.catch_exceptions\n+\n         with self.isolation(input=input, env=env, color=color) as outstreams:\n             return_value = None\n             exception: BaseException | None = None\n\n--- a/tests/test_testing.py\n+++ b/tests/test_testing.py\n@@ -182,6 +182,8 @@\n \n     result = runner.invoke(cli)\n     assert result.exit_code == 1\n+\n+\n \n \n def test_with_color():\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 28,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.0002804,
+    "cost_details": {
+      "upstream_inference_completions_cost": 5.6e-05,
+      "upstream_inference_cost": 0.0002804,
+      "upstream_inference_prompt_cost": 0.0002244
+    },
+    "is_byok": false,
+    "prompt_tokens": 1137,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 640,
+      "video_tokens": 0
+    },
+    "total_tokens": 1165
+  },
+  "variance_seed": null
+}

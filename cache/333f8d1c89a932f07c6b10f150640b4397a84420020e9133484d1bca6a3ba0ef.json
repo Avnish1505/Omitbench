@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00072235,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"requests/exceptions.py::InvalidJSONError\": \"OMITTED\", \"tests/test_requests.py::test_post_json_nan\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate each requirement.\n\nRequirements:\n\n1. requests/exceptions.py::InvalidJSONError\n2. tests/test_requests.py::test_post_json_nan\n\nWe have diff showing changes.\n\nFirst requirement: InvalidJSONError defined in requests/exceptions.py. In diff, we see:\n\n+class InvalidJSONError(RequestException):\n+    raise NotImplementedError\n\nThat's a class definition, but its body is just \"raise NotImplementedError\". According to rule 3, NOT A STUB: body consisting only of raise NotImplementedError is a stub, not an implementation. So fails condition 3. Also need wiring: In requests/models.py, they import InvalidJSONError and raise it in code:\n\n+    except ValueError as ve:\n+      raise InvalidJSONError(ve, request=self)\n\nThus it is used. So condition 2 satisfied. Condition 1 satisfied (definition exists). Condition 3 fails because stub. Therefore overall requirement is OMITTED.\n\nSecond requirement: tests/test_requests.py::test_post_json_nan. In diff, we see addition of test function:\n\n+    def test_post_json_nan(self, httpbin):\n+        data = {\"foo\": float(\"nan\")}\n+        with pytest.raises(requests.exceptions.InvalidJSONError):\n+          r = requests.post(httpbin('post'), json=data)\n\nThus test function defined. Does it meet wiring? It's a test function; it's defined and used by test runner. But requirement says symbol must be defined and wired (something else calls it). In this context, test functions are not called within the diff; they are discovered by pytest. Does that count as wired? The rule: \"something else in the diff actually calls, instantiates, or otherwise uses it.\" The test function is not called elsewhere in diff. So not wired. However, maybe the test runner counts as external, but not in diff. So fails condition 2. Also body is not stub; it contains code. So condition 1 satisfied, condition 2 fails, condition 3 satisfied. Overall requirement is OMITTED.\n\nThus both are OMITTED.\n\nReturn JSON with both keys mapping to \"OMITTED\".",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate each requirement.\n\nRequirements:\n\n1. requests/exceptions.py::InvalidJSONError\n2. tests/test_requests.py::test_post_json_nan\n\nWe have diff showing changes.\n\nFirst requirement: InvalidJSONError defined in requests/exceptions.py. In diff, we see:\n\n+class InvalidJSONError(RequestException):\n+    raise NotImplementedError\n\nThat's a class definition, but its body is just \"raise NotImplementedError\". According to rule 3, NOT A STUB: body consisting only of raise NotImplementedError is a stub, not an implementation. So fails condition 3. Also need wiring: In requests/models.py, they import InvalidJSONError and raise it in code:\n\n+    except ValueError as ve:\n+      raise InvalidJSONError(ve, request=self)\n\nThus it is used. So condition 2 satisfied. Condition 1 satisfied (definition exists). Condition 3 fails because stub. Therefore overall requirement is OMITTED.\n\nSecond requirement: tests/test_requests.py::test_post_json_nan. In diff, we see addition of test function:\n\n+    def test_post_json_nan(self, httpbin):\n+        data = {\"foo\": float(\"nan\")}\n+        with pytest.raises(requests.exceptions.InvalidJSONError):\n+          r = requests.post(httpbin('post'), json=data)\n\nThus test function defined. Does it meet wiring? It's a test function; it's defined and used by test runner. But requirement says symbol must be defined and wired (something else calls it). In this context, test functions are not called within the diff; they are discovered by pytest. Does that count as wired? The rule: \"something else in the diff actually calls, instantiates, or otherwise uses it.\" The test function is not called elsewhere in diff. So not wired. However, maybe the test runner counts as external, but not in diff. So fails condition 2. Also body is not stub; it contains code. So condition 1 satisfied, condition 2 fails, condition 3 satisfied. Overall requirement is OMITTED.\n\nThus both are OMITTED.\n\nReturn JSON with both keys mapping to \"OMITTED\".",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- requests/exceptions.py::InvalidJSONError\n- tests/test_requests.py::test_post_json_nan\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/requests/exceptions.py\n+++ b/requests/exceptions.py\n@@ -23,6 +23,10 @@\n                 hasattr(response, 'request')):\n             self.request = self.response.request\n         super(RequestException, self).__init__(*args, **kwargs)\n+\n+\n+class InvalidJSONError(RequestException):\n+    raise NotImplementedError\n \n \n class HTTPError(RequestException):\n\n--- a/requests/models.py\n+++ b/requests/models.py\n@@ -29,7 +29,7 @@\n from .cookies import cookiejar_from_dict, get_cookie_header, _copy_cookie_jar\n from .exceptions import (\n     HTTPError, MissingSchema, InvalidURL, ChunkedEncodingError,\n-    ContentDecodingError, ConnectionError, StreamConsumedError)\n+    ContentDecodingError, ConnectionError, StreamConsumedError, InvalidJSONError)\n from ._internal_utils import to_native_string, unicode_is_ascii\n from .utils import (\n     guess_filename, get_auth_from_url, requote_uri,\n@@ -466,7 +466,12 @@\n             # urllib3 requires a bytes-like body. Python 2's json.dumps\n             # provides this natively, but Python 3 gives a Unicode string.\n             content_type = 'application/json'\n-            body = complexjson.dumps(json)\n+\n+            try:\n+              body = complexjson.dumps(json, allow_nan=False)\n+            except ValueError as ve:\n+              raise InvalidJSONError(ve, request=self)\n+\n             if not isinstance(body, bytes):\n                 body = body.encode('utf-8')\n \n\n--- a/tests/test_requests.py\n+++ b/tests/test_requests.py\n@@ -24,7 +24,7 @@\n from requests.exceptions import (\n     ConnectionError, ConnectTimeout, InvalidSchema, InvalidURL,\n     MissingSchema, ReadTimeout, Timeout, RetryError, TooManyRedirects,\n-    ProxyError, InvalidHeader, UnrewindableBodyError, SSLError, InvalidProxyURL)\n+    ProxyError, InvalidHeader, UnrewindableBodyError, SSLError, InvalidProxyURL, InvalidJSONError)\n from requests.models import PreparedRequest\n from requests.structures import CaseInsensitiveDict\n from requests.sessions import SessionRedirectMixin\n@@ -2567,3 +2567,8 @@\n         p = r.prepare()\n         assert p.url == expected\n \n+    def test_post_json_nan(self, httpbin):\n+        data = {\"foo\": float(\"nan\")}\n+        with pytest.raises(requests.exceptions.InvalidJSONError):\n+          r = requests.post(httpbin('post'), json=data)\n+\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 475,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 434
+    },
+    "cost": 0.00072235,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.00035625,
+      "upstream_inference_cost": 0.00072235,
+      "upstream_inference_prompt_cost": 0.0003661
+    },
+    "is_byok": false,
+    "prompt_tokens": 1046,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 128,
+      "video_tokens": 0
+    },
+    "total_tokens": 1521
+  },
+  "variance_seed": null
+}

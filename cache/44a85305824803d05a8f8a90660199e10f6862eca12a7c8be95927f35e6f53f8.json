@@ -1,0 +1,41 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00041408,
+  "cost_source": "reported",
+  "judge_id": "B5 LLM judge (mid-tier)",
+  "message": {
+    "content": "```json\n{\n    \"tests/test_converters.py::TestOptionalPipe\": \"OMITTED\",\n    \"tests/test_converters.py::test_converter_instance\": \"IMPLEMENTED\",\n    \"tests/test_converters.py::test_instance\": \"OMITTED\",\n    \"tests/test_converters.py::test_optional\": \"OMITTED\",\n    \"tests/test_converters.py::test_pipe\": \"OMITTED\"\n}\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_converters.py::TestOptionalPipe\n- tests/test_converters.py::test_converter_instance\n- tests/test_converters.py::test_instance\n- tests/test_converters.py::test_optional\n- tests/test_converters.py::test_pipe\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/attr/converters.py\n+++ b/src/attr/converters.py\n@@ -7,7 +7,7 @@\n import typing\n \n from ._compat import _AnnotationExtractor\n-from ._make import NOTHING, Factory, pipe\n+from ._make import NOTHING, Converter, Factory, pipe\n \n \n __all__ = [\n@@ -33,10 +33,19 @@\n     .. versionadded:: 17.1.0\n     \"\"\"\n \n-    def optional_converter(val):\n-        if val is None:\n-            return None\n-        return converter(val)\n+    if isinstance(converter, Converter):\n+\n+        def optional_converter(val, inst, field):\n+            if val is None:\n+                return None\n+            return converter(val, inst, field)\n+\n+    else:\n+\n+        def optional_converter(val):\n+            if val is None:\n+                return None\n+            return converter(val)\n \n     xtr = _AnnotationExtractor(converter)\n \n@@ -47,6 +56,9 @@\n     rt = xtr.get_return_type()\n     if rt:\n         optional_converter.__annotations__[\"return\"] = typing.Optional[rt]\n+\n+    if isinstance(converter, Converter):\n+        return Converter(optional_converter, takes_self=True, takes_field=True)\n \n     return optional_converter\n \n\n--- a/tests/test_converters.py\n+++ b/tests/test_converters.py\n@@ -143,6 +143,14 @@\n         with pytest.raises(ValueError):\n             c(\"not_an_int\")\n \n+    def test_converter_instance(self):\n+        \"\"\"\n+        Works when passed a Converter instance as argument.\n+        \"\"\"\n+        c = optional(Converter(to_bool))\n+\n+        assert True is c(\"yes\", None, None)\n+\n \n class TestDefaultIfNone:\n     def test_missing_default(self):\n@@ -272,6 +280,10 @@\n         )\n \n \n+class TestOptionalPipe:\n+    raise NotImplementedError\n+\n+\n class TestToBool:\n     def test_unhashable(self):\n         \"\"\"\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 101,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.00041408,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.000202,
+      "upstream_inference_cost": 0.00041408,
+      "upstream_inference_prompt_cost": 0.00021208
+    },
+    "is_byok": false,
+    "prompt_tokens": 991,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 512,
+      "video_tokens": 0
+    },
+    "total_tokens": 1092
+  },
+  "variance_seed": null
+}

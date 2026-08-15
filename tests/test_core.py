@@ -115,13 +115,19 @@ def test_p1_cannot_catch_unwired_or_stub():
 
 
 def test_p2_catches_unwired():
-    v = verdicts(M.mut_unwired(AFTER, "app.py", "helper"))
-    assert v["P2 defined+reachable"] == "OMITTED"
+    """P2 (d_reachable) is retired (ASSUMPTIONS.md #9) -- not in DETECTORS,
+    so called directly rather than through verdicts(). Its semantics are
+    still pinned: the code is kept, unregistered, and should not silently
+    rot if touched again."""
+    out = M.mut_unwired(AFTER, "app.py", "helper")
+    assert D.d_reachable("spec", [REQ], BEFORE, out, {})[REQ] == "OMITTED"
 
 
 def test_p3_catches_stub():
-    v = verdicts(M.mut_stub(AFTER, "app.py", "helper"))
-    assert v["P3 defined+reachable+body"] == "OMITTED"
+    """P3 (d_full) is retired (ASSUMPTIONS.md #9) -- same reasoning as
+    test_p2_catches_unwired above."""
+    out = M.mut_stub(AFTER, "app.py", "helper")
+    assert D.d_full("spec", [REQ], BEFORE, out, {})[REQ] == "OMITTED"
 
 
 def test_grep_is_fooled_by_absent():
@@ -136,8 +142,11 @@ def test_grep_is_fooled_by_absent():
 def test_p2_false_positive_on_uncalled_public_api():
     """
     Pins the defect that the pilot corpus filter was hiding: a correctly
-    implemented public symbol that nothing calls internally is flagged OMITTED
-    by the reachability detectors. This is why P2/P3 score FPR ~0.84 at scale.
+    implemented public symbol that nothing calls internally, and carries NONE
+    of the three T3 exemption signals (no __all__, no __init__.py re-export,
+    no decorator), is still flagged OMITTED by the reachability detectors.
+    This residual case is why the exemption (see the tests below) is a fix
+    for the FPR, not a removal of the reachability check altogether.
     """
     before = repo(**{"api.py": "VERSION = '1'"})
     after = repo(**{"api.py": """
@@ -150,7 +159,146 @@ def public_entrypoint(x):
     p1 = D.d_defined("spec", [req], before, after, {})[req]
     p2 = D.d_reachable("spec", [req], before, after, {})[req]
     assert p1 == "IMPLEMENTED", "the symbol IS correctly implemented"
-    assert p2 == "OMITTED", "known false positive -- documented, not fixed"
+    assert p2 == "OMITTED", "no packaging signal -- correctly still a false positive"
+
+
+# --------------------------------------------------------------------------
+# T3: public-API exemption (ASSUMPTIONS.md #9)
+# --------------------------------------------------------------------------
+
+def test_p2_exempts_symbol_listed_in_own_all():
+    before = repo(**{"api.py": "VERSION = '1'"})
+    after = repo(**{"api.py": """
+__all__ = ["public_entrypoint"]
+
+def public_entrypoint(x):
+    return x + 1
+"""})
+    req = "api.py::public_entrypoint"
+    assert D.d_reachable("spec", [req], before, after, {})[req] == "IMPLEMENTED"
+
+
+def test_p2_does_not_exempt_symbol_missing_from_all():
+    """__all__ present but doesn't list this symbol -- must not blanket-exempt
+    every symbol in a module just because the module has an __all__ at all."""
+    before = repo(**{"api.py": "VERSION = '1'"})
+    after = repo(**{"api.py": """
+__all__ = ["something_else"]
+
+def public_entrypoint(x):
+    return x + 1
+"""})
+    req = "api.py::public_entrypoint"
+    assert D.d_reachable("spec", [req], before, after, {})[req] == "OMITTED"
+
+
+def test_p2_exempts_symbol_reexported_by_name_in_init():
+    before = repo(**{"pkg/api.py": "VERSION = '1'", "pkg/__init__.py": ""})
+    after = repo(**{
+        "pkg/api.py": """
+def public_entrypoint(x):
+    return x + 1
+""",
+        "pkg/__init__.py": "from .api import public_entrypoint\n",
+    })
+    req = "pkg/api.py::public_entrypoint"
+    assert D.d_reachable("spec", [req], before, after, {})[req] == "IMPLEMENTED"
+
+
+def test_p2_exempts_symbol_under_star_reexport_in_init():
+    before = repo(**{"pkg/api.py": "VERSION = '1'", "pkg/__init__.py": ""})
+    after = repo(**{
+        "pkg/api.py": """
+def public_entrypoint(x):
+    return x + 1
+""",
+        "pkg/__init__.py": "from .api import *\n",
+    })
+    req = "pkg/api.py::public_entrypoint"
+    assert D.d_reachable("spec", [req], before, after, {})[req] == "IMPLEMENTED"
+
+
+def test_p2_does_not_exempt_when_init_imports_a_different_module():
+    before = repo(**{"pkg/api.py": "VERSION = '1'", "pkg/__init__.py": ""})
+    after = repo(**{
+        "pkg/api.py": """
+def public_entrypoint(x):
+    return x + 1
+""",
+        "pkg/other.py": "",
+        "pkg/__init__.py": "from .other import something_else\n",
+    })
+    req = "pkg/api.py::public_entrypoint"
+    assert D.d_reachable("spec", [req], before, after, {})[req] == "OMITTED"
+
+
+def test_p2_exempts_decorated_symbol():
+    before = repo(**{"api.py": "VERSION = '1'"})
+    after = repo(**{"api.py": """
+def some_decorator(f):
+    return f
+
+@some_decorator
+def public_entrypoint(x):
+    return x + 1
+"""})
+    req = "api.py::public_entrypoint"
+    assert D.d_reachable("spec", [req], before, after, {})[req] == "IMPLEMENTED"
+
+
+def test_p2_does_not_exempt_decorated_private_symbol():
+    """Underscore-prefixed name -- decoration alone must not exempt something
+    already marked private by convention."""
+    before = repo(**{"api.py": "VERSION = '1'"})
+    after = repo(**{"api.py": """
+def some_decorator(f):
+    return f
+
+@some_decorator
+def _private_helper(x):
+    return x + 1
+"""})
+    req = "api.py::_private_helper"
+    assert D.d_reachable("spec", [req], before, after, {})[req] == "OMITTED"
+
+
+def test_p3_still_catches_stub_on_an_exempted_public_symbol():
+    """The exemption only ever removes the reachability false positive -- an
+    exported symbol whose body is genuinely hollow must still be caught by
+    the stub check (P3)."""
+    before = repo(**{"api.py": "VERSION = '1'"})
+    after = repo(**{"api.py": """
+__all__ = ["public_entrypoint"]
+
+def public_entrypoint(x):
+    pass
+"""})
+    req = "api.py::public_entrypoint"
+    assert D.d_reachable("spec", [req], before, after, {})[req] == "IMPLEMENTED"
+    assert D.d_full("spec", [req], before, after, {})[req] == "OMITTED"
+
+
+def test_p2_exemption_does_not_mask_a_real_unwired_mutation():
+    """Predicted trade-off, pinned as a test: a symbol that is BOTH publicly
+    exported AND has a real internal call site (so mut_unwired can target it
+    at all) loses its only internal call site under UNWIRED -- the exemption
+    then makes P2 say IMPLEMENTED anyway, because the __all__ signal doesn't
+    change. This is the expected cost, not a bug; see ASSUMPTIONS.md #9."""
+    after = repo(**{"app.py": """
+__all__ = ["helper"]
+
+def helper(x):
+    total = x * 2
+    return total
+
+def run():
+    return helper(3)
+"""})
+    out = M.mut_unwired(after, "app.py", "helper")
+    assert out is not None
+    req = "app.py::helper"
+    assert D.d_reachable("spec", [req], after, out, {})[req] == "IMPLEMENTED", \
+        "exemption fires even though the mutation genuinely unwired it"
 
 
 def test_path_qualification_prevents_name_collision():

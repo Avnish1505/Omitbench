@@ -1,0 +1,41 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00041424,
+  "cost_source": "reported",
+  "judge_id": "B5 LLM judge (mid-tier)",
+  "message": {
+    "content": "```json\n{\n    \"tests/test_requests.py::MyBytes\": \"IMPLEMENTED\",\n    \"tests/test_requests.py::MyString\": \"OMITTED\",\n    \"tests/test_requests.py::test_header_with_subclass_types\": \"IMPLEMENTED\"\n}\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_requests.py::MyBytes\n- tests/test_requests.py::MyString\n- tests/test_requests.py::test_header_with_subclass_types\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/requests/_internal_utils.py\n+++ b/requests/_internal_utils.py\n@@ -14,9 +14,11 @@\n _VALID_HEADER_VALUE_RE_BYTE = re.compile(rb\"^\\S[^\\r\\n]*$|^$\")\n _VALID_HEADER_VALUE_RE_STR = re.compile(r\"^\\S[^\\r\\n]*$|^$\")\n \n+_HEADER_VALIDATORS_STR = (_VALID_HEADER_NAME_RE_STR, _VALID_HEADER_VALUE_RE_STR)\n+_HEADER_VALIDATORS_BYTE = (_VALID_HEADER_NAME_RE_BYTE, _VALID_HEADER_VALUE_RE_BYTE)\n HEADER_VALIDATORS = {\n-    bytes: (_VALID_HEADER_NAME_RE_BYTE, _VALID_HEADER_VALUE_RE_BYTE),\n-    str: (_VALID_HEADER_NAME_RE_STR, _VALID_HEADER_VALUE_RE_STR),\n+    bytes: _HEADER_VALIDATORS_BYTE,\n+    str: _HEADER_VALIDATORS_STR,\n }\n \n \n\n--- a/requests/utils.py\n+++ b/requests/utils.py\n@@ -25,7 +25,12 @@\n from .__version__ import __version__\n \n # to_native_string is unused here, but imported here for backwards compatibility\n-from ._internal_utils import HEADER_VALIDATORS, to_native_string  # noqa: F401\n+from ._internal_utils import (  # noqa: F401\n+    _HEADER_VALIDATORS_BYTE,\n+    _HEADER_VALIDATORS_STR,\n+    HEADER_VALIDATORS,\n+    to_native_string,\n+)\n from .compat import (\n     Mapping,\n     basestring,\n@@ -1031,20 +1036,23 @@\n     :param header: tuple, in the format (name, value).\n     \"\"\"\n     name, value = header\n-\n-    for part in header:\n-        if type(part) not in HEADER_VALIDATORS:\n-            raise InvalidHeader(\n-                f\"Header part ({part!r}) from {{{name!r}: {value!r}}} must be \"\n-                f\"of type str or bytes, not {type(part)}\"\n-            )\n-\n-    _validate_header_part(name, \"name\", HEADER_VALIDATORS[type(name)][0])\n-    _validate_header_part(value, \"value\", HEADER_VALIDATORS[type(value)][1])\n-\n-\n-def _validate_header_part(header_part, header_kind, validator):\n+    _validate_header_part(header, name, 0)\n+    _validate_header_part(header, value, 1)\n+\n+\n+def _validate_header_part(header, header_part, header_validator_index):\n+    if isinstance(header_part, str):\n+        validator = _HEADER_VALIDATORS_STR[header_validator_index]\n+    elif isinstance(header_part, bytes):\n+        validator = _HEADER_VALIDATORS_BYTE[header_validator_index]\n+    else:\n+        raise InvalidHeader(\n+            f\"Header part ({header_part!r}) from {header} \"\n+            f\"must be of type str or bytes, not {type(header_part)}\"\n+        )\n+\n     if not validator.match(header_part):\n+        header_kind = \"name\" if header_validator_index == 0 else \"value\"\n         raise InvalidHeader(\n             f\"Invalid leading whitespace, reserved character(s), or return\"\n             f\"character(s) in header {header_kind}: {header_part!r}\"\n\n--- a/tests/test_requests.py\n+++ b/tests/test_requests.py\n@@ -1751,6 +1751,29 @@\n         \"\"\"\n         with pytest.raises(InvalidHeader):\n             requests.get(httpbin(\"get\"), headers=invalid_header)\n+\n+    def test_header_with_subclass_types(self, httpbin):\n+        \"\"\"If the subclasses does not behave *exactly* like\n+        the base bytes/str classes, this is not supported.\n+        This test is for backwards compatibility.\n+        \"\"\"\n+\n+\n+        class MyBytes(bytes):\n+            pass\n+\n+        r_str = requests.get(httpbin(\"get\"), headers={MyString(\"x-custom\"): \"myheader\"})\n+        assert r_str.request.headers[\"x-custom\"] == \"myheader\"\n+\n+        r_bytes = requests.get(\n+            httpbin(\"get\"), headers={MyBytes(b\"x-custom\"): b\"myheader\"}\n+        )\n+        assert r_bytes.request.headers[\"x-custom\"] == b\"myheader\"\n+\n+        r_mixed = requests.get(\n+            httpbin(\"get\"), headers={MyString(\"x-custom\"): MyBytes(b\"myheader\")}\n+        )\n+        assert r_mixed.request.headers[\"x-custom\"] == b\"myheader\"\n \n     @pytest.mark.parametrize(\"files\", (\"foo\", b\"foo\", bytearray(b\"foo\")))\n     def test_can_send_objects_with_files(self, httpbin, files):\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 60,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.00041424,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.00012,
+      "upstream_inference_cost": 0.00041424,
+      "upstream_inference_prompt_cost": 0.00029424
+    },
+    "is_byok": false,
+    "prompt_tokens": 1542,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 896,
+      "video_tokens": 0
+    },
+    "total_tokens": 1602
+  },
+  "variance_seed": null
+}

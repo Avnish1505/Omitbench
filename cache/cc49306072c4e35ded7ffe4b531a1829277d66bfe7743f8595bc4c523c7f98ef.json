@@ -1,0 +1,41 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0004908,
+  "cost_source": "reported",
+  "judge_id": "B5 LLM judge (mid-tier)",
+  "message": {
+    "content": "```json\n{\"src/itsdangerous/_json.py::DeprecatedJSON\": \"IMPLEMENTED\"}\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- src/itsdangerous/_json.py::DeprecatedJSON\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/itsdangerous/__init__.py\n+++ b/src/itsdangerous/__init__.py\n@@ -1,4 +1,4 @@\n-from ._json import json\n+from ._json import deprecated_json as json\n from .encoding import base64_decode\n from .encoding import base64_encode\n from .encoding import want_bytes\n\n--- a/src/itsdangerous/_json.py\n+++ b/src/itsdangerous/_json.py\n@@ -1,7 +1,5 @@\n-try:\n-    import simplejson as json\n-except ImportError:\n-    import json\n+import json\n+from types import ModuleType\n \n \n class _CompactJSON:\n@@ -17,3 +15,19 @@\n         kwargs.setdefault(\"separators\", (\",\", \":\"))\n         return json.dumps(obj, **kwargs)\n \n+\n+class DeprecatedJSON(ModuleType):\n+    def __getattribute__(self, item):\n+        import warnings\n+\n+        warnings.warn(\n+            \"Importing 'itsdangerous.json' is deprecated and will be\"\n+            \" removed in 2.1. Use Python's 'json' module instead.\",\n+            DeprecationWarning,\n+            stacklevel=2,\n+        )\n+        return getattr(json, item)\n+\n+\n+deprecated_json = DeprecatedJSON(\"json\")\n+\n\n--- a/src/itsdangerous/jws.py\n+++ b/src/itsdangerous/jws.py\n@@ -6,7 +6,6 @@\n from numbers import Real\n \n from ._json import _CompactJSON\n-from ._json import json\n from .encoding import base64_decode\n from .encoding import base64_encode\n from .encoding import want_bytes\n@@ -87,7 +86,7 @@\n             )\n \n         try:\n-            header = super().load_payload(json_header, serializer=json)\n+            header = super().load_payload(json_header, serializer=_CompactJSON)\n         except BadData as e:\n             raise BadHeader(\n                 \"Could not unserialize header because it was malformed\",\n\n--- a/src/itsdangerous/serializer.py\n+++ b/src/itsdangerous/serializer.py\n@@ -1,6 +1,6 @@\n import hashlib\n-\n-from ._json import json\n+import json\n+\n from .encoding import want_bytes\n from .exc import BadPayload\n from .exc import BadSignature\n@@ -19,10 +19,6 @@\n     underlying implementation for parsing and loading you have to\n     override the :meth:`load_payload` and :meth:`dump_payload`\n     functions.\n-\n-    This implementation uses simplejson if available for dumping and\n-    loading and will fall back to the standard library's json module if\n-    it's not available.\n \n     You do not need to subclass this class in order to switch out or\n     customize the :class:`.Signer`. You can instead pass a different\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 24,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.0004908,
+    "cost_details": {
+      "upstream_inference_completions_cost": 4.8e-05,
+      "upstream_inference_cost": 0.0004908,
+      "upstream_inference_prompt_cost": 0.0004428
+    },
+    "is_byok": false,
+    "prompt_tokens": 1107,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1131
+  },
+  "variance_seed": null
+}

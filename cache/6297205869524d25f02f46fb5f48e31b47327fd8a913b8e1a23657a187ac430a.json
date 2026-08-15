@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00035885,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_routing.py::test_path_weighting\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate requirement: tests/test_routing.py::test_path_weighting\n\nWe need to see if the diff defines that test function, wires it, and not stub. The diff shows modifications to tests/test_routing.py around line 1394, adding blank lines before test_newline_match. No definition of test_path_weighting appears. The diff does not show any definition of test_path_weighting. So requirement is omitted.\n\nThus output JSON with that key mapping to \"OMITTED\".",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate requirement: tests/test_routing.py::test_path_weighting\n\nWe need to see if the diff defines that test function, wires it, and not stub. The diff shows modifications to tests/test_routing.py around line 1394, adding blank lines before test_newline_match. No definition of test_path_weighting appears. The diff does not show any definition of test_path_weighting. So requirement is omitted.\n\nThus output JSON with that key mapping to \"OMITTED\".",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_routing.py::test_path_weighting\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/werkzeug/routing/rules.py\n+++ b/src/werkzeug/routing/rules.py\n@@ -592,8 +592,12 @@\n \n             data = match.groupdict()\n             if data[\"static\"]:\n-                static_weights.append((static_parts, -len(data[\"static\"])))\n-                static_parts += 1\n+                # Only static parts beyond the `/` count towards the\n+                # weighting (more static parts mean the rule should be\n+                # weighted first).\n+                if data[\"static\"] != \"/\":\n+                    static_weights.append((static_parts, -len(data[\"static\"])))\n+                    static_parts += 1\n                 self._trace.append((False, data[\"static\"]))\n \n             if data[\"variable\"] is not None:\n\n--- a/tests/test_routing.py\n+++ b/tests/test_routing.py\n@@ -1394,6 +1394,8 @@\n     r.Rule(\"/ws\", endpoint=\"ws\", websocket=True, methods=[\"get\", \"head\", \"options\"])\n \n \n+\n+\n def test_newline_match():\n     m = r.Map([r.Rule(\"/hello\", endpoint=\"hello\")])\n     a = m.bind(\"localhost\")\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 128,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 101
+    },
+    "cost": 0.00035885,
+    "cost_details": {
+      "upstream_inference_completions_cost": 9.6e-05,
+      "upstream_inference_cost": 0.00035885,
+      "upstream_inference_prompt_cost": 0.00026285
+    },
+    "is_byok": false,
+    "prompt_tokens": 751,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 256,
+      "video_tokens": 0
+    },
+    "total_tokens": 879
+  },
+  "variance_seed": null
+}

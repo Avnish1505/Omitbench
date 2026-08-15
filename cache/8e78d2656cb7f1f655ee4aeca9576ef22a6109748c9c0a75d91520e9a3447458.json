@@ -1,0 +1,41 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00023528,
+  "cost_source": "reported",
+  "judge_id": "B5 LLM judge (mid-tier)",
+  "message": {
+    "content": "```json\n{\"tests.py::test_sign_invalid_separator\": \"OMITTED\"}\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests.py::test_sign_invalid_separator\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/itsdangerous.py\n+++ b/itsdangerous.py\n@@ -9,6 +9,7 @@\n     :copyright: (c) 2011 by Armin Ronacher and the Django Software Foundation.\n     :license: BSD, see LICENSE for more details.\n \"\"\"\n+import string\n import struct\n import sys\n import hmac\n@@ -215,6 +216,11 @@\n         raise BadData('Invalid base64-encoded data')\n \n \n+# The alphabet used by base64.urlsafe_*\n+_base64_alphabet = (\n+    string.ascii_letters + string.digits + '-_='\n+).encode('ascii')\n+\n _int64_struct = struct.Struct('>Q')\n _int_to_bytes = _int64_struct.pack\n _bytes_to_int = _int64_struct.unpack\n@@ -306,7 +312,12 @@\n     def __init__(self, secret_key, salt=None, sep='.', key_derivation=None,\n                  digest_method=None, algorithm=None):\n         self.secret_key = want_bytes(secret_key)\n-        self.sep = sep\n+        self.sep = want_bytes(sep)\n+        if self.sep in _base64_alphabet:\n+            raise ValueError('The given separator cannot be used because it '\n+                             'may be contained in the signature itself. '\n+                             'Alphanumeric characters and `-_=` must not be '\n+                             'used.')\n         self.salt = 'itsdangerous.Signer' if salt is None else salt\n         if key_derivation is None:\n             key_derivation = self.default_key_derivation\n\n--- a/tests.py\n+++ b/tests.py\n@@ -1,6 +1,7 @@\n #!/usr/bin/env python\n import time\n import pickle\n+import pytest\n import hashlib\n import unittest\n from datetime import datetime\n@@ -36,6 +37,7 @@\n     def test_sign(self):\n         s = self.make_signer('secret-key')\n         assert isinstance(s.sign('my string'), bytes)\n+\n \n \n class SerializerTestCase(unittest.TestCase):\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 22,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.00023528,
+    "cost_details": {
+      "upstream_inference_completions_cost": 4.4e-05,
+      "upstream_inference_cost": 0.00023528,
+      "upstream_inference_prompt_cost": 0.00019128
+    },
+    "is_byok": false,
+    "prompt_tokens": 939,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 512,
+      "video_tokens": 0
+    },
+    "total_tokens": 961
+  },
+  "variance_seed": null
+}

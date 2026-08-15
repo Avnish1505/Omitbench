@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0007165,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/typing/typing_route.py::hello_json_dict\": \"IMPLEMENTED\", \"tests/typing/typing_route.py::hello_json_list\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate each requirement: tests/typing/typing_route.py::hello_json_dict and tests/typing/typing_route.py::hello_json_list.\n\nWe have diff for tests/typing/typing_route.py. Let's examine diff.\n\nOriginal file snippet (before) had:\n\n@ app.route(\"/json\")\ndef hello_json() -> Response:\n    return jsonify({\"response\": \"Hello, World!\"})\n\nAfter change:\n\n@ app.route(\"/json\")\ndef hello_json() -> Response:\n    return jsonify(\"Hello, World!\")\n\n+ \n+\n+@app.route(\"/json/dict\")\n+def hello_json_dict() -> t.Dict[str, t.Any]:\n+    return {\"response\": \"Hello, World!\"}\n+\n+\n+@app.route(\"/json/dict\")\n\nThen later there is @app.route(\"/generator\") etc.\n\nSo the diff adds a new function hello_json_dict defined in tests/typing/typing_route.py. It also adds a duplicate route decorator line after it (maybe a mistake). But we have hello_json_dict defined.\n\nNow requirement hello_json_dict: need to be defined, wired, not stub.\n\nDefinition: yes, we have def hello_json_dict() -> t.Dict[str, t.Any]: return {\"response\": \"Hello, World!\"}. That's a definition.\n\nWired: Something else in diff calls, instantiates, or otherwise uses it. In this diff, is hello_json_dict used anywhere else? The diff only shows its definition and the route decorator. The route decorator registers it with Flask app, but is that considered \"wired\"? The requirement says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" The decorator @app.route registers the function as a view; that is a usage. The decorator is applied to the function itself, but is that \"something else\"? The decorator is applied to the function, but the function is being defined with the decorator; the decorator uses the function object. That could be considered wiring. However, the requirement says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" The decorator is something else (app.route) that uses the function. So yes, it's wired.\n\nNot a stub: body returns a dict literal, not stub. So passes.\n\nThus hello_json_dict is IMPLEMENTED.\n\nNow hello_json_list requirement: tests/typing/typing_route.py::hello_json_list. In diff, there is no definition of hello_json_list. The diff only adds hello_json_dict. No mention of hello_json_list. So it's omitted.\n\nThus output JSON: {\"tests/typing/typing_route.py::hello_json_dict\": \"IMPLEMENTED\", \"tests/typing/typing_route.py::hello_json_list\": \"OMITTED\"}",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate each requirement: tests/typing/typing_route.py::hello_json_dict and tests/typing/typing_route.py::hello_json_list.\n\nWe have diff for tests/typing/typing_route.py. Let's examine diff.\n\nOriginal file snippet (before) had:\n\n@ app.route(\"/json\")\ndef hello_json() -> Response:\n    return jsonify({\"response\": \"Hello, World!\"})\n\nAfter change:\n\n@ app.route(\"/json\")\ndef hello_json() -> Response:\n    return jsonify(\"Hello, World!\")\n\n+ \n+\n+@app.route(\"/json/dict\")\n+def hello_json_dict() -> t.Dict[str, t.Any]:\n+    return {\"response\": \"Hello, World!\"}\n+\n+\n+@app.route(\"/json/dict\")\n\nThen later there is @app.route(\"/generator\") etc.\n\nSo the diff adds a new function hello_json_dict defined in tests/typing/typing_route.py. It also adds a duplicate route decorator line after it (maybe a mistake). But we have hello_json_dict defined.\n\nNow requirement hello_json_dict: need to be defined, wired, not stub.\n\nDefinition: yes, we have def hello_json_dict() -> t.Dict[str, t.Any]: return {\"response\": \"Hello, World!\"}. That's a definition.\n\nWired: Something else in diff calls, instantiates, or otherwise uses it. In this diff, is hello_json_dict used anywhere else? The diff only shows its definition and the route decorator. The route decorator registers it with Flask app, but is that considered \"wired\"? The requirement says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" The decorator @app.route registers the function as a view; that is a usage. The decorator is applied to the function itself, but is that \"something else\"? The decorator is applied to the function, but the function is being defined with the decorator; the decorator uses the function object. That could be considered wiring. However, the requirement says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" The decorator is something else (app.route) that uses the function. So yes, it's wired.\n\nNot a stub: body returns a dict literal, not stub. So passes.\n\nThus hello_json_dict is IMPLEMENTED.\n\nNow hello_json_list requirement: tests/typing/typing_route.py::hello_json_list. In diff, there is no definition of hello_json_list. The diff only adds hello_json_dict. No mention of hello_json_list. So it's omitted.\n\nThus output JSON: {\"tests/typing/typing_route.py::hello_json_dict\": \"IMPLEMENTED\", \"tests/typing/typing_route.py::hello_json_list\": \"OMITTED\"}",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/typing/typing_route.py::hello_json_dict\n- tests/typing/typing_route.py::hello_json_list\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/flask/typing.py\n+++ b/src/flask/typing.py\n@@ -7,7 +7,13 @@\n \n # The possible types that are directly convertible or are a Response object.\n ResponseValue = t.Union[\n-    \"Response\", str, bytes, list, t.Dict[str, t.Any], t.Iterator[str], t.Iterator[bytes]\n+    \"Response\",\n+    str,\n+    bytes,\n+    t.List[t.Any],\n+    t.Dict[str, t.Any],\n+    t.Iterator[str],\n+    t.Iterator[bytes],\n ]\n \n # the possible types for an individual HTTP header\n\n--- a/tests/typing/typing_route.py\n+++ b/tests/typing/typing_route.py\n@@ -25,7 +25,15 @@\n \n @app.route(\"/json\")\n def hello_json() -> Response:\n-    return jsonify({\"response\": \"Hello, World!\"})\n+    return jsonify(\"Hello, World!\")\n+\n+\n+@app.route(\"/json/dict\")\n+def hello_json_dict() -> t.Dict[str, t.Any]:\n+    return {\"response\": \"Hello, World!\"}\n+\n+\n+@app.route(\"/json/dict\")\n \n \n @app.route(\"/generator\")\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 596,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 551
+    },
+    "cost": 0.0007165,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.000447,
+      "upstream_inference_cost": 0.0007165,
+      "upstream_inference_prompt_cost": 0.0002695
+    },
+    "is_byok": false,
+    "prompt_tokens": 770,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 256,
+      "video_tokens": 0
+    },
+    "total_tokens": 1366
+  },
+  "variance_seed": null
+}

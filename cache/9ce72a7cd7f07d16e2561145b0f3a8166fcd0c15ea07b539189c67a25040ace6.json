@@ -1,0 +1,41 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00053912,
+  "cost_source": "reported",
+  "judge_id": "B5 LLM judge (mid-tier)",
+  "message": {
+    "content": "```json\n{\"src/werkzeug/http.py::CORP\": \"OMITTED\"}\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- src/werkzeug/http.py::CORP\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/werkzeug/http.py\n+++ b/src/werkzeug/http.py\n@@ -122,18 +122,38 @@\n \n \n class COEP(Enum):\n-    \"\"\"Cross Origin Embedder Policies\"\"\"\n+    \"\"\"``Cross-Origin-Embedder-Policy`` header values. Used by\n+    :attr:`.Response.cross_origin_embedder_policy`.\n+\n+    .. versionchanged:: 3.2\n+        Added the ``credentialless`` member.\n+\n+    .. versionadded:: 2.0\n+    \"\"\"\n \n     UNSAFE_NONE = \"unsafe-none\"\n     REQUIRE_CORP = \"require-corp\"\n+    CREDENTIALLESS = \"credentialless\"\n \n \n class COOP(Enum):\n-    \"\"\"Cross Origin Opener Policies\"\"\"\n+    \"\"\"``Cross-Origin-Opener-Policy`` header values. Used by\n+    :attr:`.Response.cross_origin_opener_policy`.\n+\n+    .. versionchanged:: 3.2\n+        Added the ``noopener-allow-popups`` member.\n+\n+    .. versionadded:: 2.0\n+    \"\"\"\n \n     UNSAFE_NONE = \"unsafe-none\"\n     SAME_ORIGIN_ALLOW_POPUPS = \"same-origin-allow-popups\"\n     SAME_ORIGIN = \"same-origin\"\n+    NOOPENER_ALLOW_POPUPS = \"noopener-allow-popups\"\n+\n+\n+\n+\n class SecFetchSite(Enum):\n     \"\"\"``Sec-Fetch-Site`` header values. Used by :attr:`.Request.sec_fetch_site`.\n \n\n--- a/src/werkzeug/sansio/response.py\n+++ b/src/werkzeug/sansio/response.py\n@@ -15,6 +15,7 @@\n from ..datastructures import WWWAuthenticate\n from ..http import COEP\n from ..http import COOP\n+from ..http import CORP\n from ..http import dump_age\n from ..http import dump_cookie\n from ..http import dump_header\n@@ -745,20 +746,42 @@\n \n     cross_origin_opener_policy = header_property[COOP](\n         \"Cross-Origin-Opener-Policy\",\n-        load_func=lambda value: COOP(value),\n+        load_func=COOP,\n         dump_func=lambda value: value.value,\n         default=COOP.UNSAFE_NONE,\n         doc=\"\"\"Allows control over sharing of browsing context group with cross-origin\n-        documents. Values must be a member of the :class:`werkzeug.http.COOP` enum.\"\"\",\n+        documents.\n+\n+        Values are members of the :class:`.COOP` enum.\n+\n+        .. versionadded:: 2.0\n+        \"\"\",\n     )\n \n     cross_origin_embedder_policy = header_property[COEP](\n         \"Cross-Origin-Embedder-Policy\",\n-        load_func=lambda value: COEP(value),\n+        load_func=COEP,\n         dump_func=lambda value: value.value,\n         default=COEP.UNSAFE_NONE,\n         doc=\"\"\"Prevents a document from loading any cross-origin resources that do not\n-        explicitly grant the document permission. Values must be a member of the\n-        :class:`werkzeug.http.COEP` enum.\"\"\",\n-    )\n-\n+        explicitly grant the document permission.\n+\n+        Values are members of the :class:`.COEP` enum.\n+\n+        .. versionadded:: 2.0\n+        \"\"\",\n+    )\n+\n+    cross_origin_resource_policy = header_property[CORP](\n+        \"Cross-Origin-Resource-Policy\",\n+        load_func=CORP,\n+        dump_func=lambda value: value.value,\n+        doc=\"\"\"specifies the policy for what sites/origins should be allowed to load\n+        this resource.\n+\n+        Values are members of the :class:`.CORP` enum.\n+\n+        .. versionadded:: 3.2\n+        \"\"\",\n+    )\n+\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 23,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.00053912,
+    "cost_details": {
+      "upstream_inference_completions_cost": 4.6e-05,
+      "upstream_inference_cost": 0.00053912,
+      "upstream_inference_prompt_cost": 0.00049312
+    },
+    "is_byok": false,
+    "prompt_tokens": 1348,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 128,
+      "video_tokens": 0
+    },
+    "total_tokens": 1371
+  },
+  "variance_seed": null
+}

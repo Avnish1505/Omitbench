@@ -21,6 +21,7 @@ import sys
 sys.path.insert(0, ".")
 
 from omitbench import detectors as P  # noqa: E402
+from omitbench import judges as J  # noqa: E402
 
 CANARY = "OMITBENCH_GOLD_CANARY_9f3a2c"
 BANNED_PARAMS = {"gold", "patch", "diff", "reference", "solution",
@@ -92,8 +93,54 @@ def test_detector_cannot_distinguish_identical_inputs():
         assert a == b, f"{name} is non-deterministic or reads hidden state"
 
 
+def test_judge_build_prompt_is_pure_and_signature_locked():
+    """
+    The LLM judge (omitbench/judges.py) introduces a SECOND leak surface
+    beyond the function signature checked above: the rendered PROMPT STRING.
+    Prompt construction is isolated in one pure function, build_prompt(reqs,
+    diff). Lock its signature to exactly those two arguments -- if it ever
+    grows a `gold=`, `ctx=`, or `spec=` parameter, that argument is where the
+    next leak will ride in.
+    """
+    params = set(inspect.signature(J.build_prompt).parameters)
+    assert params == {"reqs", "diff"}, \
+        f"build_prompt has off-contract signature: {params}"
+
+
+def test_judge_prompt_never_contains_canary():
+    """
+    Plants the canary in the gold patch only -- never in the mutated `after`
+    the judge is actually built from -- then builds the diff and the prompt
+    from ONLY (before, after) and asserts the canary never rides along.
+    Mirrors test_canary_never_reaches_detector, scoped to the judge's prompt-
+    construction path rather than a detector's argument list.
+    """
+    before = {"m.py": ["def existing():", "    return 1"]}
+    gold_after = {"m.py": [
+        "def helper():",
+        f"    # {CANARY}",
+        "    return 2",
+        "def existing():",
+        "    return helper()",
+    ]}
+    # what d_llm_judge actually sees: helper mutated away, canary gone with it
+    after = {"m.py": ["def existing():", "    return helper()"]}
+
+    diff = J.unified_diff(before, after)
+    assert CANARY not in diff, "canary leaked into the diff itself"
+
+    prompt = J.build_prompt(["m.py::helper"], diff)
+    assert CANARY not in prompt, "build_prompt leaked the gold canary"
+
+    # sanity: the canary really is in the gold patch, so this test can fail
+    assert any(CANARY in line for line in gold_after["m.py"]), \
+        "canary missing from gold -- test is vacuous"
+
+
 if __name__ == "__main__":
     test_no_detector_accepts_gold_or_label()
     test_canary_never_reaches_detector()
     test_detector_cannot_distinguish_identical_inputs()
+    test_judge_build_prompt_is_pure_and_signature_locked()
+    test_judge_prompt_never_contains_canary()
     print("all leakage guards passed")

@@ -1,0 +1,41 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0007836,
+  "cost_source": "reported",
+  "judge_id": "B5 LLM judge (mid-tier)",
+  "message": {
+    "content": "```json\n{\"tests/test_validators.py::test_validators_iterables\": \"IMPLEMENTED\"}\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_validators.py::test_validators_iterables\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/attr/validators.py\n+++ b/src/attr/validators.py\n@@ -361,18 +361,24 @@\n     A validator that performs deep validation of an iterable.\n \n     Args:\n-        member_validator: Validator to apply to iterable members.\n+        member_validator: Validator(s) to apply to iterable members.\n \n         iterable_validator:\n-            Validator to apply to iterable itself (optional).\n+            Validator(s) to apply to iterable itself (optional).\n \n     Raises\n         TypeError: if any sub-validators fail\n \n     .. versionadded:: 19.1.0\n+\n+    .. versionchanged:: 25.4.0\n+       *member_validator* and *iterable_validator* can now be a list or tuple\n+       of validators.\n     \"\"\"\n     if isinstance(member_validator, (list, tuple)):\n         member_validator = and_(*member_validator)\n+    if isinstance(iterable_validator, (list, tuple)):\n+        iterable_validator = and_(*iterable_validator)\n     return _DeepIterable(member_validator, iterable_validator)\n \n \n@@ -409,18 +415,22 @@\n     *value_validator* must be provided.\n \n     Args:\n-        key_validator: Validator to apply to dictionary keys.\n-\n-        value_validator: Validator to apply to dictionary values.\n+        key_validator: Validator(s) to apply to dictionary keys.\n+\n+        value_validator: Validator(s) to apply to dictionary values.\n \n         mapping_validator:\n-            Validator to apply to top-level mapping attribute.\n+            Validator(s) to apply to top-level mapping attribute.\n \n     .. versionadded:: 19.1.0\n \n     .. versionchanged:: 25.4.0\n        *key_validator* and *value_validator* are now optional, but at least one\n        of them must be provided.\n+\n+    .. versionchanged:: 25.4.0\n+       *key_validator*, *value_validator*, and *mapping_validator* can now be a\n+       list or tuple of validators.\n \n     Raises:\n         TypeError: If any sub-validator fails on validation.\n@@ -434,6 +444,13 @@\n             \"At least one of key_validator or value_validator must be provided\"\n         )\n         raise ValueError(msg)\n+\n+    if isinstance(key_validator, (list, tuple)):\n+        key_validator = and_(*key_validator)\n+    if isinstance(value_validator, (list, tuple)):\n+        value_validator = and_(*value_validator)\n+    if isinstance(mapping_validator, (list, tuple)):\n+        mapping_validator = and_(*mapping_validator)\n \n     return _DeepMapping(key_validator, value_validator, mapping_validator)\n \n\n--- a/tests/test_validators.py\n+++ b/tests/test_validators.py\n@@ -621,6 +621,19 @@\n \n         assert expected_repr == repr(v)\n \n+    @pytest.mark.parametrize(\"conv\", [list, tuple])\n+    def test_validators_iterables(self, conv):\n+        \"\"\"\n+        If iterables are passed as validators, they are combined with and_.\n+        \"\"\"\n+        member_validator = (instance_of(int),)\n+        iterable_validator = (instance_of(list), min_len(1))\n+\n+        v = deep_iterable(conv(member_validator), conv(iterable_validator))\n+\n+        assert and_(*member_validator) == v.member_validator\n+        assert and_(*iterable_validator) == v.iterable_validator\n+\n \n class TestDeepMapping:\n     \"\"\"\n@@ -755,6 +768,25 @@\n \n         v(None, a, {\"a\": 6, \"b\": 7})\n \n+    @pytest.mark.parametrize(\"conv\", [list, tuple])\n+    def test_validators_iterables(self, conv):\n+        \"\"\"\n+        If iterables are passed as validators, they are combined with and_.\n+        \"\"\"\n+        key_validator = (instance_of(str), min_len(2))\n+        value_validator = (instance_of(int), ge(10))\n+        mapping_validator = (instance_of(dict), max_len(2))\n+\n+        v = deep_mapping(\n+            conv(key_validator),\n+            conv(value_validator),\n+            conv(mapping_validator),\n+        )\n+\n+        assert and_(*key_validator) == v.key_validator\n+        assert and_(*value_validator) == v.value_validator\n+        assert and_(*mapping_validator) == v.mapping_validator\n+\n \n class TestIsCallable:\n     \"\"\"\n\n--- a/tests/typing_example.py\n+++ b/tests/typing_example.py\n@@ -190,10 +190,17 @@\n             attr.validators.instance_of(C), attr.validators.instance_of(list)\n         ),\n     )\n-    aa = attr.ib(\n+    a2 = attr.ib(\n         type=Tuple[C],\n         validator=attr.validators.deep_iterable(\n             attr.validators.instance_of(C), attr.validators.instance_of(tuple)\n+        ),\n+    )\n+    a3 = attr.ib(\n+        type=Tuple[C],\n+        validator=attr.validators.deep_iterable(\n+            [attr.validators.instance_of(C)],\n+            [attr.validators.instance_of(tuple)],\n         ),\n     )\n     b = attr.ib(\n@@ -224,6 +231,14 @@\n         type=Dict[C, D],\n         validator=attr.validators.deep_mapping(\n             value_validator=attr.validators.instance_of(C)\n+        ),\n+    )\n+    d4 = attr.ib(\n+        type=Dict[C, D],\n+        validator=attr.validators.deep_mapping(\n+            key_validator=[attr.validators.instance_of(C)],\n+            value_validator=[attr.validators.instance_of(C)],\n+            mapping_validator=[attr.validators.instance_of(dict)],\n         ),\n     )\n     e: str = attr.ib(validator=attr.validators.matches_re(re.compile(r\"foo\")))\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 23,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.0007836,
+    "cost_details": {
+      "upstream_inference_completions_cost": 4.6e-05,
+      "upstream_inference_cost": 0.0007836,
+      "upstream_inference_prompt_cost": 0.0007376
+    },
+    "is_byok": false,
+    "prompt_tokens": 1844,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1867
+  },
+  "variance_seed": null
+}

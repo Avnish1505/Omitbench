@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0007121,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_context.py::test_with_resource_nested_exception\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate requirement: tests/test_context.py::test_with_resource_nested_exception\n\nWe have diff of tests/test_context.py. The diff adds a new test function test_with_resource_nested_exception. The requirement is that a symbol (function or class) named test_with_resource_nested_exception must be defined in tests/test_context.py and be wired (used) and not a stub.\n\nWe see in diff: added lines:\n\ndef test_with_resource_nested_exception() -> None:\n    class TestContext(AbstractContextManager[list[int]]):\n        ...\n\nSo the function test_with_resource_nested_exception is defined (def). It contains code that uses TestContext, TestException, click.Context, etc. The function itself is not a stub; it has body with code. So definition exists.\n\nWired: The function is defined, but is it used elsewhere? The requirement says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" For a test function, being defined is enough? Usually test functions are discovered by pytest, not called directly in code. The requirement says \"wired\" meaning something else calls it. In the diff, there is no call to test_with_resource_nested_exception. However, test functions are typically not called directly; they are discovered by test runner. Does that count as wired? The spec: \"something else in the diff actually calls, instantiates, or otherwise uses it.\" For a test function, the test runner would call it, but that's not in the diff. So maybe it's considered not wired. But many previous similar tasks treat test definitions as implementation even if not called. However the spec is strict: must be used elsewhere in diff. Since there is no call to test_with_resource_nested_exception, it may be considered omitted.\n\nBut the requirement is about a test function; they likely expect that defining the test is enough. The spec says \"wired\" meaning something else in the diff actually calls, instantiates, or otherwise uses it. For a test function, the test runner is external, not in diff. So maybe they consider that as not wired, thus omitted. However earlier tasks I've seen treat test definitions as implementation even if not called. The spec is generic, but they might consider that test functions are used by pytest automatically, but that's not in diff. The spec says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" Since there is no explicit call, I'd lean to OMITTED.\n\nBut also the function is defined, not stub. So only missing wired.\n\nThus answer: {\"tests/test_context.py::test_with_resource_nested_exception\": \"OMITTED\"}",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate requirement: tests/test_context.py::test_with_resource_nested_exception\n\nWe have diff of tests/test_context.py. The diff adds a new test function test_with_resource_nested_exception. The requirement is that a symbol (function or class) named test_with_resource_nested_exception must be defined in tests/test_context.py and be wired (used) and not a stub.\n\nWe see in diff: added lines:\n\ndef test_with_resource_nested_exception() -> None:\n    class TestContext(AbstractContextManager[list[int]]):\n        ...\n\nSo the function test_with_resource_nested_exception is defined (def). It contains code that uses TestContext, TestException, click.Context, etc. The function itself is not a stub; it has body with code. So definition exists.\n\nWired: The function is defined, but is it used elsewhere? The requirement says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" For a test function, being defined is enough? Usually test functions are discovered by pytest, not called directly in code. The requirement says \"wired\" meaning something else calls it. In the diff, there is no call to test_with_resource_nested_exception. However, test functions are typically not called directly; they are discovered by test runner. Does that count as wired? The spec: \"something else in the diff actually calls, instantiates, or otherwise uses it.\" For a test function, the test runner would call it, but that's not in the diff. So maybe it's considered not wired. But many previous similar tasks treat test definitions as implementation even if not called. However the spec is strict: must be used elsewhere in diff. Since there is no call to test_with_resource_nested_exception, it may be considered omitted.\n\nBut the requirement is about a test function; they likely expect that defining the test is enough. The spec says \"wired\" meaning something else in the diff actually calls, instantiates, or otherwise uses it. For a test function, the test runner is external, not in diff. So maybe they consider that as not wired, thus omitted. However earlier tasks I've seen treat test definitions as implementation even if not called. The spec is generic, but they might consider that test functions are used by pytest automatically, but that's not in diff. The spec says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" Since there is no explicit call, I'd lean to OMITTED.\n\nBut also the function is defined, not stub. So only missing wired.\n\nThus answer: {\"tests/test_context.py::test_with_resource_nested_exception\": \"OMITTED\"}",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_context.py::test_with_resource_nested_exception\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/tests/test_context.py\n+++ b/tests/test_context.py\n@@ -478,7 +478,41 @@\n             )\n             raise TestException()\n \n+\n+def test_with_resource_nested_exception() -> None:\n+    class TestContext(AbstractContextManager[list[int]]):\n+        _handle_exception: bool\n+        _base_val: int\n+        val: list[int]\n+\n+        def __init__(self, base_val: int = 1, *, handle_exception: bool = True) -> None:\n+            self._handle_exception = handle_exception\n+            self._base_val = base_val\n+\n+        def __enter__(self) -> list[int]:\n+            self.val = [self._base_val]\n+            return self.val\n+\n+        def __exit__(\n+            self,\n+            exc_type: type[BaseException] | None,\n+            exc_value: BaseException | None,\n+            traceback: TracebackType | None,\n+        ) -> bool | None:\n+            if not exc_type:\n+                self.val[0] = self._base_val - 1\n+                return None\n+\n+            self.val[0] = self._base_val + 1\n+            return self._handle_exception\n+\n+    class TestException(Exception):\n+        pass\n+\n+    ctx = click.Context(click.Command(\"test\"))\n+    base_val = 1\n     base_val_nested = 11\n+\n     with ctx.scope():\n         rv = ctx.with_resource(TestContext(base_val=base_val))\n         rv_nested = ctx.with_resource(TestContext(base_val=base_val_nested))\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 557,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 530
+    },
+    "cost": 0.0007121,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.00041775,
+      "upstream_inference_cost": 0.0007121,
+      "upstream_inference_prompt_cost": 0.00029435
+    },
+    "is_byok": false,
+    "prompt_tokens": 841,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1398
+  },
+  "variance_seed": null
+}

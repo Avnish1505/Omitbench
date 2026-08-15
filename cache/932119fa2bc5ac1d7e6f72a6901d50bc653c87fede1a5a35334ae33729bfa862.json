@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0006912,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_dunders.py::test_factory_hashable\": \"OMITTED\", \"tests/test_dunders.py::test_factory_takes_self\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate two requirements:\n\n- tests/test_dunders.py::test_factory_hashable\n- tests/test_dunders.py::test_factory_takes_self\n\nWe have diff showing modifications to tests/test_dunders.py and tests/test_make.py.\n\nIn tests/test_dunders.py diff, we see added definitions:\n\n```\n    def test_factory_takes_self(self):\n        raise NotImplementedError\n\n    def test_factory_hashable(self):\n        \"\"\"\n        Factory is hashable.\n        \"\"\"\n        assert hash(Factory(None, False)) == hash(Factory(None, False))\n```\n\nThus both functions are defined in tests/test_dunders.py. Are they \"wired\"? The requirement is about the symbol being defined and used elsewhere? The definition is a test function; the test itself uses Factory (calls hash). That counts as using Factory, but the requirement is about the test function itself? The requirement is that the test function exists (definition) and is wired (something else calls it). In test files, test functions are discovered by pytest; they are not called explicitly in the diff. Does that count as \"wired\"? The spec says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" For a test function, the test runner calls it, but that's not shown in diff. So likely not wired. However, the test function itself uses Factory, but that is not \"using the test function\". The requirement is about the symbol (test function) being defined and wired. Since there is no explicit call to test_factory_hashable elsewhere in diff, it's not wired. So according to strict criteria, it's OMITTED.\n\nBut maybe they consider that test functions are automatically used by pytest, but the spec says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" The diff does not show any call to test_factory_hashable. So it's not wired.\n\nThus both requirements are OMITTED.\n\nCheck if any other definitions: In tests/test_make.py, there were previously definitions of test_factory_takes_self and test_factory_hashable, but they were removed (the diff shows removal). So the functions are now only in test_dunders.py. The requirement is for test_dunders.py::test_factory_hashable and test_factory_takes_self. They are defined (yes). Are they wired? Not called. So omitted.\n\nThus output JSON with both as \"OMITTED\".",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate two requirements:\n\n- tests/test_dunders.py::test_factory_hashable\n- tests/test_dunders.py::test_factory_takes_self\n\nWe have diff showing modifications to tests/test_dunders.py and tests/test_make.py.\n\nIn tests/test_dunders.py diff, we see added definitions:\n\n```\n    def test_factory_takes_self(self):\n        raise NotImplementedError\n\n    def test_factory_hashable(self):\n        \"\"\"\n        Factory is hashable.\n        \"\"\"\n        assert hash(Factory(None, False)) == hash(Factory(None, False))\n```\n\nThus both functions are defined in tests/test_dunders.py. Are they \"wired\"? The requirement is about the symbol being defined and used elsewhere? The definition is a test function; the test itself uses Factory (calls hash). That counts as using Factory, but the requirement is about the test function itself? The requirement is that the test function exists (definition) and is wired (something else calls it). In test files, test functions are discovered by pytest; they are not called explicitly in the diff. Does that count as \"wired\"? The spec says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" For a test function, the test runner calls it, but that's not shown in diff. So likely not wired. However, the test function itself uses Factory, but that is not \"using the test function\". The requirement is about the symbol (test function) being defined and wired. Since there is no explicit call to test_factory_hashable elsewhere in diff, it's not wired. So according to strict criteria, it's OMITTED.\n\nBut maybe they consider that test functions are automatically used by pytest, but the spec says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" The diff does not show any call to test_factory_hashable. So it's not wired.\n\nThus both requirements are OMITTED.\n\nCheck if any other definitions: In tests/test_make.py, there were previously definitions of test_factory_takes_self and test_factory_hashable, but they were removed (the diff shows removal). So the functions are now only in test_dunders.py. The requirement is for test_dunders.py::test_factory_hashable and test_factory_takes_self. They are defined (yes). Are they wired? Not called. So omitted.\n\nThus output JSON with both as \"OMITTED\".",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_dunders.py::test_factory_hashable\n- tests/test_dunders.py::test_factory_takes_self\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/tests/test_dunders.py\n+++ b/tests/test_dunders.py\n@@ -836,6 +836,15 @@\n         assert [] == i.a\n         assert isinstance(i.b, D)\n \n+    def test_factory_takes_self(self):\n+        raise NotImplementedError\n+\n+    def test_factory_hashable(self):\n+        \"\"\"\n+        Factory is hashable.\n+        \"\"\"\n+        assert hash(Factory(None, False)) == hash(Factory(None, False))\n+\n     def test_validator(self):\n         \"\"\"\n         If a validator is passed, call it with the preliminary instance, the\n\n--- a/tests/test_make.py\n+++ b/tests/test_make.py\n@@ -1336,29 +1336,6 @@\n         assert c.x == val + 1\n         assert c.y == 2\n \n-    def test_factory_takes_self(self):\n-        \"\"\"\n-        If takes_self on factories is True, self is passed.\n-        \"\"\"\n-        C = make_class(\n-            \"C\",\n-            {\n-                \"x\": attr.ib(\n-                    default=Factory((lambda self: self), takes_self=True)\n-                )\n-            },\n-        )\n-\n-        i = C()\n-\n-        assert i is i.x\n-\n-    def test_factory_hashable(self):\n-        \"\"\"\n-        Factory is hashable.\n-        \"\"\"\n-        assert hash(Factory(None, False)) == hash(Factory(None, False))\n-\n     def test_convert_before_validate(self):\n         \"\"\"\n         Validation happens after conversion.\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 531,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 486
+    },
+    "cost": 0.0006912,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.00039825,
+      "upstream_inference_cost": 0.0006912,
+      "upstream_inference_prompt_cost": 0.00029295
+    },
+    "is_byok": false,
+    "prompt_tokens": 837,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1368
+  },
+  "variance_seed": null
+}

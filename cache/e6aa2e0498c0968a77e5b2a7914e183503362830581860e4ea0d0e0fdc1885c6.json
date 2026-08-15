@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00045605,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests.py::test_custom_media_type\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate requirement: tests.py::test_custom_media_type\n\nWe need to see if there is a function or class named test_custom_media_type defined in tests.py, and if it's wired and not a stub.\n\nSearch diff: In tests.py diff, we see modifications around test_decode_return_header, but not test_custom_media_type. The diff shows changes to test_decode_return_header, but no mention of test_custom_media_type. The requirement is tests.py::test_custom_media_type. The diff does not contain definition of that test function. So it's omitted.\n\nThus output: {\"tests.py::test_custom_media_type\": \"OMITTED\"}",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate requirement: tests.py::test_custom_media_type\n\nWe need to see if there is a function or class named test_custom_media_type defined in tests.py, and if it's wired and not a stub.\n\nSearch diff: In tests.py diff, we see modifications around test_decode_return_header, but not test_custom_media_type. The diff shows changes to test_decode_return_header, but no mention of test_custom_media_type. The requirement is tests.py::test_custom_media_type. The diff does not contain definition of that test function. So it's omitted.\n\nThus output: {\"tests.py::test_custom_media_type\": \"OMITTED\"}",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests.py::test_custom_media_type\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/itsdangerous.py\n+++ b/itsdangerous.py\n@@ -669,6 +669,7 @@\n \n     #: The default algorithm to use for signature generation\n     default_algorithm = 'HS256'\n+    default_media_type = 'JWT'\n \n     default_serializer = _CompactJSON\n \n@@ -676,7 +677,7 @@\n         self, secret_key, salt=None,\n         serializer=None, serializer_kwargs=None,\n         signer=None, signer_kwargs=None,\n-        algorithm_name=None\n+        algorithm_name=None, media_type=None\n     ):\n         Serializer.__init__(\n             self, secret_key=secret_key, salt=salt,\n@@ -687,6 +688,9 @@\n             algorithm_name = self.default_algorithm\n         self.algorithm_name = algorithm_name\n         self.algorithm = self.make_algorithm(algorithm_name)\n+        if media_type is None:\n+            media_type = self.default_media_type\n+        self.media_type = media_type\n \n     def load_payload(self, payload, return_header=False):\n         payload = want_bytes(payload)\n@@ -740,6 +744,7 @@\n     def make_header(self, header_fields):\n         header = header_fields.copy() if header_fields else {}\n         header['alg'] = self.algorithm_name\n+        header['typ'] = self.media_type\n         return header\n \n     def dumps(self, obj, salt=None, header_fields=None):\n\n--- a/tests.py\n+++ b/tests.py\n@@ -192,11 +192,12 @@\n     def test_decode_return_header(self):\n         secret_key = 'predictable-key'\n         value = u'hello'\n-        header = {\"typ\": \"dummy\"}\n+        header = {\"cty\": \"dummy\"}\n \n         s = self.make_serializer(secret_key)\n         full_header = header.copy()\n         full_header['alg'] = s.algorithm_name\n+        full_header['typ'] = s.media_type\n \n         ts = s.dumps(value, header_fields=header)\n         loaded, loaded_header = s.loads(ts, return_header=True)\n@@ -235,6 +236,7 @@\n             self.assertEqual(s.load_payload(e.payload), value)\n         else:\n             self.fail('Did not get algorithm mismatch')\n+\n \n \n class TimedJSONWebSignatureSerializerTest(unittest.TestCase):\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 154,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 130
+    },
+    "cost": 0.00045605,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.0001155,
+      "upstream_inference_cost": 0.00045605,
+      "upstream_inference_prompt_cost": 0.00034055
+    },
+    "is_byok": false,
+    "prompt_tokens": 973,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1127
+  },
+  "variance_seed": null
+}

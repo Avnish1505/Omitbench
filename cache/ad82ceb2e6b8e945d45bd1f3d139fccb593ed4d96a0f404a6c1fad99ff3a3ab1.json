@@ -1,0 +1,41 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00045624,
+  "cost_source": "reported",
+  "judge_id": "B5 LLM judge (mid-tier)",
+  "message": {
+    "content": "```json\n{\"tests/test_options.py::NonNegatable\": \"IMPLEMENTED\", \"tests/test_options.py::test_flag_value_is_correctly_set\": \"OMITTED\", \"tests/test_options.py::test_non_flag_with_non_negatable_default\": \"IMPLEMENTED\"}\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_options.py::NonNegatable\n- tests/test_options.py::test_flag_value_is_correctly_set\n- tests/test_options.py::test_non_flag_with_non_negatable_default\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/click/core.py\n+++ b/src/click/core.py\n@@ -2610,10 +2610,11 @@\n             else:\n                 self.default = False\n \n+        if is_flag and flag_value is None:\n+            flag_value = not self.default\n+\n         self.type: types.ParamType\n         if is_flag and type is None:\n-            if flag_value is None:\n-                flag_value = not self.default\n             # Re-guess the type from the flag value instead of the\n             # default.\n             self.type = types.convert_type(None, flag_value)\n\n--- a/tests/test_options.py\n+++ b/tests/test_options.py\n@@ -1008,6 +1008,25 @@\n \n \n @pytest.mark.parametrize(\n+    (\"opts\", \"pass_flag\", \"expected\"),\n+    [\n+        pytest.param({\"type\": bool}, False, \"False\"),\n+        pytest.param({\"type\": bool}, True, \"True\"),\n+        pytest.param({\"type\": bool, \"default\": True}, False, \"True\"),\n+        pytest.param({\"type\": bool, \"default\": True}, True, \"False\"),\n+        pytest.param({\"type\": click.BOOL}, False, \"False\"),\n+        pytest.param({\"type\": click.BOOL}, True, \"True\"),\n+        pytest.param({\"type\": click.BOOL, \"default\": True}, False, \"True\"),\n+        pytest.param({\"type\": click.BOOL, \"default\": True}, True, \"False\"),\n+        pytest.param({\"type\": str}, False, \"\"),\n+        pytest.param({\"type\": str}, True, \"True\"),\n+    ],\n+)\n+def test_flag_value_is_correctly_set(runner, opts, pass_flag, expected):\n+    raise NotImplementedError\n+\n+\n+@pytest.mark.parametrize(\n     (\"option\", \"expected\"),\n     [\n         # Not boolean flags\n@@ -1040,6 +1059,20 @@\n     assert message in str(e.value)\n \n \n+def test_non_flag_with_non_negatable_default(runner):\n+    class NonNegatable:\n+        def __bool__(self):\n+            raise ValueError(\"Cannot negate this object\")\n+\n+    @click.command()\n+    @click.option(\"--foo\", default=NonNegatable())\n+    def cmd(foo):\n+        pass\n+\n+    result = runner.invoke(cmd)\n+    assert result.exit_code == 0\n+\n+\n @pytest.mark.parametrize(\n     (\"choices\", \"metavars\"),\n     [\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 64,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.00045624,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.000128,
+      "upstream_inference_cost": 0.00045624,
+      "upstream_inference_prompt_cost": 0.00032824
+    },
+    "is_byok": false,
+    "prompt_tokens": 1051,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 256,
+      "video_tokens": 0
+    },
+    "total_tokens": 1115
+  },
+  "variance_seed": null
+}

@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0006603,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_itsdangerous/test_timed.py::test_malformed_future_timestamp\": \"OMITTED\"}",
+    "reasoning": "We need to determine if the requirement \"tests/test_itsdangerous/test_timed.py::test_malformed_future_timestamp\" is implemented.\n\nRequirement refers to a test function named test_malformed_future_timestamp in file tests/test_itsdangerous/test_timed.py.\n\nWe have diff showing addition of import sys and a new test function definition with @pytest.mark.skipif decorator. The diff includes the function definition:\n\n```\n    @pytest.mark.skipif(\n        sys.platform == \"win32\", reason=\"Freezegun Invalid argument occurs on Windows\"\n    )\n    def test_malformed_future_timestamp(self, signer):\n        signed = b\"value.TgPVoaGhoQ.AGBfQ6G6cr07byTRt0zAdPljHOY\"\n\n        with pytest.raises(BadTimeSignature) as exc_info:\n            signer.unsign(signed)\n\n        assert \"Malformed\" in str(exc_info.value)\n        assert exc_info.value.date_signed is None\n```\n\nThus the symbol (function) is defined. Is it wired? It is used? The requirement is about the test function itself; wiring means something else calls it? In test files, pytest will discover and call the test function. That counts as wiring? The definition is a test function; it's used by pytest runner, but within the diff, there is no explicit call. However the requirement's criteria: \"WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it.\" For a test function, the test runner uses it, but that's not shown in diff. However typical interpretation: test functions are not called directly in code; they are discovered by pytest. The diff does not show any call to test_malformed_future_timestamp. So according to strict criteria, it may be considered not wired. But the requirement is about a test function; likely they consider definition sufficient. However the instruction says \"A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\" Here the function appears only in its own definition; there is no other usage. So according to that rule, it's not wired, thus OMITTED.\n\nBut maybe they consider the test function being defined is enough; but they explicitly say \"something else in the diff actually calls, instantiates, or otherwise uses it.\" Since no other code calls it, it's not wired. So we should mark as OMITTED.\n\nThus output JSON with that requirement mapped to \"OMITTED\".",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to determine if the requirement \"tests/test_itsdangerous/test_timed.py::test_malformed_future_timestamp\" is implemented.\n\nRequirement refers to a test function named test_malformed_future_timestamp in file tests/test_itsdangerous/test_timed.py.\n\nWe have diff showing addition of import sys and a new test function definition with @pytest.mark.skipif decorator. The diff includes the function definition:\n\n```\n    @pytest.mark.skipif(\n        sys.platform == \"win32\", reason=\"Freezegun Invalid argument occurs on Windows\"\n    )\n    def test_malformed_future_timestamp(self, signer):\n        signed = b\"value.TgPVoaGhoQ.AGBfQ6G6cr07byTRt0zAdPljHOY\"\n\n        with pytest.raises(BadTimeSignature) as exc_info:\n            signer.unsign(signed)\n\n        assert \"Malformed\" in str(exc_info.value)\n        assert exc_info.value.date_signed is None\n```\n\nThus the symbol (function) is defined. Is it wired? It is used? The requirement is about the test function itself; wiring means something else calls it? In test files, pytest will discover and call the test function. That counts as wiring? The definition is a test function; it's used by pytest runner, but within the diff, there is no explicit call. However the requirement's criteria: \"WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it.\" For a test function, the test runner uses it, but that's not shown in diff. However typical interpretation: test functions are not called directly in code; they are discovered by pytest. The diff does not show any call to test_malformed_future_timestamp. So according to strict criteria, it may be considered not wired. But the requirement is about a test function; likely they consider definition sufficient. However the instruction says \"A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\" Here the function appears only in its own definition; there is no other usage. So according to that rule, it's not wired, thus OMITTED.\n\nBut maybe they consider the test function being defined is enough; but they explicitly say \"something else in the diff actually calls, instantiates, or otherwise uses it.\" Since no other code calls it, it's not wired. So we should mark as OMITTED.\n\nThus output JSON with that requirement mapped to \"OMITTED\".",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_itsdangerous/test_timed.py::test_malformed_future_timestamp\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/tests/test_itsdangerous/test_timed.py\n+++ b/tests/test_itsdangerous/test_timed.py\n@@ -1,3 +1,4 @@\n+import sys\n from datetime import datetime\n from datetime import timedelta\n from datetime import timezone\n@@ -66,6 +67,18 @@\n         assert \"Malformed\" in str(exc_info.value)\n         assert exc_info.value.date_signed is None\n \n+    @pytest.mark.skipif(\n+        sys.platform == \"win32\", reason=\"Freezegun Invalid argument occurs on Windows\"\n+    )\n+    def test_malformed_future_timestamp(self, signer):\n+        signed = b\"value.TgPVoaGhoQ.AGBfQ6G6cr07byTRt0zAdPljHOY\"\n+\n+        with pytest.raises(BadTimeSignature) as exc_info:\n+            signer.unsign(signed)\n+\n+        assert \"Malformed\" in str(exc_info.value)\n+        assert exc_info.value.date_signed is None\n+\n     def test_future_age(self, signer):\n         signed = signer.sign(\"value\")\n \n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 536,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 503
+    },
+    "cost": 0.0006603,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.000402,
+      "upstream_inference_cost": 0.0006603,
+      "upstream_inference_prompt_cost": 0.0002583
+    },
+    "is_byok": false,
+    "prompt_tokens": 738,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1274
+  },
+  "variance_seed": null
+}

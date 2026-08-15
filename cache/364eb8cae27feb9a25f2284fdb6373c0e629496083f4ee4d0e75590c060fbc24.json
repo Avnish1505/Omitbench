@@ -1,0 +1,41 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.000678,
+  "cost_source": "reported",
+  "judge_id": "B5 LLM judge (mid-tier)",
+  "message": {
+    "content": "```json\n{\"tests/test_content.py::AsyncBytesIO\": \"IMPLEMENTED\", \"tests/test_content.py::aread\": \"OMITTED\", \"tests/test_content.py::test_async_bytesio_content\": \"IMPLEMENTED\"}\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_content.py::AsyncBytesIO\n- tests/test_content.py::aread\n- tests/test_content.py::test_async_bytesio_content\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/httpx/_content.py\n+++ b/httpx/_content.py\n@@ -38,6 +38,8 @@\n \n \n class IteratorByteStream(SyncByteStream):\n+    CHUNK_SIZE = 65_536\n+\n     def __init__(self, stream: Iterable[bytes]):\n         self._stream = stream\n         self._is_stream_consumed = False\n@@ -48,11 +50,21 @@\n             raise StreamConsumed()\n \n         self._is_stream_consumed = True\n-        for part in self._stream:\n-            yield part\n+        if hasattr(self._stream, \"read\"):\n+            # File-like interfaces should use 'read' directly.\n+            chunk = self._stream.read(self.CHUNK_SIZE)  # type: ignore\n+            while chunk:\n+                yield chunk\n+                chunk = self._stream.read(self.CHUNK_SIZE)  # type: ignore\n+        else:\n+            # Otherwise iterate.\n+            for part in self._stream:\n+                yield part\n \n \n class AsyncIteratorByteStream(AsyncByteStream):\n+    CHUNK_SIZE = 65_536\n+\n     def __init__(self, stream: AsyncIterable[bytes]):\n         self._stream = stream\n         self._is_stream_consumed = False\n@@ -63,8 +75,16 @@\n             raise StreamConsumed()\n \n         self._is_stream_consumed = True\n-        async for part in self._stream:\n-            yield part\n+        if hasattr(self._stream, \"aread\"):\n+            # File-like interfaces should use 'aread' directly.\n+            chunk = await self._stream.aread(self.CHUNK_SIZE)  # type: ignore\n+            while chunk:\n+                yield chunk\n+                chunk = await self._stream.aread(self.CHUNK_SIZE)  # type: ignore\n+        else:\n+            # Otherwise iterate.\n+            async for part in self._stream:\n+                yield part\n \n \n class UnattachedStream(AsyncByteStream, SyncByteStream):\n\n--- a/httpx/_multipart.py\n+++ b/httpx/_multipart.py\n@@ -71,6 +71,8 @@\n     A single file field item, within a multipart form field.\n     \"\"\"\n \n+    CHUNK_SIZE = 64 * 1024\n+\n     def __init__(self, name: str, value: FileTypes) -> None:\n         self.name = name\n \n@@ -142,8 +144,10 @@\n             self.file.seek(0)\n         self._consumed = True\n \n-        for chunk in self.file:\n+        chunk = self.file.read(self.CHUNK_SIZE)\n+        while chunk:\n             yield to_bytes(chunk)\n+            chunk = self.file.read(self.CHUNK_SIZE)\n \n     def render(self) -> typing.Iterator[bytes]:\n         yield self.render_headers()\n\n--- a/tests/test_content.py\n+++ b/tests/test_content.py\n@@ -57,6 +57,31 @@\n     content = b\"\".join([part for part in stream])\n \n     assert headers == {\"Content-Length\": \"13\"}\n+    assert content == b\"Hello, world!\"\n+\n+\n+@pytest.mark.asyncio\n+async def test_async_bytesio_content():\n+    class AsyncBytesIO:\n+        def __init__(self, content):\n+            self._idx = 0\n+            self._content = content\n+\n+        async def aread(self, chunk_size: int):\n+            chunk = self._content[self._idx : self._idx + chunk_size]\n+            self._idx = self._idx + chunk_size\n+            return chunk\n+\n+        async def __aiter__(self):\n+            yield self._content  # pragma: nocover\n+\n+    headers, stream = encode_request(content=AsyncBytesIO(b\"Hello, world!\"))\n+    assert not isinstance(stream, typing.Iterable)\n+    assert isinstance(stream, typing.AsyncIterable)\n+\n+    content = b\"\".join([part async for part in stream])\n+\n+    assert headers == {\"Transfer-Encoding\": \"chunked\"}\n     assert content == b\"Hello, world!\"\n \n \n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 52,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.000678,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.000104,
+      "upstream_inference_cost": 0.000678,
+      "upstream_inference_prompt_cost": 0.000574
+    },
+    "is_byok": false,
+    "prompt_tokens": 1435,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1487
+  },
+  "variance_seed": null
+}

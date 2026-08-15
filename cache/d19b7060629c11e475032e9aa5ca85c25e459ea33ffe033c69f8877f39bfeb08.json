@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0006983,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_shell_completion.py::test_nested_group\": \"OMITTED\"}",
+    "reasoning": "We need to judge requirement: tests/test_shell_completion.py::test_nested_group\n\nWe need to see if this test function is defined and wired etc. The diff shows modifications to tests/test_shell_completion.py adding the test function. The diff adds the function definition test_nested_group with its body. So definition exists. Is it wired? In tests, the test function will be called by test runner; but within diff, is there any call to it? The requirement says symbol must be defined and wired (something else in diff actually calls, instantiates, or otherwise uses it). For a test function, wiring would be the test runner discovering it, but that's external. Within diff, there is no explicit call to test_nested_group. However, does the requirement consider test functions as being wired by the test framework? The rule: \"something else in the diff actually calls, instantiates, or otherwise uses it.\" For a test function, the test runner is not part of diff. So likely not wired. But maybe they consider that adding the test function itself is enough? In previous similar tasks, test functions are considered implemented if they are defined (since test runner will call). However the rule explicitly says must be wired by something else in the diff. Since there is no call to test_nested_group, it's not wired. But maybe the test runner is considered external, but they might treat test functions as being used by pytest automatically, which is not in diff. In prior similar problems, they often treat test definitions as implemented if they appear, even if not called. But the rule is strict. Let's examine other parts: The diff also modifies src/click/shell_completion.py, but not directly related to test function. The test function uses _get_words, Group, Command, Option etc. Those symbols are defined elsewhere, not in diff. But the test function is defined. The requirement is about test_nested_group symbol in tests/test_shell_completion.py. So we need to see if the test function is defined (yes) and wired (maybe not). Does any other code in diff call test_nested_group? No. So according to rule, it's omitted.\n\nThus answer: {\"tests/test_shell_completion.py::test_nested_group\": \"OMITTED\"}",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to judge requirement: tests/test_shell_completion.py::test_nested_group\n\nWe need to see if this test function is defined and wired etc. The diff shows modifications to tests/test_shell_completion.py adding the test function. The diff adds the function definition test_nested_group with its body. So definition exists. Is it wired? In tests, the test function will be called by test runner; but within diff, is there any call to it? The requirement says symbol must be defined and wired (something else in diff actually calls, instantiates, or otherwise uses it). For a test function, wiring would be the test runner discovering it, but that's external. Within diff, there is no explicit call to test_nested_group. However, does the requirement consider test functions as being wired by the test framework? The rule: \"something else in the diff actually calls, instantiates, or otherwise uses it.\" For a test function, the test runner is not part of diff. So likely not wired. But maybe they consider that adding the test function itself is enough? In previous similar tasks, test functions are considered implemented if they are defined (since test runner will call). However the rule explicitly says must be wired by something else in the diff. Since there is no call to test_nested_group, it's not wired. But maybe the test runner is considered external, but they might treat test functions as being used by pytest automatically, which is not in diff. In prior similar problems, they often treat test definitions as implemented if they appear, even if not called. But the rule is strict. Let's examine other parts: The diff also modifies src/click/shell_completion.py, but not directly related to test function. The test function uses _get_words, Group, Command, Option etc. Those symbols are defined elsewhere, not in diff. But the test function is defined. The requirement is about test_nested_group symbol in tests/test_shell_completion.py. So we need to see if the test function is defined (yes) and wired (maybe not). Does any other code in diff call test_nested_group? No. So according to rule, it's omitted.\n\nThus answer: {\"tests/test_shell_completion.py::test_nested_group\": \"OMITTED\"}",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_shell_completion.py::test_nested_group\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/click/shell_completion.py\n+++ b/src/click/shell_completion.py\n@@ -567,8 +567,8 @@\n                     with cmd.make_context(\n                         name, args, parent=ctx, resilient_parsing=True\n                     ) as sub_ctx:\n+                        ctx = sub_ctx\n                         args = ctx._protected_args + ctx.args\n-                        ctx = sub_ctx\n                 else:\n                     sub_ctx = ctx\n \n@@ -586,8 +586,8 @@\n                             allow_interspersed_args=False,\n                             resilient_parsing=True,\n                         ) as sub_sub_ctx:\n+                            sub_ctx = sub_sub_ctx\n                             args = sub_ctx.args\n-                            sub_ctx = sub_sub_ctx\n \n                     ctx = sub_ctx\n                     args = [*sub_ctx._protected_args, *sub_ctx.args]\n\n--- a/tests/test_shell_completion.py\n+++ b/tests/test_shell_completion.py\n@@ -38,6 +38,30 @@\n     cli = Group(\"cli\", params=[Option([\"-a\"])], commands=[Command(\"x\"), Command(\"y\")])\n     assert _get_words(cli, [], \"\") == [\"x\", \"y\"]\n     assert _get_words(cli, [], \"-\") == [\"-a\", \"--help\"]\n+\n+\n+def test_nested_group():\n+    cli = Group(\n+        \"cli\",\n+        commands=[\n+            Group(\n+                \"get\",\n+                commands=[\n+                    Group(\n+                        \"full\",\n+                        params=[Option([\"--verbose\"])],\n+                        commands=[Command(\"data\", params=[Option([\"-a\"])])],\n+                    )\n+                ],\n+            )\n+        ],\n+    )\n+    assert _get_words(cli, [], \"\") == [\"get\"]\n+    assert _get_words(cli, [\"get\"], \"\") == [\"full\"]\n+    assert _get_words(cli, [\"get\", \"full\"], \"\") == [\"data\"]\n+    assert _get_words(cli, [\"get\", \"full\"], \"-\") == [\"--verbose\", \"--help\"]\n+    assert _get_words(cli, [\"get\", \"full\", \"data\"], \"\") == []\n+    assert _get_words(cli, [\"get\", \"full\", \"data\"], \"-\") == [\"-a\", \"--help\"]\n \n \n def test_group_command_same_option():\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 477,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 451
+    },
+    "cost": 0.0006983,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.00035775,
+      "upstream_inference_cost": 0.0006983,
+      "upstream_inference_prompt_cost": 0.00034055
+    },
+    "is_byok": false,
+    "prompt_tokens": 973,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1450
+  },
+  "variance_seed": null
+}

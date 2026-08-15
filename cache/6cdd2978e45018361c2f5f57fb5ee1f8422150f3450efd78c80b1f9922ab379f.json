@@ -1,0 +1,41 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00104984,
+  "cost_source": "reported",
+  "judge_id": "B5 LLM judge (mid-tier)",
+  "message": {
+    "content": "```json\n{\n    \"tests/test_lexnparse.py::test_lstrip_blocks_consume_after_without_new_line\": \"IMPLEMENTED\",\n    \"tests/test_lexnparse.py::test_lstrip_blocks_inside_with_new_line\": \"IMPLEMENTED\",\n    \"tests/test_lexnparse.py::test_lstrip_blocks_outside_with_new_line\": \"IMPLEMENTED\",\n    \"tests/test_lexnparse.py::test_lstrip_blocks_without_new_line\": \"IMPLEMENTED\",\n    \"tests/test_lexnparse.py::test_lstrip_trim_blocks_consume_before_without_new_line\": \"OMITTED\",\n    \"tests/test_lexnparse.py::test_lstrip_trim_blocks_inside_with_new_line\": \"IMPLEMENTED\",\n    \"tests/test_lexnparse.py::test_lstrip_trim_blocks_outside_with_new_line\": \"IMPLEMENTED\",\n    \"tests/test_lexnparse.py::test_lstrip_trim_blocks_without_new_line\": \"IMPLEMENTED\"\n}\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_lexnparse.py::test_lstrip_blocks_consume_after_without_new_line\n- tests/test_lexnparse.py::test_lstrip_blocks_inside_with_new_line\n- tests/test_lexnparse.py::test_lstrip_blocks_outside_with_new_line\n- tests/test_lexnparse.py::test_lstrip_blocks_without_new_line\n- tests/test_lexnparse.py::test_lstrip_trim_blocks_consume_before_without_new_line\n- tests/test_lexnparse.py::test_lstrip_trim_blocks_inside_with_new_line\n- tests/test_lexnparse.py::test_lstrip_trim_blocks_outside_with_new_line\n- tests/test_lexnparse.py::test_lstrip_trim_blocks_without_new_line\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/tests/test_lexnparse.py\n+++ b/tests/test_lexnparse.py\n@@ -729,6 +729,89 @@\n         )\n         assert tmpl.render(seq=range(5)) == \"\".join(\"%s\\n\" % x for x in range(5))\n \n+    def test_lstrip_blocks_outside_with_new_line(self):\n+        env = Environment(lstrip_blocks=True, trim_blocks=False)\n+        tmpl = env.from_string(\n+            \"  {% if kvs %}(\\n\"\n+            \"   {% for k, v in kvs %}{{ k }}={{ v }} {% endfor %}\\n\"\n+            \"  ){% endif %}\"\n+        )\n+        out = tmpl.render(kvs=[(\"a\", 1), (\"b\", 2)])\n+        assert out == \"(\\na=1 b=2 \\n  )\"\n+\n+    def test_lstrip_trim_blocks_outside_with_new_line(self):\n+        env = Environment(lstrip_blocks=True, trim_blocks=True)\n+        tmpl = env.from_string(\n+            \"  {% if kvs %}(\\n\"\n+            \"   {% for k, v in kvs %}{{ k }}={{ v }} {% endfor %}\\n\"\n+            \"  ){% endif %}\"\n+        )\n+        out = tmpl.render(kvs=[(\"a\", 1), (\"b\", 2)])\n+        assert out == \"(\\na=1 b=2   )\"\n+\n+    def test_lstrip_blocks_inside_with_new_line(self):\n+        env = Environment(lstrip_blocks=True, trim_blocks=False)\n+        tmpl = env.from_string(\n+            \"  ({% if kvs %}\\n\"\n+            \"   {% for k, v in kvs %}{{ k }}={{ v }} {% endfor %}\\n\"\n+            \"  {% endif %})\"\n+        )\n+        out = tmpl.render(kvs=[(\"a\", 1), (\"b\", 2)])\n+        assert out == \"  (\\na=1 b=2 \\n)\"\n+\n+    def test_lstrip_trim_blocks_inside_with_new_line(self):\n+        env = Environment(lstrip_blocks=True, trim_blocks=True)\n+        tmpl = env.from_string(\n+            \"  ({% if kvs %}\\n\"\n+            \"   {% for k, v in kvs %}{{ k }}={{ v }} {% endfor %}\\n\"\n+            \"  {% endif %})\"\n+        )\n+        out = tmpl.render(kvs=[(\"a\", 1), (\"b\", 2)])\n+        assert out == \"  (a=1 b=2 )\"\n+\n+    def test_lstrip_blocks_without_new_line(self):\n+        env = Environment(lstrip_blocks=True, trim_blocks=False)\n+        tmpl = env.from_string(\n+            \"  {% if kvs %}\"\n+            \"   {% for k, v in kvs %}{{ k }}={{ v }} {% endfor %}\"\n+            \"  {% endif %}\"\n+        )\n+        out = tmpl.render(kvs=[(\"a\", 1), (\"b\", 2)])\n+        assert out == \"   a=1 b=2   \"\n+\n+    def test_lstrip_trim_blocks_without_new_line(self):\n+        env = Environment(lstrip_blocks=True, trim_blocks=True)\n+        tmpl = env.from_string(\n+            \"  {% if kvs %}\"\n+            \"   {% for k, v in kvs %}{{ k }}={{ v }} {% endfor %}\"\n+            \"  {% endif %}\"\n+        )\n+        out = tmpl.render(kvs=[(\"a\", 1), (\"b\", 2)])\n+        assert out == \"   a=1 b=2   \"\n+\n+    def test_lstrip_blocks_consume_after_without_new_line(self):\n+        env = Environment(lstrip_blocks=True, trim_blocks=False)\n+        tmpl = env.from_string(\n+            \"  {% if kvs -%}\"\n+            \"   {% for k, v in kvs %}{{ k }}={{ v }} {% endfor -%}\"\n+            \"  {% endif -%}\"\n+        )\n+        out = tmpl.render(kvs=[(\"a\", 1), (\"b\", 2)])\n+        assert out == \"a=1 b=2 \"\n+\n+\n+    def test_lstrip_trim_blocks_comment(self):\n+        env = Environment(lstrip_blocks=True, trim_blocks=True)\n+        tmpl = env.from_string(\" {# 1 space #}\\n  {# 2 spaces #}    {# 4 spaces #}\")\n+        out = tmpl.render()\n+        assert out == \" \" * 4\n+\n+    def test_lstrip_trim_blocks_raw(self):\n+        env = Environment(lstrip_blocks=True, trim_blocks=True)\n+        tmpl = env.from_string(\"{{x}}\\n{%- raw %} {% endraw -%}\\n{{ y }}\")\n+        out = tmpl.render(x=1, y=2)\n+        assert out == \"1 2\"\n+\n     def test_php_syntax_with_manual(self, env):\n         env = Environment(\n             \"<?\", \"?>\", \"<?=\", \"?>\", \"<!--\", \"-->\", lstrip_blocks=True, trim_blocks=True\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 218,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.00104984,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.000436,
+      "upstream_inference_cost": 0.00104984,
+      "upstream_inference_prompt_cost": 0.00061384
+    },
+    "is_byok": false,
+    "prompt_tokens": 1765,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 256,
+      "video_tokens": 0
+    },
+    "total_tokens": 1983
+  },
+  "variance_seed": null
+}

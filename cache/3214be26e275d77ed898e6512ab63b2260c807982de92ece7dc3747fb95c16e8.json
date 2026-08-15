@@ -1,0 +1,41 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0005636,
+  "cost_source": "reported",
+  "judge_id": "B5 LLM judge (mid-tier)",
+  "message": {
+    "content": "```json\n{\"tests/test_commands.py::test_deprecated_empty_help_no_leading_space\": \"IMPLEMENTED\", \"tests/test_options.py::test_deprecated_empty_help_no_leading_space\": \"IMPLEMENTED\"}\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_commands.py::test_deprecated_empty_help_no_leading_space\n- tests/test_options.py::test_deprecated_empty_help_no_leading_space\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/click/core.py\n+++ b/src/click/core.py\n@@ -1189,7 +1189,8 @@\n             text = \"\"\n \n         if self.deprecated:\n-            text = f\"{_(text)} {_format_deprecated_label(self.deprecated)}\"\n+            label = _format_deprecated_label(self.deprecated)\n+            text = f\"{_(text)} {label}\" if text else label\n \n         if text:\n             formatter.write_paragraph()\n@@ -2826,7 +2827,7 @@\n \n         if deprecated:\n             label = _format_deprecated_label(deprecated)\n-            help = f\"{help} {label}\" if help is not None else label\n+            help = f\"{help} {label}\" if help else label\n \n         self.prompt = prompt_text\n         self.confirmation_prompt = confirmation_prompt\n\n--- a/tests/test_commands.py\n+++ b/tests/test_commands.py\n@@ -492,6 +492,22 @@\n \n \n @pytest.mark.parametrize(\"deprecated\", [True, \"USE OTHER COMMAND INSTEAD\"])\n+@pytest.mark.parametrize(\"doc\", [\"\", None])\n+def test_deprecated_empty_help_no_leading_space(runner, doc, deprecated):\n+    \"\"\"A command with empty or missing help text must render the deprecation\n+    label at the normal indentation, without a stray leading space.\n+    \"\"\"\n+\n+    @click.command(deprecated=deprecated, help=doc)\n+    def cli():\n+        pass\n+\n+    out = runner.invoke(cli, [\"--help\"]).output\n+    assert \"\\n  (DEPRECATED\" in out\n+    assert \"\\n   (DEPRECATED\" not in out\n+\n+\n+@pytest.mark.parametrize(\"deprecated\", [True, \"USE OTHER COMMAND INSTEAD\"])\n def test_deprecated_in_invocation(runner, deprecated):\n     @click.command(deprecated=deprecated)\n     def deprecated_cmd():\n\n--- a/tests/test_options.py\n+++ b/tests/test_options.py\n@@ -56,6 +56,20 @@\n \n     if isinstance(deprecated, str):\n         assert deprecated in result.output\n+\n+\n+@pytest.mark.parametrize(\n+    (\"deprecated\", \"expected\"),\n+    [(True, \"(DEPRECATED)\"), (\"USE B INSTEAD\", \"(DEPRECATED: USE B INSTEAD)\")],\n+)\n+@pytest.mark.parametrize(\"help_text\", [\"\", None])\n+def test_deprecated_empty_help_no_leading_space(help_text, deprecated, expected):\n+    \"\"\"An option with empty or missing help text must not gain a stray leading\n+    space before the deprecation label.\n+    \"\"\"\n+    opt = click.Option([\"--foo\"], help=help_text, deprecated=deprecated)\n+    ctx = click.Context(click.Command(\"cli\"))\n+    assert opt.get_help_record(ctx)[1] == expected\n \n \n @pytest.mark.parametrize(\"deprecated\", [True, \"USE B INSTEAD\"])\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 48,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.0005636,
+    "cost_details": {
+      "upstream_inference_completions_cost": 9.6e-05,
+      "upstream_inference_cost": 0.0005636,
+      "upstream_inference_prompt_cost": 0.0004676
+    },
+    "is_byok": false,
+    "prompt_tokens": 1169,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1217
+  },
+  "variance_seed": null
+}

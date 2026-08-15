@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0007559,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_routing.py::test_any_converter_build_validates_value\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate requirement: tests/test_routing.py::test_any_converter_build_validates_value\n\nWe need to see if the symbol (function or class) named test_any_converter_build_validates_value is defined in tests/test_routing.py and is wired (called/used) somewhere else in diff. Also not a stub.\n\nIn diff, we see addition of a test function:\n\n+def test_any_converter_build_validates_value() -> None:\n+    m = r.Map([r.Rule(\"/<any(patient, provider):value>\", endpoint=\"actor\")])\n+    a = m.bind(\"localhost\")\n+\n+    assert a.build(\"actor\", {\"value\": \"patient\"}) == \"/patient\"\n+    assert a.build(\"actor\", {\"value\": \"provider\"}) == \"/provider\"\n+\n+    with pytest.raises(ValueError) as exc:\n+        a.build(\"actor\", {\"value\": \"invalid\"})\n+\n+    assert str(exc.value) == \"'invalid' is not one of 'patient', 'provider'\"\n\nThus the function is defined (def). That's condition 1 satisfied.\n\nWired: Does something else in diff call it? The test function is not called elsewhere; tests are run by pytest automatically. In the diff, there is no other reference to test_any_converter_build_validates_value. The requirement says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" For a test function, being defined is enough? Usually test functions are discovered by pytest, not called directly. The requirement's definition of \"wired\" says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" Since there is no explicit call, it's not wired. However, maybe the test function is considered wired by the test runner, but that's not in diff. The diff does not show any call. So likely fails wired condition.\n\nBut we need to interpret the requirement: The requirement is about a test function. Usually they consider definition sufficient? The instruction: \"WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\" So a test function defined but not called elsewhere is not wired. So it would be considered OMITTED.\n\nBut maybe they consider the test function being used by pytest as \"wired\"? The diff does not show any call, but the test runner will call it. However the rule says \"something else in the diff\". Since there is no other code referencing it, it's not wired.\n\nThus requirement is OMITTED.\n\nReturn JSON with that key mapping to \"OMITTED\".",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate requirement: tests/test_routing.py::test_any_converter_build_validates_value\n\nWe need to see if the symbol (function or class) named test_any_converter_build_validates_value is defined in tests/test_routing.py and is wired (called/used) somewhere else in diff. Also not a stub.\n\nIn diff, we see addition of a test function:\n\n+def test_any_converter_build_validates_value() -> None:\n+    m = r.Map([r.Rule(\"/<any(patient, provider):value>\", endpoint=\"actor\")])\n+    a = m.bind(\"localhost\")\n+\n+    assert a.build(\"actor\", {\"value\": \"patient\"}) == \"/patient\"\n+    assert a.build(\"actor\", {\"value\": \"provider\"}) == \"/provider\"\n+\n+    with pytest.raises(ValueError) as exc:\n+        a.build(\"actor\", {\"value\": \"invalid\"})\n+\n+    assert str(exc.value) == \"'invalid' is not one of 'patient', 'provider'\"\n\nThus the function is defined (def). That's condition 1 satisfied.\n\nWired: Does something else in diff call it? The test function is not called elsewhere; tests are run by pytest automatically. In the diff, there is no other reference to test_any_converter_build_validates_value. The requirement says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" For a test function, being defined is enough? Usually test functions are discovered by pytest, not called directly. The requirement's definition of \"wired\" says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" Since there is no explicit call, it's not wired. However, maybe the test function is considered wired by the test runner, but that's not in diff. The diff does not show any call. So likely fails wired condition.\n\nBut we need to interpret the requirement: The requirement is about a test function. Usually they consider definition sufficient? The instruction: \"WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\" So a test function defined but not called elsewhere is not wired. So it would be considered OMITTED.\n\nBut maybe they consider the test function being used by pytest as \"wired\"? The diff does not show any call, but the test runner will call it. However the rule says \"something else in the diff\". Since there is no other code referencing it, it's not wired.\n\nThus requirement is OMITTED.\n\nReturn JSON with that key mapping to \"OMITTED\".",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_routing.py::test_any_converter_build_validates_value\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/werkzeug/routing/converters.py\n+++ b/src/werkzeug/routing/converters.py\n@@ -81,13 +81,24 @@\n     :param map: the :class:`Map`.\n     :param items: this function accepts the possible items as positional\n                   arguments.\n+\n+    .. versionchanged:: 2.2\n+        Value is validated when building a URL.\n     \"\"\"\n \n     part_isolating = True\n \n     def __init__(self, map: \"Map\", *items: str) -> None:\n         super().__init__(map)\n+        self.items = set(items)\n         self.regex = f\"(?:{'|'.join([re.escape(x) for x in items])})\"\n+\n+    def to_url(self, value: t.Any) -> str:\n+        if value in self.items:\n+            return str(value)\n+\n+        valid_values = \", \".join(f\"'{item}'\" for item in sorted(self.items))\n+        raise ValueError(f\"'{value}' is not one of {valid_values}\")\n \n \n class PathConverter(BaseConverter):\n\n--- a/tests/test_routing.py\n+++ b/tests/test_routing.py\n@@ -757,6 +757,19 @@\n     assert a.match(\"/a.2\") == (\"yes_dot\", {\"a\": \"a.2\"})\n \n \n+def test_any_converter_build_validates_value() -> None:\n+    m = r.Map([r.Rule(\"/<any(patient, provider):value>\", endpoint=\"actor\")])\n+    a = m.bind(\"localhost\")\n+\n+    assert a.build(\"actor\", {\"value\": \"patient\"}) == \"/patient\"\n+    assert a.build(\"actor\", {\"value\": \"provider\"}) == \"/provider\"\n+\n+    with pytest.raises(ValueError) as exc:\n+        a.build(\"actor\", {\"value\": \"invalid\"})\n+\n+    assert str(exc.value) == \"'invalid' is not one of 'patient', 'provider'\"\n+\n+\n @pytest.mark.parametrize(\n     (\"endpoint\", \"value\", \"expect\"),\n     [\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 572,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 542
+    },
+    "cost": 0.0007559,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.000429,
+      "upstream_inference_cost": 0.0007559,
+      "upstream_inference_prompt_cost": 0.0003269
+    },
+    "is_byok": false,
+    "prompt_tokens": 934,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1506
+  },
+  "variance_seed": null
+}

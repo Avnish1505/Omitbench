@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00044935,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_annotations.py::test_missing_classvar_import\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate requirement: tests/test_annotations.py::test_missing_classvar_import\n\nWe need to see if this symbol (function) is defined in the target file tests/test_annotations.py, and also wired (called/used) somewhere else in diff, and not a stub.\n\nLook at diff for tests/test_annotations.py. The diff shows addition of a test function:\n\n+    @pytest.mark.skipif(\n+        sys.version_info[:2] < (3, 14),\n+        reason=\"Python 3.14 changed annotation evaluation behavior.\",\n+    )\n+    def test_missing_classvar_import(self, slots):\n+        raise NotImplementedError\n\nSo definition exists: def test_missing_classvar_import(self, slots): with body raise NotImplementedError. That's a stub (body is raise NotImplementedError). According to criteria, stub is not implementation. So requirement is omitted.\n\nAlso need to check wiring: is it used elsewhere? Not in diff. So fails wiring too. So overall OMITTED.\n\nThus output JSON with that key mapping to \"OMITTED\".",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate requirement: tests/test_annotations.py::test_missing_classvar_import\n\nWe need to see if this symbol (function) is defined in the target file tests/test_annotations.py, and also wired (called/used) somewhere else in diff, and not a stub.\n\nLook at diff for tests/test_annotations.py. The diff shows addition of a test function:\n\n+    @pytest.mark.skipif(\n+        sys.version_info[:2] < (3, 14),\n+        reason=\"Python 3.14 changed annotation evaluation behavior.\",\n+    )\n+    def test_missing_classvar_import(self, slots):\n+        raise NotImplementedError\n\nSo definition exists: def test_missing_classvar_import(self, slots): with body raise NotImplementedError. That's a stub (body is raise NotImplementedError). According to criteria, stub is not implementation. So requirement is omitted.\n\nAlso need to check wiring: is it used elsewhere? Not in diff. So fails wiring too. So overall OMITTED.\n\nThus output JSON with that key mapping to \"OMITTED\".",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_annotations.py::test_missing_classvar_import\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/attr/_make.py\n+++ b/src/attr/_make.py\n@@ -297,6 +297,7 @@\n     annotations which would put attrs-based classes at a performance\n     disadvantage compared to plain old classes.\n     \"\"\"\n+    annot = getattr(annot, \"__forward_arg__\", annot)\n     annot = str(annot)\n \n     # Annotation can be quoted.\n\n--- a/tests/test_annotations.py\n+++ b/tests/test_annotations.py\n@@ -434,6 +434,13 @@\n \n         assert_init_annotations(C)\n \n+    @pytest.mark.skipif(\n+        sys.version_info[:2] < (3, 14),\n+        reason=\"Python 3.14 changed annotation evaluation behavior.\",\n+    )\n+    def test_missing_classvar_import(self, slots):\n+        raise NotImplementedError\n+\n     def test_keyword_only_auto_attribs(self):\n         \"\"\"\n         `kw_only` propagates to attributes defined via `auto_attribs`.\n@@ -691,6 +698,7 @@\n         \"typing.ClassVar\",\n         \"'typing.ClassVar[dict]'\",\n         \"t.ClassVar[int]\",\n+        typing.ForwardRef(\"ClassVar[str]\"),\n     ],\n )\n def test_is_class_var(annot):\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 244,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 217
+    },
+    "cost": 0.00044935,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.000183,
+      "upstream_inference_cost": 0.00044935,
+      "upstream_inference_prompt_cost": 0.00026635
+    },
+    "is_byok": false,
+    "prompt_tokens": 761,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1005
+  },
+  "variance_seed": null
+}

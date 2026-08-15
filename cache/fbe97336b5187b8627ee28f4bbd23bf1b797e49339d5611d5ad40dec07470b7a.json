@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00064945,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_termui.py::test_false_show_default_cause_no_default_display_in_prompt\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate requirement: tests/test_termui.py::test_false_show_default_cause_no_default_display_in_prompt\n\nWe need to see if the symbol (function) test_false_show_default_cause_no_default_display_in_prompt is defined and wired and not a stub.\n\nIn diff, we see addition in tests/test_termui.py:\n\n+def test_false_show_default_cause_no_default_display_in_prompt(runner):\n+    @click.command()\n+    @click.option(\"--arg1\", show_default=False, prompt=True, default=\"my-default-value\")\n+    def cmd(arg1):\n+        pass\n...\n+    result = runner.invoke(cmd, input=\"my-input\", standalone_mode=False)\n+    assert \"my-default-value\" not in result.output\n\nThus the function definition is present. Is it wired? It is a test function; it's called by test runner, but within diff we need to see if something else calls it. The requirement says \"WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it.\" In this diff, the test function is defined but not called anywhere else in the diff. However, test functions are typically discovered by pytest automatically; but does that count as \"something else in the diff actually calls\"? The test runner is external, not part of diff. The requirement says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" Since there is no explicit call to the test function within the diff, it's not wired. However, maybe the test function is used by pytest automatically, but that's not visible in diff. According to strict criteria, we need an explicit call. So likely it's considered not wired, thus OMITTED.\n\nBut we need to consider if the test function is considered \"wired\" because the test runner will call it. The diff does not contain any code that calls it. The requirement says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" Since there is no call, it's omitted.\n\nThus the requirement is omitted.\n\nReturn JSON with that key mapping to \"OMITTED\".",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate requirement: tests/test_termui.py::test_false_show_default_cause_no_default_display_in_prompt\n\nWe need to see if the symbol (function) test_false_show_default_cause_no_default_display_in_prompt is defined and wired and not a stub.\n\nIn diff, we see addition in tests/test_termui.py:\n\n+def test_false_show_default_cause_no_default_display_in_prompt(runner):\n+    @click.command()\n+    @click.option(\"--arg1\", show_default=False, prompt=True, default=\"my-default-value\")\n+    def cmd(arg1):\n+        pass\n...\n+    result = runner.invoke(cmd, input=\"my-input\", standalone_mode=False)\n+    assert \"my-default-value\" not in result.output\n\nThus the function definition is present. Is it wired? It is a test function; it's called by test runner, but within diff we need to see if something else calls it. The requirement says \"WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it.\" In this diff, the test function is defined but not called anywhere else in the diff. However, test functions are typically discovered by pytest automatically; but does that count as \"something else in the diff actually calls\"? The test runner is external, not part of diff. The requirement says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" Since there is no explicit call to the test function within the diff, it's not wired. However, maybe the test function is used by pytest automatically, but that's not visible in diff. According to strict criteria, we need an explicit call. So likely it's considered not wired, thus OMITTED.\n\nBut we need to consider if the test function is considered \"wired\" because the test runner will call it. The diff does not contain any code that calls it. The requirement says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" Since there is no call, it's omitted.\n\nThus the requirement is omitted.\n\nReturn JSON with that key mapping to \"OMITTED\".",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_termui.py::test_false_show_default_cause_no_default_display_in_prompt\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/click/core.py\n+++ b/src/click/core.py\n@@ -2795,6 +2795,12 @@\n         if self.is_bool_flag:\n             return confirm(self.prompt, default)\n \n+        # If show_default is set to True/False, provide this to `prompt` as well. For\n+        # non-bool values of `show_default`, we use `prompt`'s default behavior\n+        prompt_kwargs: t.Any = {}\n+        if isinstance(self.show_default, bool):\n+            prompt_kwargs[\"show_default\"] = self.show_default\n+\n         return prompt(\n             self.prompt,\n             default=default,\n@@ -2803,6 +2809,7 @@\n             show_choices=self.show_choices,\n             confirmation_prompt=self.confirmation_prompt,\n             value_proc=lambda x: self.process_value(ctx, x),\n+            **prompt_kwargs,\n         )\n \n     def resolve_envvar_value(self, ctx: Context) -> str | None:\n\n--- a/tests/test_termui.py\n+++ b/tests/test_termui.py\n@@ -448,3 +448,15 @@\n     if prompt == \"Confirm Password\":\n         assert \"Confirm Password: \" in result.output\n \n+\n+def test_false_show_default_cause_no_default_display_in_prompt(runner):\n+    @click.command()\n+    @click.option(\"--arg1\", show_default=False, prompt=True, default=\"my-default-value\")\n+    def cmd(arg1):\n+        pass\n+\n+    # Confirm that the default value is not included in the output when `show_default`\n+    # is False\n+    result = runner.invoke(cmd, input=\"my-input\", standalone_mode=False)\n+    assert \"my-default-value\" not in result.output\n+\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 459,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 425
+    },
+    "cost": 0.00064945,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.00034425,
+      "upstream_inference_cost": 0.00064945,
+      "upstream_inference_prompt_cost": 0.0003052
+    },
+    "is_byok": false,
+    "prompt_tokens": 872,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1331
+  },
+  "variance_seed": null
+}

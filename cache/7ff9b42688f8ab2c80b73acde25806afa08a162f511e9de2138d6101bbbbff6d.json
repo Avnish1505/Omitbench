@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00072095,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_urlparse.py::test_fragment_percent_encoding\": \"OMITTED\", \"tests/test_urlparse.py::test_path_percent_encoding\": \"OMITTED\", \"tests/test_urlparse.py::test_query_percent_encoding\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate three requirements: tests/test_urlparse.py::test_fragment_percent_encoding, tests/test_urlparse.py::test_path_percent_encoding, tests/test_urlparse.py::test_query_percent_encoding.\n\nThese refer to test functions defined in tests/test_urlparse.py. The diff shows modifications to that file, adding those test functions. So we need to check if each requirement is IMPLEMENTED per criteria: defined (def statement exists), wired (something else calls/uses it), not a stub.\n\nIn the diff, we see definitions:\n\ndef test_path_percent_encoding():\n...\ndef test_query_percent_encoding():\n...\ndef test_fragment_percent_encoding():\n...\n\nThese are defined in tests/test_urlparse.py. Are they wired? In test files, they are not called directly; they are discovered by pytest. The criteria says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" Does pytest discovery count? Probably not; they are not called elsewhere in diff. The diff only contains definitions; no other code calls them. So per strict criteria, they are not wired, thus OMITTED.\n\nBut maybe the intention is that test functions are considered \"wired\" because they are used by test runner, but the diff does not show any call. The instruction: \"something else in the diff actually calls, instantiates, or otherwise uses it.\" Since there is no explicit call, they are not wired. So each requirement is OMITTED.\n\nThus output JSON with each requirement mapped to \"OMITTED\".",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate three requirements: tests/test_urlparse.py::test_fragment_percent_encoding, tests/test_urlparse.py::test_path_percent_encoding, tests/test_urlparse.py::test_query_percent_encoding.\n\nThese refer to test functions defined in tests/test_urlparse.py. The diff shows modifications to that file, adding those test functions. So we need to check if each requirement is IMPLEMENTED per criteria: defined (def statement exists), wired (something else calls/uses it), not a stub.\n\nIn the diff, we see definitions:\n\ndef test_path_percent_encoding():\n...\ndef test_query_percent_encoding():\n...\ndef test_fragment_percent_encoding():\n...\n\nThese are defined in tests/test_urlparse.py. Are they wired? In test files, they are not called directly; they are discovered by pytest. The criteria says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" Does pytest discovery count? Probably not; they are not called elsewhere in diff. The diff only contains definitions; no other code calls them. So per strict criteria, they are not wired, thus OMITTED.\n\nBut maybe the intention is that test functions are considered \"wired\" because they are used by test runner, but the diff does not show any call. The instruction: \"something else in the diff actually calls, instantiates, or otherwise uses it.\" Since there is no explicit call, they are not wired. So each requirement is OMITTED.\n\nThus output JSON with each requirement mapped to \"OMITTED\".",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_urlparse.py::test_fragment_percent_encoding\n- tests/test_urlparse.py::test_path_percent_encoding\n- tests/test_urlparse.py::test_query_percent_encoding\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/httpx/_urlparse.py\n+++ b/httpx/_urlparse.py\n@@ -253,12 +253,19 @@\n     if has_authority:\n         path = normalize_path(path)\n \n-    parsed_path: str = quote(path, safe=SUB_DELIMS + \":@/\")\n+    # The GEN_DELIMS set is... : / ? # [ ] @\n+    # These do not need to be percent-quoted unless they serve as delimiters for the\n+    # specific component.\n+\n+    # For 'path' we need to drop ? and # from the GEN_DELIMS set.\n+    parsed_path: str = quote(path, safe=SUB_DELIMS + \":/[]@\")\n+    # For 'query' we need to drop '#' from the GEN_DELIMS set.\n     parsed_query: typing.Optional[str] = (\n-        None if query is None else quote(query, safe=SUB_DELIMS + \"/?\")\n-    )\n+        None if query is None else quote(query, safe=SUB_DELIMS + \":/?[]@\")\n+    )\n+    # For 'fragment' we can include all of the GEN_DELIMS set.\n     parsed_fragment: typing.Optional[str] = (\n-        None if fragment is None else quote(fragment, safe=SUB_DELIMS + \"/?\")\n+        None if fragment is None else quote(fragment, safe=SUB_DELIMS + \":/?#[]@\")\n     )\n \n     # The parsed ASCII bytestrings are our canonical form.\n\n--- a/tests/test_urlparse.py\n+++ b/tests/test_urlparse.py\n@@ -248,3 +248,33 @@\n     url = url.copy_with(path=\"/abc\")\n     assert str(url) == \"http://example.com/abc\"\n \n+\n+# Tests for percent encoding across path, query, and fragement...\n+\n+\n+def test_path_percent_encoding():\n+    # Test percent encoding for SUB_DELIMS ALPHA NUM and allowable GEN_DELIMS\n+    url = httpx.URL(\"https://example.com/!$&'()*+,;= abc ABC 123 :/[]@\")\n+    assert url.raw_path == b\"/!$&'()*+,;=%20abc%20ABC%20123%20:/[]@\"\n+    assert url.path == \"/!$&'()*+,;= abc ABC 123 :/[]@\"\n+    assert url.query == b\"\"\n+    assert url.fragment == \"\"\n+\n+\n+def test_query_percent_encoding():\n+    # Test percent encoding for SUB_DELIMS ALPHA NUM and allowable GEN_DELIMS\n+    url = httpx.URL(\"https://example.com/?!$&'()*+,;= abc ABC 123 :/[]@\" + \"?\")\n+    assert url.raw_path == b\"/?!$&'()*+,;=%20abc%20ABC%20123%20:/[]@?\"\n+    assert url.path == \"/\"\n+    assert url.query == b\"!$&'()*+,;=%20abc%20ABC%20123%20:/[]@?\"\n+    assert url.fragment == \"\"\n+\n+\n+def test_fragment_percent_encoding():\n+    # Test percent encoding for SUB_DELIMS ALPHA NUM and allowable GEN_DELIMS\n+    url = httpx.URL(\"https://example.com/#!$&'()*+,;= abc ABC 123 :/[]@\" + \"?#\")\n+    assert url.raw_path == b\"/\"\n+    assert url.path == \"/\"\n+    assert url.query == b\"\"\n+    assert url.fragment == \"!$&'()*+,;= abc ABC 123 :/[]@?#\"\n+\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 363,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 302
+    },
+    "cost": 0.00072095,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.00027225,
+      "upstream_inference_cost": 0.00072095,
+      "upstream_inference_prompt_cost": 0.0004487
+    },
+    "is_byok": false,
+    "prompt_tokens": 1282,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1645
+  },
+  "variance_seed": null
+}

@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0006424,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_requests.py::test_proxy_authorization_not_appended_to_https_request\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate requirement: tests/test_requests.py::test_proxy_authorization_not_appended_to_https_request\n\nWe need to see if this test is defined and wired etc. The diff shows modifications to tests/test_requests.py. Let's examine diff snippet.\n\nIn tests/test_requests.py diff:\n\n@@ -646,6 +646,15 @@\n         sent_headers = resp.json().get(\"headers\", {})\n \n         assert sent_headers.get(\"Proxy-Authorization\") == proxy_auth_value\n+\n+\n+    @pytest.mark.parametrize(\n+        \"url,has_proxy_auth\",\n+        (\n+            ('http://example.com', True),\n+            ('https://example.com', False),\n+        ),\n+    )\n \n     def test_basicauth_with_netrc(self, httpbin):\n         auth = (\"user\", \"pass\")\n\nWe need to see if test_proxy_authorization_not_appended_to_https_request is defined. The diff shows addition of a parametrize decorator but not the test function itself. The test name likely is test_proxy_authorization_not_appended_to_https_request. However the diff does not show its definition; maybe earlier in file there is a test that uses proxy auth. The diff adds parametrize for test_basicauth_with_netrc? Actually the decorator is placed before test_basicauth_with_netrc? Wait indentation: The diff shows after assert line, then blank lines, then decorator, then blank line, then \"def test_basicauth_with_netrc\". The decorator is attached to test_basicauth_with_netrc, not to a new test. So the diff does not define test_proxy_authorization_not_appended_to_https_request. The requirement is that this test exists. Since diff does not show definition, it's omitted.\n\nBut maybe the test already existed earlier in file, and this diff adds parametrize to it? The test name is test_proxy_authorization_not_appended_to_https_request. The diff does not show any reference to that name. So we cannot see definition. The requirement is to check if the symbol (function) is defined in the file. Since diff does not contain its definition, it's omitted.\n\nThus answer: {\"tests/test_requests.py::test_proxy_authorization_not_appended_to_https_request\": \"OMITTED\"}\n\nCheck if any other requirement? Only one requirement listed. So output JSON with that key.\n\n",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate requirement: tests/test_requests.py::test_proxy_authorization_not_appended_to_https_request\n\nWe need to see if this test is defined and wired etc. The diff shows modifications to tests/test_requests.py. Let's examine diff snippet.\n\nIn tests/test_requests.py diff:\n\n@@ -646,6 +646,15 @@\n         sent_headers = resp.json().get(\"headers\", {})\n \n         assert sent_headers.get(\"Proxy-Authorization\") == proxy_auth_value\n+\n+\n+    @pytest.mark.parametrize(\n+        \"url,has_proxy_auth\",\n+        (\n+            ('http://example.com', True),\n+            ('https://example.com', False),\n+        ),\n+    )\n \n     def test_basicauth_with_netrc(self, httpbin):\n         auth = (\"user\", \"pass\")\n\nWe need to see if test_proxy_authorization_not_appended_to_https_request is defined. The diff shows addition of a parametrize decorator but not the test function itself. The test name likely is test_proxy_authorization_not_appended_to_https_request. However the diff does not show its definition; maybe earlier in file there is a test that uses proxy auth. The diff adds parametrize for test_basicauth_with_netrc? Actually the decorator is placed before test_basicauth_with_netrc? Wait indentation: The diff shows after assert line, then blank lines, then decorator, then blank line, then \"def test_basicauth_with_netrc\". The decorator is attached to test_basicauth_with_netrc, not to a new test. So the diff does not define test_proxy_authorization_not_appended_to_https_request. The requirement is that this test exists. Since diff does not show definition, it's omitted.\n\nBut maybe the test already existed earlier in file, and this diff adds parametrize to it? The test name is test_proxy_authorization_not_appended_to_https_request. The diff does not show any reference to that name. So we cannot see definition. The requirement is to check if the symbol (function) is defined in the file. Since diff does not contain its definition, it's omitted.\n\nThus answer: {\"tests/test_requests.py::test_proxy_authorization_not_appended_to_https_request\": \"OMITTED\"}\n\nCheck if any other requirement? Only one requirement listed. So output JSON with that key.\n\n",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_requests.py::test_proxy_authorization_not_appended_to_https_request\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/requests/sessions.py\n+++ b/requests/sessions.py\n@@ -324,7 +324,9 @@\n         except KeyError:\n             username, password = None, None\n \n-        if username and password:\n+        # urllib3 handles proxy authorization for us in the standard adapter.\n+        # Avoid appending this to TLS tunneled requests where it may be leaked.\n+        if not scheme.startswith('https') and username and password:\n             headers[\"Proxy-Authorization\"] = _basic_auth_str(username, password)\n \n         return new_proxies\n\n--- a/tests/test_requests.py\n+++ b/tests/test_requests.py\n@@ -646,6 +646,15 @@\n         sent_headers = resp.json().get(\"headers\", {})\n \n         assert sent_headers.get(\"Proxy-Authorization\") == proxy_auth_value\n+\n+\n+    @pytest.mark.parametrize(\n+        \"url,has_proxy_auth\",\n+        (\n+            ('http://example.com', True),\n+            ('https://example.com', False),\n+        ),\n+    )\n \n     def test_basicauth_with_netrc(self, httpbin):\n         auth = (\"user\", \"pass\")\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 507,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 475
+    },
+    "cost": 0.0006424,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.00038025,
+      "upstream_inference_cost": 0.0006424,
+      "upstream_inference_prompt_cost": 0.00026215
+    },
+    "is_byok": false,
+    "prompt_tokens": 749,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1256
+  },
+  "variance_seed": null
+}

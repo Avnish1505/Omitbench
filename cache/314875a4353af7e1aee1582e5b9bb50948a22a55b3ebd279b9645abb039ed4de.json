@@ -1,0 +1,41 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00049344,
+  "cost_source": "reported",
+  "judge_id": "B5 LLM judge (mid-tier)",
+  "message": {
+    "content": "```json\n{\n    \"tests/test_validators.py::test_error_neither_validator_provided\": \"IMPLEMENTED\",\n    \"tests/test_validators.py::test_key_validator_can_be_none\": \"OMITTED\",\n    \"tests/test_validators.py::test_value_validator_can_be_none\": \"IMPLEMENTED\"\n}\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_validators.py::test_error_neither_validator_provided\n- tests/test_validators.py::test_key_validator_can_be_none\n- tests/test_validators.py::test_value_validator_can_be_none\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/attr/validators.py\n+++ b/src/attr/validators.py\n@@ -378,9 +378,9 @@\n \n @attrs(repr=False, slots=True, unsafe_hash=True)\n class _DeepMapping:\n-    key_validator = attrib(validator=is_callable())\n-    value_validator = attrib(validator=is_callable())\n-    mapping_validator = attrib(default=None, validator=optional(is_callable()))\n+    key_validator = attrib(validator=optional(is_callable()))\n+    value_validator = attrib(validator=optional(is_callable()))\n+    mapping_validator = attrib(validator=optional(is_callable()))\n \n     def __call__(self, inst, attr, value):\n         \"\"\"\n@@ -390,30 +390,51 @@\n             self.mapping_validator(inst, attr, value)\n \n         for key in value:\n-            self.key_validator(inst, attr, key)\n-            self.value_validator(inst, attr, value[key])\n+            if self.key_validator is not None:\n+                self.key_validator(inst, attr, key)\n+            if self.value_validator is not None:\n+                self.value_validator(inst, attr, value[key])\n \n     def __repr__(self):\n         return f\"<deep_mapping validator for objects mapping {self.key_validator!r} to {self.value_validator!r}>\"\n \n \n-def deep_mapping(key_validator, value_validator, mapping_validator=None):\n+def deep_mapping(\n+    key_validator=None, value_validator=None, mapping_validator=None\n+):\n     \"\"\"\n     A validator that performs deep validation of a dictionary.\n \n+    All validators are optional, but at least one of *key_validator* or\n+    *value_validator* must be provided.\n+\n     Args:\n         key_validator: Validator to apply to dictionary keys.\n \n         value_validator: Validator to apply to dictionary values.\n \n         mapping_validator:\n-            Validator to apply to top-level mapping attribute (optional).\n+            Validator to apply to top-level mapping attribute.\n \n     .. versionadded:: 19.1.0\n \n+    .. versionchanged:: 25.4.0\n+       *key_validator* and *value_validator* are now optional, but at least one\n+       of them must be provided.\n+\n     Raises:\n-        TypeError: if any sub-validators fail\n-    \"\"\"\n+        TypeError: If any sub-validator fails on validation.\n+\n+        ValueError:\n+            If neither *key_validator* nor *value_validator* is provided on\n+            instantiation.\n+    \"\"\"\n+    if key_validator is None and value_validator is None:\n+        msg = (\n+            \"At least one of key_validator or value_validator must be provided\"\n+        )\n+        raise ValueError(msg)\n+\n     return _DeepMapping(key_validator, value_validator, mapping_validator)\n \n \n\n--- a/tests/test_validators.py\n+++ b/tests/test_validators.py\n@@ -651,6 +651,8 @@\n             (instance_of(str), instance_of(int), 42),\n             (42, 42, None),\n             (42, 42, 42),\n+            (42, None, None),\n+            (None, 42, None),\n         ],\n     )\n     def test_noncallable_validators(\n@@ -719,7 +721,31 @@\n             \"<deep_mapping validator for objects mapping \"\n             f\"{key_repr} to {value_repr}>\"\n         )\n+\n         assert expected_repr == repr(v)\n+\n+    def test_error_neither_validator_provided(self):\n+        \"\"\"\n+        Raise ValueError if neither key_validator nor value_validator is\n+        provided.\n+        \"\"\"\n+        with pytest.raises(ValueError) as e:\n+            deep_mapping()\n+\n+        assert (\n+            \"At least one of key_validator or value_validator must be provided\"\n+            == e.value.args[0]\n+        )\n+\n+\n+    def test_value_validator_can_be_none(self):\n+        \"\"\"\n+        The value validator can be None.\n+        \"\"\"\n+        v = deep_mapping(key_validator=instance_of(str))\n+        a = simple_attr(\"test\")\n+\n+        v(None, a, {\"a\": 6, \"b\": 7})\n \n \n class TestIsCallable:\n\n--- a/tests/typing_example.py\n+++ b/tests/typing_example.py\n@@ -214,6 +214,16 @@\n         type=Dict[C, D],\n         validator=attr.validators.deep_mapping(\n             attr.validators.instance_of(C), attr.validators.instance_of(D)\n+        ),\n+    )\n+    d2 = attr.ib(\n+        type=Dict[C, D],\n+        validator=attr.validators.deep_mapping(attr.validators.instance_of(C)),\n+    )\n+    d3 = attr.ib(\n+        type=Dict[C, D],\n+        validator=attr.validators.deep_mapping(\n+            value_validator=attr.validators.instance_of(C)\n         ),\n     )\n     e: str = attr.ib(validator=attr.validators.matches_re(re.compile(r\"foo\")))\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 75,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.00049344,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.00015,
+      "upstream_inference_cost": 0.00049344,
+      "upstream_inference_prompt_cost": 0.00034344
+    },
+    "is_byok": false,
+    "prompt_tokens": 1665,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 896,
+      "video_tokens": 0
+    },
+    "total_tokens": 1740
+  },
+  "variance_seed": null
+}

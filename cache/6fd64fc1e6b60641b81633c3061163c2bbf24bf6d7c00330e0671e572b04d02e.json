@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00068385,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_async.py::test_getitem_after_call\": \"OMITTED\", \"tests/test_async.py::test_getitem_after_filter\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate two requirements:\n\n- tests/test_async.py::test_getitem_after_call\n- tests/test_async.py::test_getitem_after_filter\n\nWe need to see if the diff defines these symbols (functions) in the target file tests/test_async.py, and if they are wired (called somewhere else) and not stub.\n\nThe diff shows modifications to tests/test_async.py: added new test functions at the end. The diff includes definitions of test_getitem_after_filter and test_getitem_after_call. They are defined as functions (def test_getitem_after_filter(): ...) and test_getitem_after_call(). So they are defined.\n\nNow, are they wired? The requirement says \"WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it.\" For a test function, wiring would be that the test runner calls it. But within the diff, is there any code that calls these functions? Usually test functions are discovered by pytest, not called directly. The diff does not show any explicit call to these functions. The requirement expects that the symbol is used somewhere else in the diff. For test functions, they are not called directly; they are just defined. So likely they are not wired, thus requirement is omitted.\n\nBut we need to interpret the requirement: It says \"A requirement is IMPLEMENTED only if the diff shows the symbol is: 1. DEFINED, 2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\" So for test functions, they are not called elsewhere in the diff. So they fail the WIRED condition. Therefore they are OMITTED.\n\nThus both requirements are omitted.\n\nReturn JSON with both keys mapping to \"OMITTED\".",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate two requirements:\n\n- tests/test_async.py::test_getitem_after_call\n- tests/test_async.py::test_getitem_after_filter\n\nWe need to see if the diff defines these symbols (functions) in the target file tests/test_async.py, and if they are wired (called somewhere else) and not stub.\n\nThe diff shows modifications to tests/test_async.py: added new test functions at the end. The diff includes definitions of test_getitem_after_filter and test_getitem_after_call. They are defined as functions (def test_getitem_after_filter(): ...) and test_getitem_after_call(). So they are defined.\n\nNow, are they wired? The requirement says \"WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it.\" For a test function, wiring would be that the test runner calls it. But within the diff, is there any code that calls these functions? Usually test functions are discovered by pytest, not called directly. The diff does not show any explicit call to these functions. The requirement expects that the symbol is used somewhere else in the diff. For test functions, they are not called directly; they are just defined. So likely they are not wired, thus requirement is omitted.\n\nBut we need to interpret the requirement: It says \"A requirement is IMPLEMENTED only if the diff shows the symbol is: 1. DEFINED, 2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\" So for test functions, they are not called elsewhere in the diff. So they fail the WIRED condition. Therefore they are OMITTED.\n\nThus both requirements are omitted.\n\nReturn JSON with both keys mapping to \"OMITTED\".",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_async.py::test_getitem_after_call\n- tests/test_async.py::test_getitem_after_filter\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/jinja2/compiler.py\n+++ b/src/jinja2/compiler.py\n@@ -1755,7 +1755,7 @@\n         self, node: t.Union[nodes.Filter, nodes.Test], frame: Frame, is_filter: bool\n     ) -> t.Iterator[None]:\n         if self.environment.is_async:\n-            self.write(\"await auto_await(\")\n+            self.write(\"(await auto_await(\")\n \n         if is_filter:\n             self.write(f\"{self.filters[node.name]}(\")\n@@ -1790,7 +1790,7 @@\n         self.write(\")\")\n \n         if self.environment.is_async:\n-            self.write(\")\")\n+            self.write(\"))\")\n \n     @optimizeconst\n     def visit_Filter(self, node: nodes.Filter, frame: Frame) -> None:\n@@ -1842,7 +1842,7 @@\n         self, node: nodes.Call, frame: Frame, forward_caller: bool = False\n     ) -> None:\n         if self.environment.is_async:\n-            self.write(\"await auto_await(\")\n+            self.write(\"(await auto_await(\")\n         if self.environment.sandboxed:\n             self.write(\"environment.call(context, \")\n         else:\n@@ -1858,7 +1858,7 @@\n         self.signature(node, frame, extra_kwargs)\n         self.write(\")\")\n         if self.environment.is_async:\n-            self.write(\")\")\n+            self.write(\"))\")\n \n     def visit_Keyword(self, node: nodes.Keyword, frame: Frame) -> None:\n         self.write(node.key + \"=\")\n\n--- a/tests/test_async.py\n+++ b/tests/test_async.py\n@@ -643,3 +643,19 @@\n \n     asyncio.run(_test())\n \n+\n+def test_getitem_after_filter():\n+    env = Environment(enable_async=True)\n+    env.filters[\"add_each\"] = lambda v, x: [i + x for i in v]\n+    t = env.from_string(\"{{ (a|add_each(2))[1:] }}\")\n+    out = t.render(a=range(3))\n+    assert out == \"[3, 4]\"\n+\n+\n+def test_getitem_after_call():\n+    env = Environment(enable_async=True)\n+    env.globals[\"add_each\"] = lambda v, x: [i + x for i in v]\n+    t = env.from_string(\"{{ add_each(a, 2)[1:] }}\")\n+    out = t.render(a=range(3))\n+    assert out == \"[3, 4]\"\n+\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 419,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 375
+    },
+    "cost": 0.00068385,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.00031425,
+      "upstream_inference_cost": 0.00068385,
+      "upstream_inference_prompt_cost": 0.0003696
+    },
+    "is_byok": false,
+    "prompt_tokens": 1056,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1475
+  },
+  "variance_seed": null
+}

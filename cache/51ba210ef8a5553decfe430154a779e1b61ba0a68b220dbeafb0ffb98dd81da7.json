@@ -1,0 +1,41 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0007516,
+  "cost_source": "reported",
+  "judge_id": "B5 LLM judge (mid-tier)",
+  "message": {
+    "content": "```json\n{\"tests/test_ext.py::test_context_block\": \"IMPLEMENTED\", \"tests/test_ext.py::test_context_plural\": \"IMPLEMENTED\", \"tests/test_ext.py::test_context_plural_block\": \"IMPLEMENTED\"}\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_ext.py::test_context_block\n- tests/test_ext.py::test_context_plural\n- tests/test_ext.py::test_context_plural_block\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/jinja2/ext.py\n+++ b/src/jinja2/ext.py\n@@ -354,13 +354,19 @@\n     def parse(self, parser: \"Parser\") -> t.Union[nodes.Node, t.List[nodes.Node]]:\n         \"\"\"Parse a translatable tag.\"\"\"\n         lineno = next(parser.stream).lineno\n-        num_called_num = False\n+\n+        context = None\n+        context_token = parser.stream.next_if(\"string\")\n+\n+        if context_token is not None:\n+            context = context_token.value\n \n         # find all the variables referenced.  Additionally a variable can be\n         # defined in the body of the trans block too, but this is checked at\n         # a later state.\n         plural_expr: t.Optional[nodes.Expr] = None\n         plural_expr_assignment: t.Optional[nodes.Assign] = None\n+        num_called_num = False\n         variables: t.Dict[str, nodes.Expr] = {}\n         trimmed = None\n         while parser.stream.current.type != \"block_end\":\n@@ -455,6 +461,7 @@\n         node = self._make_node(\n             singular,\n             plural,\n+            context,\n             variables,\n             plural_expr,\n             bool(referenced),\n@@ -510,6 +517,7 @@\n         self,\n         singular: str,\n         plural: t.Optional[str],\n+        context: t.Optional[str],\n         variables: t.Dict[str, nodes.Expr],\n         plural_expr: t.Optional[nodes.Expr],\n         vars_referenced: bool,\n@@ -526,21 +534,18 @@\n             if plural:\n                 plural = plural.replace(\"%%\", \"%\")\n \n-        # singular only:\n-        if plural_expr is None:\n-            gettext = nodes.Name(\"gettext\", \"load\")\n-            node = nodes.Call(gettext, [nodes.Const(singular)], [], None, None)\n-\n-        # singular and plural\n-        else:\n-            ngettext = nodes.Name(\"ngettext\", \"load\")\n-            node = nodes.Call(\n-                ngettext,\n-                [nodes.Const(singular), nodes.Const(plural), plural_expr],\n-                [],\n-                None,\n-                None,\n-            )\n+        func_name = \"gettext\"\n+        func_args: t.List[nodes.Expr] = [nodes.Const(singular)]\n+\n+        if context is not None:\n+            func_args.insert(0, nodes.Const(context))\n+            func_name = f\"p{func_name}\"\n+\n+        if plural_expr is not None:\n+            func_name = f\"n{func_name}\"\n+            func_args.extend((nodes.Const(plural), plural_expr))\n+\n+        node = nodes.Call(nodes.Name(func_name, \"load\"), func_args, [], None, None)\n \n         # in case newstyle gettext is used, the method is powerful\n         # enough to handle the variable expansion and autoescape\n\n--- a/tests/test_ext.py\n+++ b/tests/test_ext.py\n@@ -43,6 +43,9 @@\n     \"pgettext.html\": '{{ pgettext(\"fruit\", \"Apple\") }}',\n     \"npgettext.html\": '{{ npgettext(\"fruit\", \"%(num)s apple\", \"%(num)s apples\",'\n     \" apples) }}\",\n+    \"pgettext_block\": \"{% trans 'fruit' num=apples %}Apple{% endtrans %}\",\n+    \"npgettext_block\": \"{% trans 'fruit' num=apples %}{{ num }} apple\"\n+    \"{% pluralize %}{{ num }} apples{% endtrans %}\",\n     \"transvars1.html\": \"{% trans %}User: {{ num }}{% endtrans %}\",\n     \"transvars2.html\": \"{% trans num=count %}User: {{ num }}{% endtrans %}\",\n     \"transvars3.html\": \"{% trans count=num %}User: {{ count }}{% endtrans %}\",\n@@ -593,8 +596,17 @@\n         tmpl = newstyle_i18n_env.get_template(\"pgettext.html\")\n         assert tmpl.render(LANGUAGE=\"de\") == \"Apple\"\n \n-    def test_context_newstyle_plural(self):\n+    def test_context_plural(self):\n         tmpl = newstyle_i18n_env.get_template(\"npgettext.html\")\n+        assert tmpl.render(LANGUAGE=\"de\", apples=1) == \"1 Apple\"\n+        assert tmpl.render(LANGUAGE=\"de\", apples=5) == \"5 Apples\"\n+\n+    def test_context_block(self):\n+        tmpl = newstyle_i18n_env.get_template(\"pgettext_block\")\n+        assert tmpl.render(LANGUAGE=\"de\") == \"Apple\"\n+\n+    def test_context_plural_block(self):\n+        tmpl = newstyle_i18n_env.get_template(\"npgettext_block\")\n         assert tmpl.render(LANGUAGE=\"de\", apples=1) == \"1 Apple\"\n         assert tmpl.render(LANGUAGE=\"de\", apples=5) == \"5 Apples\"\n \n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 53,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.0007516,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.000106,
+      "upstream_inference_cost": 0.0007516,
+      "upstream_inference_prompt_cost": 0.0006456
+    },
+    "is_byok": false,
+    "prompt_tokens": 1614,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1667
+  },
+  "variance_seed": null
+}

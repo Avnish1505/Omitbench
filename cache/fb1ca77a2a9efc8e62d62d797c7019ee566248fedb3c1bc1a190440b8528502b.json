@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0005269,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_itsdangerous/test_timed.py::test_fallback_signers\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate requirement: tests/test_itsdangerous/test_timed.py::test_fallback_signers\n\nWe need to see if this test function is defined and implemented (i.e., not a stub) and wired (called somewhere). The diff shows modifications to tests file: added import hashlib, and added a new test method:\n\n```\n    def test_fallback_signers(self):\n        raise NotImplementedError\n```\n\nThus the function is defined (def test_fallback_signers). Its body is raise NotImplementedError, which is a stub. According to criteria: NOT A STUB required. Since body is raise NotImplementedError, it's a stub, so requirement is OMITTED.\n\nAlso need to check if it's wired: test functions are used by pytest automatically, but \"wired\" means something else in diff calls/instantiates it. However test functions are not called explicitly in code; they are discovered by pytest. Does that count as wired? The criteria: \"something else in the diff actually calls, instantiates, or otherwise uses it.\" For test functions, they are not called elsewhere in diff. So fails wired as well. So definitely OMITTED.\n\nThus output JSON with that requirement mapped to \"OMITTED\".",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate requirement: tests/test_itsdangerous/test_timed.py::test_fallback_signers\n\nWe need to see if this test function is defined and implemented (i.e., not a stub) and wired (called somewhere). The diff shows modifications to tests file: added import hashlib, and added a new test method:\n\n```\n    def test_fallback_signers(self):\n        raise NotImplementedError\n```\n\nThus the function is defined (def test_fallback_signers). Its body is raise NotImplementedError, which is a stub. According to criteria: NOT A STUB required. Since body is raise NotImplementedError, it's a stub, so requirement is OMITTED.\n\nAlso need to check if it's wired: test functions are used by pytest automatically, but \"wired\" means something else in diff calls/instantiates it. However test functions are not called explicitly in code; they are discovered by pytest. Does that count as wired? The criteria: \"something else in the diff actually calls, instantiates, or otherwise uses it.\" For test functions, they are not called elsewhere in diff. So fails wired as well. So definitely OMITTED.\n\nThus output JSON with that requirement mapped to \"OMITTED\".",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_itsdangerous/test_timed.py::test_fallback_signers\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/itsdangerous/timed.py\n+++ b/src/itsdangerous/timed.py\n@@ -123,13 +123,20 @@\n         raised. All arguments are forwarded to the signer's\n         :meth:`~TimestampSigner.unsign` method.\n         \"\"\"\n-        base64d, timestamp = self.make_signer(salt).unsign(\n-            s, max_age, return_timestamp=True\n-        )\n-        payload = self.load_payload(base64d)\n-        if return_timestamp:\n-            return payload, timestamp\n-        return payload\n+        s = want_bytes(s)\n+        last_exception = None\n+        for signer in self.iter_unsigners(salt):\n+            try:\n+                base64d, timestamp = signer.unsign(\n+                    s, max_age, return_timestamp=True\n+                )\n+                payload = self.load_payload(base64d)\n+                if return_timestamp:\n+                    return payload, timestamp\n+                return payload\n+            except BadSignature as err:\n+                last_exception = err\n+        raise last_exception\n \n     def loads_unsafe(self, s, max_age=None, salt=None):\n         load_kwargs = {\"max_age\": max_age}\n\n--- a/tests/test_itsdangerous/test_timed.py\n+++ b/tests/test_itsdangerous/test_timed.py\n@@ -3,6 +3,7 @@\n from functools import partial\n \n import pytest\n+import hashlib\n from freezegun import freeze_time\n from test_itsdangerous.test_serializer import TestSerializer\n from test_itsdangerous.test_signer import TestSigner\n@@ -85,3 +86,6 @@\n         signed = serializer.dumps(value)\n         assert serializer.loads(signed, return_timestamp=True) == (value, ts)\n \n+    def test_fallback_signers(self):\n+        raise NotImplementedError\n+\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 283,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 250
+    },
+    "cost": 0.0005269,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.00021225,
+      "upstream_inference_cost": 0.0005269,
+      "upstream_inference_prompt_cost": 0.00031465
+    },
+    "is_byok": false,
+    "prompt_tokens": 899,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 384,
+      "video_tokens": 0
+    },
+    "total_tokens": 1182
+  },
+  "variance_seed": null
+}

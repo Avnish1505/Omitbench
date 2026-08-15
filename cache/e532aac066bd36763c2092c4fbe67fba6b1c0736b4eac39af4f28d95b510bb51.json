@@ -1,0 +1,41 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0008128,
+  "cost_source": "reported",
+  "judge_id": "B5 LLM judge (mid-tier)",
+  "message": {
+    "content": "```json\n{\n    \"src/flask/app.py::redirect\": \"IMPLEMENTED\",\n    \"src/flask/helpers.py::redirect\": \"IMPLEMENTED\",\n    \"tests/test_helpers.py::redirect\": \"OMITTED\",\n    \"tests/test_helpers.py::test_redirect_no_app\": \"IMPLEMENTED\",\n    \"tests/test_helpers.py::test_redirect_with_app\": \"IMPLEMENTED\"\n}\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- src/flask/app.py::redirect\n- src/flask/helpers.py::redirect\n- tests/test_helpers.py::redirect\n- tests/test_helpers.py::test_redirect_no_app\n- tests/test_helpers.py::test_redirect_with_app\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/flask/__init__.py\n+++ b/src/flask/__init__.py\n@@ -1,7 +1,6 @@\n from markupsafe import escape\n from markupsafe import Markup\n from werkzeug.exceptions import abort as abort\n-from werkzeug.utils import redirect as redirect\n \n from . import json as json\n from .app import Flask as Flask\n@@ -23,6 +22,7 @@\n from .helpers import get_flashed_messages as get_flashed_messages\n from .helpers import get_template_attribute as get_template_attribute\n from .helpers import make_response as make_response\n+from .helpers import redirect as redirect\n from .helpers import send_file as send_file\n from .helpers import send_from_directory as send_from_directory\n from .helpers import stream_with_context as stream_with_context\n\n--- a/src/flask/app.py\n+++ b/src/flask/app.py\n@@ -22,6 +22,7 @@\n from werkzeug.routing import RequestRedirect\n from werkzeug.routing import RoutingException\n from werkzeug.routing import Rule\n+from werkzeug.utils import redirect as _wz_redirect\n from werkzeug.wrappers import Response as BaseResponse\n \n from . import cli\n@@ -1630,6 +1631,16 @@\n \n         return asgiref_async_to_sync(func)\n \n+    def redirect(self, location: str, code: int = 302) -> BaseResponse:\n+        \"\"\"Create a redirect response object.\n+\n+        :param location: the url of the redirect\n+        :param code: http return code\n+\n+        .. versionadded:: 2.2\n+        \"\"\"\n+        return _wz_redirect(location, code=code, Response=self.response_class)\n+\n     def make_response(self, rv: ResponseReturnValue) -> Response:\n         \"\"\"Convert the return value from a view function to an instance of\n         :attr:`response_class`.\n\n--- a/src/flask/helpers.py\n+++ b/src/flask/helpers.py\n@@ -12,6 +12,7 @@\n import werkzeug.utils\n from werkzeug.routing import BuildError\n from werkzeug.urls import url_quote\n+from werkzeug.utils import redirect as _wz_redirect\n \n from .globals import _app_ctx_stack\n from .globals import _request_ctx_stack\n@@ -21,6 +22,7 @@\n from .signals import message_flashed\n \n if t.TYPE_CHECKING:  # pragma: no cover\n+    from werkzeug.wrappers import Response as BaseResponse\n     from .wrappers import Response\n \n \n@@ -338,6 +340,28 @@\n     if anchor is not None:\n         rv += f\"#{url_quote(anchor)}\"\n     return rv\n+\n+\n+def redirect(\n+    location: str, code: int = 302, Response: t.Optional[t.Type[\"BaseResponse\"]] = None\n+) -> \"BaseResponse\":\n+    \"\"\"Create a redirect response object.\n+\n+    If :data:`~flask.current_app` is available, it will use\n+    :meth:`~flask.app.Flask.redirect`, otherwise it will use\n+    :func:`werkzeug.utils.redirect`.\n+\n+    :param location: The URL to redirect to.\n+    :param code: The status code for the redirect.\n+    :param Response: The response class to use. Not used when\n+        ``current_app`` is active, which uses ``app.response_class``.\n+\n+    .. versionadded:: 2.2\n+    \"\"\"\n+    if current_app:\n+        return current_app.redirect(location, code=code)\n+\n+    return _wz_redirect(location, code=code, Response=Response)\n \n \n def get_template_attribute(template_name: str, attribute: str) -> t.Any:\n\n--- a/tests/test_helpers.py\n+++ b/tests/test_helpers.py\n@@ -156,6 +156,22 @@\n         assert flask.url_for(\"myview\", _method=\"GET\") == \"/myview/\"\n         assert flask.url_for(\"myview\", id=42, _method=\"GET\") == \"/myview/42\"\n         assert flask.url_for(\"myview\", _method=\"POST\") == \"/myview/create\"\n+\n+\n+def test_redirect_no_app():\n+    response = flask.redirect(\"https://localhost\", 307)\n+    assert response.location == \"https://localhost\"\n+    assert response.status_code == 307\n+\n+\n+def test_redirect_with_app(app):\n+    def redirect(location, code=302):\n+        raise ValueError\n+\n+    app.redirect = redirect\n+\n+    with app.app_context(), pytest.raises(ValueError):\n+        flask.redirect(\"other\")\n \n \n class TestNoImports:\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 93,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.0008128,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.000186,
+      "upstream_inference_cost": 0.0008128,
+      "upstream_inference_prompt_cost": 0.0006268
+    },
+    "is_byok": false,
+    "prompt_tokens": 1567,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1660
+  },
+  "variance_seed": null
+}

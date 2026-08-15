@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0006418,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_itsdangerous/test_timed.py::test_fallback_signers\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate requirement: tests/test_itsdangerous/test_timed.py::test_fallback_signers\n\nThe requirement names a test function test_fallback_signers located in tests/test_itsdangerous/test_timed.py. We need to see if this test is defined and wired etc. The diff shows modifications to that file: added import hashlib and added a new test method test_fallback_signers inside the test class (presumably TestTimedSerializer?). Let's view context: The diff shows at top of test file imports, then later added test method. The test function is defined (def test_fallback_signers(self):). So definition exists.\n\nNow \"wired\": Something else in diff calls it? The requirement is about the test function itself; we need to see if something else in diff uses it. Usually test functions are discovered by pytest, not called directly. The requirement's criteria: \"WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it.\" For a test function, it's not called elsewhere; it's just defined. So likely not wired. The requirement expects that the test is implemented (i.e., the test exists) and maybe the code under test supports fallback signers. But the criteria says we need to see if the symbol is used elsewhere. In this diff, no other code calls test_fallback_signers. So fails wired.\n\nThus according to strict criteria, it's OMITTED.\n\nBut maybe they consider test functions as being used by test runner, but that's not \"something else in the diff\". The diff does not contain any call to test_fallback_signers. So it's omitted.\n\nThus output: {\"tests/test_itsdangerous/test_timed.py::test_fallback_signers\": \"OMITTED\"}",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate requirement: tests/test_itsdangerous/test_timed.py::test_fallback_signers\n\nThe requirement names a test function test_fallback_signers located in tests/test_itsdangerous/test_timed.py. We need to see if this test is defined and wired etc. The diff shows modifications to that file: added import hashlib and added a new test method test_fallback_signers inside the test class (presumably TestTimedSerializer?). Let's view context: The diff shows at top of test file imports, then later added test method. The test function is defined (def test_fallback_signers(self):). So definition exists.\n\nNow \"wired\": Something else in diff calls it? The requirement is about the test function itself; we need to see if something else in diff uses it. Usually test functions are discovered by pytest, not called directly. The requirement's criteria: \"WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it.\" For a test function, it's not called elsewhere; it's just defined. So likely not wired. The requirement expects that the test is implemented (i.e., the test exists) and maybe the code under test supports fallback signers. But the criteria says we need to see if the symbol is used elsewhere. In this diff, no other code calls test_fallback_signers. So fails wired.\n\nThus according to strict criteria, it's OMITTED.\n\nBut maybe they consider test functions as being used by test runner, but that's not \"something else in the diff\". The diff does not contain any call to test_fallback_signers. So it's omitted.\n\nThus output: {\"tests/test_itsdangerous/test_timed.py::test_fallback_signers\": \"OMITTED\"}",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_itsdangerous/test_timed.py::test_fallback_signers\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/itsdangerous/timed.py\n+++ b/src/itsdangerous/timed.py\n@@ -123,13 +123,20 @@\n         raised. All arguments are forwarded to the signer's\n         :meth:`~TimestampSigner.unsign` method.\n         \"\"\"\n-        base64d, timestamp = self.make_signer(salt).unsign(\n-            s, max_age, return_timestamp=True\n-        )\n-        payload = self.load_payload(base64d)\n-        if return_timestamp:\n-            return payload, timestamp\n-        return payload\n+        s = want_bytes(s)\n+        last_exception = None\n+        for signer in self.iter_unsigners(salt):\n+            try:\n+                base64d, timestamp = signer.unsign(\n+                    s, max_age, return_timestamp=True\n+                )\n+                payload = self.load_payload(base64d)\n+                if return_timestamp:\n+                    return payload, timestamp\n+                return payload\n+            except BadSignature as err:\n+                last_exception = err\n+        raise last_exception\n \n     def loads_unsafe(self, s, max_age=None, salt=None):\n         load_kwargs = {\"max_age\": max_age}\n\n--- a/tests/test_itsdangerous/test_timed.py\n+++ b/tests/test_itsdangerous/test_timed.py\n@@ -3,6 +3,7 @@\n from functools import partial\n \n import pytest\n+import hashlib\n from freezegun import freeze_time\n from test_itsdangerous.test_serializer import TestSerializer\n from test_itsdangerous.test_signer import TestSigner\n@@ -85,3 +86,15 @@\n         signed = serializer.dumps(value)\n         assert serializer.loads(signed, return_timestamp=True) == (value, ts)\n \n+    def test_fallback_signers(self):\n+        serializer = TimedSerializer(\n+            secret_key=\"foo\", signer_kwargs={\"digest_method\": hashlib.sha512}\n+        )\n+        value = serializer.dumps([1, 2, 3])\n+        fallback_serializer = TimedSerializer(\n+            secret_key=\"foo\",\n+            signer_kwargs={\"digest_method\": hashlib.sha1},\n+            fallback_signers=[{\"digest_method\": hashlib.sha512}],\n+        )\n+        assert fallback_serializer.loads(value) == [1, 2, 3]\n+\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 390,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 357
+    },
+    "cost": 0.0006418,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.0002925,
+      "upstream_inference_cost": 0.0006418,
+      "upstream_inference_prompt_cost": 0.0003493
+    },
+    "is_byok": false,
+    "prompt_tokens": 998,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1388
+  },
+  "variance_seed": null
+}

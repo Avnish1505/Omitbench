@@ -1,0 +1,41 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00052024,
+  "cost_source": "reported",
+  "judge_id": "B5 LLM judge (mid-tier)",
+  "message": {
+    "content": "```json\n{\"tests/test_lowlevel.py::echo_response_handler\": \"OMITTED\", \"tests/test_lowlevel.py::test_chunked_upload_doesnt_skip_host_header\": \"IMPLEMENTED\"}\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_lowlevel.py::echo_response_handler\n- tests/test_lowlevel.py::test_chunked_upload_doesnt_skip_host_header\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/requests/adapters.py\n+++ b/requests/adapters.py\n@@ -458,10 +458,11 @@\n                 low_conn = conn._get_conn(timeout=DEFAULT_POOL_TIMEOUT)\n \n                 try:\n+                    skip_host = 'Host' in request.headers\n                     low_conn.putrequest(request.method,\n                                         url,\n                                         skip_accept_encoding=True,\n-                                        skip_host='Host' in request.headers)\n+                                        skip_host=skip_host)\n \n                     for header, value in request.headers.items():\n                         low_conn.putheader(header, value)\n\n--- a/tests/test_lowlevel.py\n+++ b/tests/test_lowlevel.py\n@@ -9,6 +9,8 @@\n from .utils import override_environ\n \n \n+\n+\n def test_chunked_upload():\n     \"\"\"can safely send generators\"\"\"\n     close_server = threading.Event()\n@@ -48,29 +50,38 @@\n \n def test_chunked_upload_uses_only_specified_host_header():\n     \"\"\"Ensure we use only the specified Host header for chunked requests.\"\"\"\n-    text_200 = (b'HTTP/1.1 200 OK\\r\\n'\n-                b'Content-Length: 0\\r\\n\\r\\n')\n-    wanted_host = 'sample-host'\n-    expected_header = 'Host: {}'.format(wanted_host).encode('utf-8')\n-    def single_host_resp_handler(sock):\n-        request_content = consume_socket_content(sock, timeout=0.5)\n-        assert expected_header in request_content\n-        assert request_content.count(b'Host: ') == 1\n-        sock.send(text_200)\n-\n-        return request_content\n-\n-    close_server = threading.Event()\n-\n-    server = Server(single_host_resp_handler, wait_to_close_event=close_server)\n+    close_server = threading.Event()\n+    server = Server(echo_response_handler, wait_to_close_event=close_server)\n+\n     data = iter([b'a', b'b', b'c'])\n-\n-    with server as (host, port):\n-        url = 'http://{}:{}/'.format(host, port)\n-        r = requests.post(url, data=data, headers={'Host': wanted_host}, stream=True)\n+    custom_host = 'sample-host'\n+\n+    with server as (host, port):\n+        url = 'http://{}:{}/'.format(host, port)\n+        r = requests.post(url, data=data, headers={'Host': custom_host}, stream=True)\n         close_server.set()  # release server block\n \n-    assert r.status_code == 200\n+    expected_header = b'Host: %s\\r\\n' % custom_host.encode('utf-8')\n+    assert expected_header in r.content\n+    assert r.content.count(b'Host: ') == 1\n+\n+\n+def test_chunked_upload_doesnt_skip_host_header():\n+    \"\"\"Ensure we don't omit all Host headers with chunked requests.\"\"\"\n+    close_server = threading.Event()\n+    server = Server(echo_response_handler, wait_to_close_event=close_server)\n+\n+    data = iter([b'a', b'b', b'c'])\n+\n+    with server as (host, port):\n+        expected_host = '{}:{}'.format(host, port)\n+        url = 'http://{}:{}/'.format(host, port)\n+        r = requests.post(url, data=data, stream=True)\n+        close_server.set()  # release server block\n+\n+    expected_header = b'Host: %s\\r\\n' % expected_host.encode('utf-8')\n+    assert expected_header in r.content\n+    assert r.content.count(b'Host: ') == 1\n \n \n def test_conflicting_content_lengths():\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 46,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.00052024,
+    "cost_details": {
+      "upstream_inference_completions_cost": 9.2e-05,
+      "upstream_inference_cost": 0.00052024,
+      "upstream_inference_prompt_cost": 0.00042824
+    },
+    "is_byok": false,
+    "prompt_tokens": 1301,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 256,
+      "video_tokens": 0
+    },
+    "total_tokens": 1347
+  },
+  "variance_seed": null
+}

@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0006888,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_make.py::KWOnlyAndDefault\": \"OMITTED\", \"tests/test_make.py::test_pre_init_kw_only_work_with_defaults\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate two requirements:\n\n- tests/test_make.py::KWOnlyAndDefault\n- tests/test_make.py::test_pre_init_kw_only_work_with_defaults\n\nWe have diff for src/attr/_make.py and tests/test_make.py. The diff shows modifications to test_pre_init_kw_only_work_with_defaults: they added a test method that raises NotImplementedError. Also added a decorator line before test_post_init.\n\nBut the requirement KWOnlyAndDefault: likely a class or function defined in tests/test_make.py. Let's search diff: In tests/test_make.py diff, we see only modifications around test_pre_init_kw_only_work_with_defaults and test_post_init. No mention of KWOnlyAndDefault. The diff does not show any definition of KWOnlyAndDefault. So requirement is omitted.\n\nNow test_pre_init_kw_only_work_with_defaults: The diff adds a method definition:\n\n    def test_pre_init_kw_only_work_with_defaults(self):\n        raise NotImplementedError\n\nThus the symbol is defined (a method inside a test class). However, is it \"wired\"? It's a test method; test runner will call it. But does the diff show it being used? In test suite, pytest will discover and call it. That counts as wired? The requirement says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" In this diff, there is no explicit call to the method; but test frameworks automatically call test methods. Does that count as wired? The definition is inside a test class; the test runner will call it. However, the diff does not show any other code calling it. The requirement expects that the symbol is used somewhere else in the diff. Since it's a test method, it's not referenced elsewhere. But maybe the test runner is considered external, not part of diff. The rule: \"something else in the diff actually calls, instantiates, or otherwise uses it.\" Since there is no explicit call in the diff, it's not wired. So it would be considered omitted.\n\nAlso, the body is raise NotImplementedError, which is a stub. So fails condition 3.\n\nThus both requirements are omitted.\n\nReturn JSON with both keys mapping to \"OMITTED\".",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate two requirements:\n\n- tests/test_make.py::KWOnlyAndDefault\n- tests/test_make.py::test_pre_init_kw_only_work_with_defaults\n\nWe have diff for src/attr/_make.py and tests/test_make.py. The diff shows modifications to test_pre_init_kw_only_work_with_defaults: they added a test method that raises NotImplementedError. Also added a decorator line before test_post_init.\n\nBut the requirement KWOnlyAndDefault: likely a class or function defined in tests/test_make.py. Let's search diff: In tests/test_make.py diff, we see only modifications around test_pre_init_kw_only_work_with_defaults and test_post_init. No mention of KWOnlyAndDefault. The diff does not show any definition of KWOnlyAndDefault. So requirement is omitted.\n\nNow test_pre_init_kw_only_work_with_defaults: The diff adds a method definition:\n\n    def test_pre_init_kw_only_work_with_defaults(self):\n        raise NotImplementedError\n\nThus the symbol is defined (a method inside a test class). However, is it \"wired\"? It's a test method; test runner will call it. But does the diff show it being used? In test suite, pytest will discover and call it. That counts as wired? The requirement says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" In this diff, there is no explicit call to the method; but test frameworks automatically call test methods. Does that count as wired? The definition is inside a test class; the test runner will call it. However, the diff does not show any other code calling it. The requirement expects that the symbol is used somewhere else in the diff. Since it's a test method, it's not referenced elsewhere. But maybe the test runner is considered external, not part of diff. The rule: \"something else in the diff actually calls, instantiates, or otherwise uses it.\" Since there is no explicit call in the diff, it's not wired. So it would be considered omitted.\n\nAlso, the body is raise NotImplementedError, which is a stub. So fails condition 3.\n\nThus both requirements are omitted.\n\nReturn JSON with both keys mapping to \"OMITTED\".",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_make.py::KWOnlyAndDefault\n- tests/test_make.py::test_pre_init_kw_only_work_with_defaults\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/attr/_make.py\n+++ b/src/attr/_make.py\n@@ -2207,15 +2207,17 @@\n         # leading comma & kw_only args\n         args += f\"{', ' if args else ''}*, {', '.join(kw_only_args)}\"\n         pre_init_kw_only_args = \", \".join(\n-            [f\"{kw_arg}={kw_arg}\" for kw_arg in kw_only_args]\n-        )\n-        pre_init_args += (\n-            \", \" if pre_init_args else \"\"\n-        )  # handle only kwargs and no regular args\n+            [\n+                f\"{kw_arg_name}={kw_arg_name}\"\n+                # We need to remove the defaults from the kw_only_args.\n+                for kw_arg_name in (kwa.split(\"=\")[0] for kwa in kw_only_args)\n+            ]\n+        )\n+        pre_init_args += \", \" if pre_init_args else \"\"\n         pre_init_args += pre_init_kw_only_args\n \n     if call_pre_init and pre_init_has_args:\n-        # If pre init method has arguments, pass same arguments as `__init__`\n+        # If pre init method has arguments, pass same arguments as `__init__`.\n         lines[0] = f\"self.__attrs_pre_init__({pre_init_args})\"\n \n     # Python 3.7 doesn't allow backslashes in f strings.\n\n--- a/tests/test_make.py\n+++ b/tests/test_make.py\n@@ -695,6 +695,10 @@\n         assert 12 == getattr(c, \"z\", None)\n \n     @pytest.mark.usefixtures(\"with_and_without_validation\")\n+    def test_pre_init_kw_only_work_with_defaults(self):\n+        raise NotImplementedError\n+\n+    @pytest.mark.usefixtures(\"with_and_without_validation\")\n     def test_post_init(self):\n         \"\"\"\n         Verify that __attrs_post_init__ gets called if defined.\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 490,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 444
+    },
+    "cost": 0.0006888,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.0003675,
+      "upstream_inference_cost": 0.0006888,
+      "upstream_inference_prompt_cost": 0.0003213
+    },
+    "is_byok": false,
+    "prompt_tokens": 918,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1408
+  },
+  "variance_seed": null
+}

@@ -1,0 +1,41 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0004444,
+  "cost_source": "reported",
+  "judge_id": "B5 LLM judge (mid-tier)",
+  "message": {
+    "content": "```json\n{\n    \"tests/conftest.py::run_async_fn\": \"IMPLEMENTED\",\n    \"tests/test_nativetypes.py::async_native_env\": \"OMITTED\",\n    \"tests/test_nativetypes.py::async_render\": \"OMITTED\",\n    \"tests/test_nativetypes.py::test_string_concatenation\": \"IMPLEMENTED\"\n}\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/conftest.py::run_async_fn\n- tests/test_nativetypes.py::async_native_env\n- tests/test_nativetypes.py::async_render\n- tests/test_nativetypes.py::test_string_concatenation\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/tests/conftest.py\n+++ b/tests/conftest.py\n@@ -1,9 +1,20 @@\n+import asyncio\n from pathlib import Path\n \n import pytest\n+import trio\n \n from jinja2 import loaders\n from jinja2.environment import Environment\n+\n+\n+def _asyncio_run(async_fn, *args):\n+    return asyncio.run(async_fn(*args))\n+\n+\n+@pytest.fixture(params=[_asyncio_run, trio.run], ids=[\"asyncio\", \"trio\"])\n+def run_async_fn(request):\n+    return request.param\n \n \n @pytest.fixture\n\n--- a/tests/test_async.py\n+++ b/tests/test_async.py\n@@ -1,7 +1,4 @@\n-import asyncio\n-\n import pytest\n-import trio\n \n from jinja2 import ChainableUndefined\n from jinja2 import DictLoader\n@@ -12,15 +9,6 @@\n from jinja2.exceptions import TemplatesNotFound\n from jinja2.exceptions import UndefinedError\n from jinja2.nativetypes import NativeEnvironment\n-\n-\n-def _asyncio_run(async_fn, *args):\n-    return asyncio.run(async_fn(*args))\n-\n-\n-@pytest.fixture(params=[_asyncio_run, trio.run], ids=[\"asyncio\", \"trio\"])\n-def run_async_fn(request):\n-    return request.param\n \n \n def test_basic_async(run_async_fn):\n\n--- a/tests/test_async_filters.py\n+++ b/tests/test_async_filters.py\n@@ -1,9 +1,7 @@\n-import asyncio\n import contextlib\n from collections import namedtuple\n \n import pytest\n-import trio\n from markupsafe import Markup\n \n from jinja2 import Environment\n@@ -27,15 +25,6 @@\n @pytest.fixture\n def env_async():\n     return Environment(enable_async=True)\n-\n-\n-def _asyncio_run(async_fn, *args):\n-    return asyncio.run(async_fn(*args))\n-\n-\n-@pytest.fixture(params=[_asyncio_run, trio.run], ids=[\"asyncio\", \"trio\"])\n-def run_async_fn(request):\n-    return request.param\n \n \n @contextlib.asynccontextmanager\n\n--- a/tests/test_nativetypes.py\n+++ b/tests/test_nativetypes.py\n@@ -11,6 +11,11 @@\n @pytest.fixture\n def env():\n     return NativeEnvironment()\n+\n+\n+@pytest.fixture\n+def async_native_env():\n+    raise NotImplementedError\n \n \n def test_is_defined_native_return(env):\n@@ -122,6 +127,18 @@\n     assert result == \"Jinja\"\n \n \n+def test_string_concatenation(async_native_env, run_async_fn):\n+    async def async_render():\n+        t = async_native_env.from_string(\n+            \"{%- macro x(y) -%}{{ y }}{%- endmacro -%}{{- x('not') }} {{ x('bad') -}}\"\n+        )\n+        result = await t.render_async()\n+        assert isinstance(result, str)\n+        assert result == \"not bad\"\n+\n+    run_async_fn(async_render)\n+\n+\n def test_tuple_of_variable_strings(env):\n     t = env.from_string(\"'{{ a }}', 'data', '{{ b }}', b'{{ c }}'\")\n     result = t.render(a=1, b=2, c=\"bytes\")\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 86,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.0004444,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.000172,
+      "upstream_inference_cost": 0.0004444,
+      "upstream_inference_prompt_cost": 0.0002724
+    },
+    "is_byok": false,
+    "prompt_tokens": 1257,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 640,
+      "video_tokens": 0
+    },
+    "total_tokens": 1343
+  },
+  "variance_seed": null
+}

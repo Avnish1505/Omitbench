@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0006306,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_lowlevel.py::single_host_resp_handler\": \"OMITTED\", \"tests/test_lowlevel.py::test_chunked_upload_uses_only_specified_host_header\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate two requirements:\n\n- tests/test_lowlevel.py::single_host_resp_handler\n- tests/test_lowlevel.py::test_chunked_upload_uses_only_specified_host_header\n\nWe have diff showing modifications in adapters.py and test_lowlevel.py.\n\nFirst requirement: tests/test_lowlevel.py::single_host_resp_handler. We need to see if that symbol is defined in tests/test_lowlevel.py. In diff, we see only addition of test_chunked_upload_uses_only_specified_host_header function, and earlier code. No mention of single_host_resp_handler. Possibly earlier in file there is a function definition, but diff only shows part of file. The diff shows lines around line 44 etc. The function single_host_resp_handler is not present in diff. Since diff is entire change, but not entire file. However requirement says we must see if symbol is defined and wired etc. Since diff does not contain definition of single_host_resp_handler, it's omitted. So first requirement is OMITTED.\n\nSecond requirement: tests/test_lowlevel.py::test_chunked_upload_uses_only_specified_host_header. In diff, we see addition:\n\n+def test_chunked_upload_uses_only_specified_host_header():\n+    raise NotImplementedError\n\nThus definition exists (def). That's DEFINED. Is it wired? It is a test function; wiring would be that something else calls it. In test suite, pytest will discover and call it, but within diff we don't see any other code calling it. However the requirement's definition of \"wired\" says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" Does pytest's discovery count? Probably not; they likely expect that the test function is used by test runner, but within diff there is no explicit call. In previous similar tasks, they treat test functions as being wired because they are discovered by pytest automatically? The definition says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" The test runner is not part of diff. So likely not wired. Also body is raise NotImplementedError, which is a stub, not real work. So fails both wired and not a stub. So requirement is OMITTED.\n\nThus both are OMITTED.\n\nReturn JSON with both keys mapping to \"OMITTED\".",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate two requirements:\n\n- tests/test_lowlevel.py::single_host_resp_handler\n- tests/test_lowlevel.py::test_chunked_upload_uses_only_specified_host_header\n\nWe have diff showing modifications in adapters.py and test_lowlevel.py.\n\nFirst requirement: tests/test_lowlevel.py::single_host_resp_handler. We need to see if that symbol is defined in tests/test_lowlevel.py. In diff, we see only addition of test_chunked_upload_uses_only_specified_host_header function, and earlier code. No mention of single_host_resp_handler. Possibly earlier in file there is a function definition, but diff only shows part of file. The diff shows lines around line 44 etc. The function single_host_resp_handler is not present in diff. Since diff is entire change, but not entire file. However requirement says we must see if symbol is defined and wired etc. Since diff does not contain definition of single_host_resp_handler, it's omitted. So first requirement is OMITTED.\n\nSecond requirement: tests/test_lowlevel.py::test_chunked_upload_uses_only_specified_host_header. In diff, we see addition:\n\n+def test_chunked_upload_uses_only_specified_host_header():\n+    raise NotImplementedError\n\nThus definition exists (def). That's DEFINED. Is it wired? It is a test function; wiring would be that something else calls it. In test suite, pytest will discover and call it, but within diff we don't see any other code calling it. However the requirement's definition of \"wired\" says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" Does pytest's discovery count? Probably not; they likely expect that the test function is used by test runner, but within diff there is no explicit call. In previous similar tasks, they treat test functions as being wired because they are discovered by pytest automatically? The definition says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" The test runner is not part of diff. So likely not wired. Also body is raise NotImplementedError, which is a stub, not real work. So fails both wired and not a stub. So requirement is OMITTED.\n\nThus both are OMITTED.\n\nReturn JSON with both keys mapping to \"OMITTED\".",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_lowlevel.py::single_host_resp_handler\n- tests/test_lowlevel.py::test_chunked_upload_uses_only_specified_host_header\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/requests/adapters.py\n+++ b/requests/adapters.py\n@@ -460,7 +460,8 @@\n                 try:\n                     low_conn.putrequest(request.method,\n                                         url,\n-                                        skip_accept_encoding=True)\n+                                        skip_accept_encoding=True,\n+                                        skip_host='Host' in request.headers)\n \n                     for header, value in request.headers.items():\n                         low_conn.putheader(header, value)\n\n--- a/tests/test_lowlevel.py\n+++ b/tests/test_lowlevel.py\n@@ -44,6 +44,10 @@\n         with pytest.raises(requests.exceptions.ChunkedEncodingError):\n             r = requests.get(url)\n         close_server.set()  # release server block\n+\n+\n+def test_chunked_upload_uses_only_specified_host_header():\n+    raise NotImplementedError\n \n \n def test_conflicting_content_lengths():\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 516,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 465
+    },
+    "cost": 0.0006306,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.000387,
+      "upstream_inference_cost": 0.0006306,
+      "upstream_inference_prompt_cost": 0.0002436
+    },
+    "is_byok": false,
+    "prompt_tokens": 696,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1212
+  },
+  "variance_seed": null
+}

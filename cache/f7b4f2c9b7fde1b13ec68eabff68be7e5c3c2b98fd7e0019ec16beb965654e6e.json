@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0005397,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_loader.py::teardown_method\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate requirement: tests/test_loader.py::teardown_method\n\nWe need to see if in diff there is definition of teardown_method in tests/test_loader.py. Let's examine diff for tests/test_loader.py.\n\nThe diff shows modifications: added a class variable mod_env = None, removed a teardown method (named teardown). No mention of teardown_method. The original file likely had a method named teardown_method? In pytest, you can define teardown_method(self, method) for per-test teardown. The diff shows removal of a method named teardown (not teardown_method). So there is no definition of teardown_method in the diff. Therefore requirement is omitted.\n\nWe must check if any definition appears: Not present. So OMITTED.\n\nReturn JSON with that key mapping to \"OMITTED\".",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate requirement: tests/test_loader.py::teardown_method\n\nWe need to see if in diff there is definition of teardown_method in tests/test_loader.py. Let's examine diff for tests/test_loader.py.\n\nThe diff shows modifications: added a class variable mod_env = None, removed a teardown method (named teardown). No mention of teardown_method. The original file likely had a method named teardown_method? In pytest, you can define teardown_method(self, method) for per-test teardown. The diff shows removal of a method named teardown (not teardown_method). So there is no definition of teardown_method in the diff. Therefore requirement is omitted.\n\nWe must check if any definition appears: Not present. So OMITTED.\n\nReturn JSON with that key mapping to \"OMITTED\".",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_loader.py::teardown_method\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/jinja2/async_utils.py\n+++ b/src/jinja2/async_utils.py\n@@ -74,7 +74,7 @@\n         async for item in t.cast(\"t.AsyncIterable[V]\", iterable):\n             yield item\n     else:\n-        for item in t.cast(\"t.Iterable[V]\", iterable):\n+        for item in iterable:\n             yield item\n \n \n\n--- a/src/jinja2/ext.py\n+++ b/src/jinja2/ext.py\n@@ -291,14 +291,14 @@\n \n         if hasattr(translations, \"pgettext\"):\n             # Python < 3.8\n-            pgettext = translations.pgettext  # type: ignore\n+            pgettext = translations.pgettext\n         else:\n \n             def pgettext(c: str, s: str) -> str:\n                 return s\n \n         if hasattr(translations, \"npgettext\"):\n-            npgettext = translations.npgettext  # type: ignore\n+            npgettext = translations.npgettext\n         else:\n \n             def npgettext(c: str, s: str, p: str, n: int) -> str:\n\n--- a/src/jinja2/loaders.py\n+++ b/src/jinja2/loaders.py\n@@ -392,7 +392,7 @@\n             )\n             offset = len(prefix)\n \n-            for name in self._loader._files.keys():  # type: ignore\n+            for name in self._loader._files.keys():\n                 # Find names under the templates directory that aren't directories.\n                 if name.startswith(prefix) and name[-1] != os.path.sep:\n                     results.append(name[offset:].replace(os.path.sep, \"/\"))\n\n--- a/src/jinja2/runtime.py\n+++ b/src/jinja2/runtime.py\n@@ -272,9 +272,9 @@\n         # Allow callable classes to take a context\n         if (\n             hasattr(__obj, \"__call__\")  # noqa: B004\n-            and _PassArg.from_obj(__obj.__call__) is not None  # type: ignore\n+            and _PassArg.from_obj(__obj.__call__) is not None\n         ):\n-            __obj = __obj.__call__  # type: ignore\n+            __obj = __obj.__call__\n \n         pass_arg = _PassArg.from_obj(__obj)\n \n\n--- a/tests/test_loader.py\n+++ b/tests/test_loader.py\n@@ -183,6 +183,7 @@\n \n class TestModuleLoader:\n     archive = None\n+    mod_env = None\n \n     def compile_down(self, prefix_loader, zip=\"deflated\"):\n         log = []\n@@ -196,13 +197,6 @@\n         self.mod_env = Environment(loader=loaders.ModuleLoader(self.archive))\n         return \"\".join(log)\n \n-    def teardown(self):\n-        if hasattr(self, \"mod_env\"):\n-            if os.path.isfile(self.archive):\n-                os.remove(self.archive)\n-            else:\n-                shutil.rmtree(self.archive)\n-            self.archive = None\n \n     def test_log(self, prefix_loader):\n         log = self.compile_down(prefix_loader)\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 182,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 157
+    },
+    "cost": 0.0005397,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.0001365,
+      "upstream_inference_cost": 0.0005397,
+      "upstream_inference_prompt_cost": 0.0004032
+    },
+    "is_byok": false,
+    "prompt_tokens": 1152,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1334
+  },
+  "variance_seed": null
+}

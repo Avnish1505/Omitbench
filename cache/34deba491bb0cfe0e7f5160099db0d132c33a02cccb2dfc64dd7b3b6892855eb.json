@@ -1,0 +1,41 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00026248,
+  "cost_source": "reported",
+  "judge_id": "B5 LLM judge (mid-tier)",
+  "message": {
+    "content": "```json\n{\"tests/test_formparser.py::test_multipart_max_form_memory_size\": \"OMITTED\"}\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_formparser.py::test_multipart_max_form_memory_size\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/werkzeug/formparser.py\n+++ b/src/werkzeug/formparser.py\n@@ -352,6 +352,7 @@\n         self, stream: t.IO[bytes], boundary: bytes, content_length: int | None\n     ) -> tuple[MultiDict[str, str], MultiDict[str, FileStorage]]:\n         current_part: Field | File\n+        field_size: int | None = None\n         container: t.IO[bytes] | list[bytes]\n         _write: t.Callable[[bytes], t.Any]\n \n@@ -370,13 +371,23 @@\n             while not isinstance(event, (Epilogue, NeedData)):\n                 if isinstance(event, Field):\n                     current_part = event\n+                    field_size = 0\n                     container = []\n                     _write = container.append\n                 elif isinstance(event, File):\n                     current_part = event\n+                    field_size = None\n                     container = self.start_file_streaming(event, content_length)\n                     _write = container.write\n                 elif isinstance(event, Data):\n+                    if self.max_form_memory_size is not None and field_size is not None:\n+                        # Ensure that accumulated data events do not exceed limit.\n+                        # Also checked within single event in MultipartDecoder.\n+                        field_size += len(event.data)\n+\n+                        if field_size > self.max_form_memory_size:\n+                            raise RequestEntityTooLarge()\n+\n                     _write(event.data)\n                     if not event.more_data:\n                         if isinstance(current_part, Field):\n\n--- a/src/werkzeug/sansio/multipart.py\n+++ b/src/werkzeug/sansio/multipart.py\n@@ -140,6 +140,8 @@\n             self.max_form_memory_size is not None\n             and len(self.buffer) + len(data) > self.max_form_memory_size\n         ):\n+            # Ensure that data within single event does not exceed limit.\n+            # Also checked across accumulated events in MultiPartParser.\n             raise RequestEntityTooLarge()\n         else:\n             self.buffer.extend(data)\n\n--- a/tests/test_formparser.py\n+++ b/tests/test_formparser.py\n@@ -457,3 +457,5 @@\n             assert request.files[\"rfc2231\"].filename == \"a b c d e f.txt\"\n             assert request.files[\"rfc2231\"].read() == b\"file contents\"\n \n+\n+\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 27,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.00026248,
+    "cost_details": {
+      "upstream_inference_completions_cost": 5.4e-05,
+      "upstream_inference_cost": 0.00026248,
+      "upstream_inference_prompt_cost": 0.00020848
+    },
+    "is_byok": false,
+    "prompt_tokens": 982,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 512,
+      "video_tokens": 0
+    },
+    "total_tokens": 1009
+  },
+  "variance_seed": null
+}

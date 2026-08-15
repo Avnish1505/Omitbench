@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00055855,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_itsdangerous/test_timed.py::test_sig_error_date_signed\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate requirement: tests/test_itsdangerous/test_timed.py::test_sig_error_date_signed\n\nWe need to see if this test function is defined and implemented (i.e., not a stub) and wired.\n\nThe diff shows modifications to tests file: added a new test method definition:\n\n```\n    def test_sig_error_date_signed(self, signer):\n        raise NotImplementedError\n```\n\nSo the function is defined (def). It appears in the diff. It is a test function. It is \"wired\"? The requirement is about the test function itself. The definition is present. Does something else call it? In test suite, pytest will discover and call it. That counts as wired? The criteria: \"something else in the diff actually calls, instantiates, or otherwise uses it.\" In this diff, there is no explicit call to test_sig_error_date_signed. However, the test runner will call it, but that's not visible in diff. The diff only includes the test file. The test function is defined but not used elsewhere in the diff. According to criteria, a symbol must be wired: something else in the diff calls/instantiates/uses it. Since there is no call in diff, it's not wired. So requirement is OMITTED.\n\nAlso, the body is raise NotImplementedError, which is a stub. So fails NOT A STUB. So definitely omitted.\n\nThus output: {\"tests/test_itsdangerous/test_timed.py::test_sig_error_date_signed\": \"OMITTED\"}",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate requirement: tests/test_itsdangerous/test_timed.py::test_sig_error_date_signed\n\nWe need to see if this test function is defined and implemented (i.e., not a stub) and wired.\n\nThe diff shows modifications to tests file: added a new test method definition:\n\n```\n    def test_sig_error_date_signed(self, signer):\n        raise NotImplementedError\n```\n\nSo the function is defined (def). It appears in the diff. It is a test function. It is \"wired\"? The requirement is about the test function itself. The definition is present. Does something else call it? In test suite, pytest will discover and call it. That counts as wired? The criteria: \"something else in the diff actually calls, instantiates, or otherwise uses it.\" In this diff, there is no explicit call to test_sig_error_date_signed. However, the test runner will call it, but that's not visible in diff. The diff only includes the test file. The test function is defined but not used elsewhere in the diff. According to criteria, a symbol must be wired: something else in the diff calls/instantiates/uses it. Since there is no call in diff, it's not wired. So requirement is OMITTED.\n\nAlso, the body is raise NotImplementedError, which is a stub. So fails NOT A STUB. So definitely omitted.\n\nThus output: {\"tests/test_itsdangerous/test_timed.py::test_sig_error_date_signed\": \"OMITTED\"}",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_itsdangerous/test_timed.py::test_sig_error_date_signed\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/itsdangerous/timed.py\n+++ b/src/itsdangerous/timed.py\n@@ -86,6 +86,9 @@\n         # Signature is *not* okay. Raise a proper error now that we have\n         # split the value and the timestamp.\n         if sig_error is not None:\n+            if timestamp is not None:\n+                timestamp = self.timestamp_to_datetime(timestamp)\n+\n             raise BadTimeSignature(str(sig_error), payload=value, date_signed=timestamp)\n \n         # Signature was okay but the timestamp is actually not there or\n\n--- a/tests/test_itsdangerous/test_timed.py\n+++ b/tests/test_itsdangerous/test_timed.py\n@@ -54,6 +54,7 @@\n             signer.unsign(signed)\n \n         assert \"missing\" in str(exc_info.value)\n+        assert exc_info.value.date_signed is None\n \n     def test_malformed_timestamp(self, signer):\n         other = Signer(\"secret-key\")\n@@ -63,13 +64,19 @@\n             signer.unsign(signed)\n \n         assert \"Malformed\" in str(exc_info.value)\n+        assert exc_info.value.date_signed is None\n \n     def test_future_age(self, signer):\n         signed = signer.sign(\"value\")\n \n         with freeze_time(\"1971-05-31\"):\n-            with pytest.raises(SignatureExpired):\n+            with pytest.raises(SignatureExpired) as exc_info:\n                 signer.unsign(signed, max_age=10)\n+\n+        assert isinstance(exc_info.value.date_signed, datetime)\n+\n+    def test_sig_error_date_signed(self, signer):\n+        raise NotImplementedError\n \n \n class TestTimedSerializer(FreezeMixin, TestSerializer):\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 342,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 309
+    },
+    "cost": 0.00055855,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.0002565,
+      "upstream_inference_cost": 0.00055855,
+      "upstream_inference_prompt_cost": 0.00030205
+    },
+    "is_byok": false,
+    "prompt_tokens": 863,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1205
+  },
+  "variance_seed": null
+}

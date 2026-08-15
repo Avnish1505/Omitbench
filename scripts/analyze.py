@@ -29,7 +29,16 @@ import random
 from collections import defaultdict
 
 ORDER = ["B0 flag-nothing", "B1 flag-everything", "B3 line-grep (no AST)",
+         "B4 LLM judge (gpt-oss-120b)", "B5 LLM judge (mid-tier)",
+         "B6 LLM judge (NVIDIA NIM)",
          "P1 defined", "P2 defined+reachable", "P3 defined+reachable+body"]
+
+# B4/B5/B6 are the three LLM-judge baselines (omitbench/judges.py). A single
+# judge cannot support "LLM judges are structurally weak at omission" -- see
+# that module's docstring -- so every comparison against P1 below is run for
+# all three, not just one.
+JUDGE_NAMES = ["B4 LLM judge (gpt-oss-120b)", "B5 LLM judge (mid-tier)",
+               "B6 LLM judge (NVIDIA NIM)"]
 
 
 def load():
@@ -132,6 +141,34 @@ def main():
         obs = summary[d]["mcc"] - summary[base]["mcc"]
         sig = "" if lo <= 0 <= hi else "  *"
         print(f"  {d:28} vs {base:24} {obs:>+7.3f}  [{lo:>+6.3f},{hi:>+6.3f}]{sig}")
+
+    # ---- P1 vs each LLM judge: the specific comparison this repo exists to
+    # make ----------------------------------------------------------------
+    # RELATED.md's wedge is "LLM judges are structurally weak at omission
+    # specifically" -- reported on its own rather than folded into the
+    # generic vs-B3 loop above, so it can't get buried under other rows.
+    # Run for EVERY judge present, not just one: a single judge losing to P1
+    # would not support the claim (a reviewer's first objection is "you
+    # picked a weak model"), so all of B4/B5/B6 are reported here. Same
+    # paired resamples (B), so each is directly comparable to the others.
+    p1_d = "P1 defined"
+    judge_ds = [d for d in JUDGE_NAMES if d in dets]
+    if judge_ds and p1_d in dets:
+        print()
+        for judge_d in judge_ds:
+            diffs = []
+            for samp in B:
+                a = metrics([x for i in samp for x in per_det[p1_d][i]])["mcc"]
+                b = metrics([x for i in samp for x in per_det[judge_d][i]])["mcc"]
+                diffs.append(a - b)
+            diffs.sort()
+            lo, hi = diffs[25], diffs[974]
+            obs = summary[p1_d]["mcc"] - summary[judge_d]["mcc"]
+            sig = "" if lo <= 0 <= hi else "  *"
+            print(f"  {p1_d:28} vs {judge_d:28} {obs:>+7.3f}  "
+                  f"[{lo:>+6.3f},{hi:>+6.3f}]{sig}")
+        print("  (this is the central claim RELATED.md exists to test -- "
+              "read it plainly, do not re-run to change it)")
 
     # ---- per-repo stability of the best detector ------------------------
     best = max((d for d in dets if d.startswith("P")),

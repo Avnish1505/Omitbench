@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0006126,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_serving.py::test_watchdog_reloader_ignores_closed_no_write\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate requirement: tests/test_serving.py::test_watchdog_reloader_ignores_closed_no_write\n\nWe need to see if this test function is defined and wired and not a stub.\n\nIn diff, we see modifications to tests/test_serving.py. At line after imports, they added a test function:\n\n```\n@pytest.mark.skipif(\n    watchdog_version.VERSION_MAJOR < 5,\n    reason=\"'closed no write' event introduced in watchdog 5.0\",\n)\n@patch.object(WatchdogReloaderLoop, \"trigger_reload\")\ndef test_watchdog_reloader_ignores_closed_no_write(mock_trigger_reload):\n    raise NotImplementedError\n```\n\nThus the function is defined (def). It appears in the diff. Does it get \"wired\"? The requirement says \"WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it.\" For a test function, being defined is enough? Usually test functions are discovered by pytest, not called directly in code. The requirement expects that the symbol is used somewhere else in the diff. For a test function, there is no explicit call. In the diff, there is no call to test_watchdog_reloader_ignores_closed_no_write. So it's not wired. Also the body is raise NotImplementedError, which is a stub. So fails both wired and not a stub. So requirement is OMITTED.\n\nThus output: {\"tests/test_serving.py::test_watchdog_reloader_ignores_closed_no_write\": \"OMITTED\"}",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate requirement: tests/test_serving.py::test_watchdog_reloader_ignores_closed_no_write\n\nWe need to see if this test function is defined and wired and not a stub.\n\nIn diff, we see modifications to tests/test_serving.py. At line after imports, they added a test function:\n\n```\n@pytest.mark.skipif(\n    watchdog_version.VERSION_MAJOR < 5,\n    reason=\"'closed no write' event introduced in watchdog 5.0\",\n)\n@patch.object(WatchdogReloaderLoop, \"trigger_reload\")\ndef test_watchdog_reloader_ignores_closed_no_write(mock_trigger_reload):\n    raise NotImplementedError\n```\n\nThus the function is defined (def). It appears in the diff. Does it get \"wired\"? The requirement says \"WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it.\" For a test function, being defined is enough? Usually test functions are discovered by pytest, not called directly in code. The requirement expects that the symbol is used somewhere else in the diff. For a test function, there is no explicit call. In the diff, there is no call to test_watchdog_reloader_ignores_closed_no_write. So it's not wired. Also the body is raise NotImplementedError, which is a stub. So fails both wired and not a stub. So requirement is OMITTED.\n\nThus output: {\"tests/test_serving.py::test_watchdog_reloader_ignores_closed_no_write\": \"OMITTED\"}",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_serving.py::test_watchdog_reloader_ignores_closed_no_write\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/werkzeug/_reloader.py\n+++ b/src/werkzeug/_reloader.py\n@@ -312,7 +312,11 @@\n \n class WatchdogReloaderLoop(ReloaderLoop):\n     def __init__(self, *args: t.Any, **kwargs: t.Any) -> None:\n-        from watchdog.events import EVENT_TYPE_OPENED\n+        from watchdog.events import EVENT_TYPE_CLOSED\n+        from watchdog.events import EVENT_TYPE_CREATED\n+        from watchdog.events import EVENT_TYPE_DELETED\n+        from watchdog.events import EVENT_TYPE_MODIFIED\n+        from watchdog.events import EVENT_TYPE_MOVED\n         from watchdog.events import FileModifiedEvent\n         from watchdog.events import PatternMatchingEventHandler\n         from watchdog.observers import Observer\n@@ -322,7 +326,14 @@\n \n         class EventHandler(PatternMatchingEventHandler):\n             def on_any_event(self, event: FileModifiedEvent):  # type: ignore\n-                if event.event_type == EVENT_TYPE_OPENED:\n+                if event.event_type not in {\n+                    EVENT_TYPE_CLOSED,\n+                    EVENT_TYPE_CREATED,\n+                    EVENT_TYPE_DELETED,\n+                    EVENT_TYPE_MODIFIED,\n+                    EVENT_TYPE_MOVED,\n+                }:\n+                    # skip events that don't involve changes to the file\n                     return\n \n                 trigger_reload(event.src_path)\n\n--- a/tests/test_serving.py\n+++ b/tests/test_serving.py\n@@ -10,6 +10,7 @@\n from unittest.mock import patch\n \n import pytest\n+from watchdog import version as watchdog_version\n from watchdog.events import EVENT_TYPE_MODIFIED\n from watchdog.events import EVENT_TYPE_OPENED\n from watchdog.events import FileModifiedEvent\n@@ -134,6 +135,15 @@\n     opened_event.event_type = EVENT_TYPE_OPENED\n     reloader.event_handler.on_any_event(opened_event)\n     reloader.trigger_reload.assert_not_called()\n+\n+\n+@pytest.mark.skipif(\n+    watchdog_version.VERSION_MAJOR < 5,\n+    reason=\"'closed no write' event introduced in watchdog 5.0\",\n+)\n+@patch.object(WatchdogReloaderLoop, \"trigger_reload\")\n+def test_watchdog_reloader_ignores_closed_no_write(mock_trigger_reload):\n+    raise NotImplementedError\n \n \n @pytest.mark.skipif(sys.version_info >= (3, 10), reason=\"not needed on >= 3.10\")\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 345,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 311
+    },
+    "cost": 0.0006126,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.00025875,
+      "upstream_inference_cost": 0.0006126,
+      "upstream_inference_prompt_cost": 0.00035385
+    },
+    "is_byok": false,
+    "prompt_tokens": 1011,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1356
+  },
+  "variance_seed": null
+}

@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00048565,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_utils.py::test_should_bypass_proxies_no_proxy_domain_boundary\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate requirement: tests/test_utils.py::test_should_bypass_proxies_no_proxy_domain_boundary\n\nWe need to see if this test function is defined and wired etc. The diff shows modifications to tests/test_utils.py, adding a parametrize block but not the test function itself. The test function name is test_should_bypass_proxies_no_proxy_domain_boundary. We need to see if that function appears in diff. The diff snippet shows only part of file around line 844 etc. It adds a new parametrize block but not the test function definition. The test function likely already existed earlier in file, but not shown in diff. Since diff only includes changed lines, we need to see if the definition appears. The requirement says the symbol must be defined in that file. If the diff does not contain the definition, then it's omitted. The diff does not show a def test_should_bypass_proxies_no_proxy_domain_boundary. So it's omitted.\n\nThus output: {\"tests/test_utils.py::test_should_bypass_proxies_no_proxy_domain_boundary\": \"OMITTED\"}",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate requirement: tests/test_utils.py::test_should_bypass_proxies_no_proxy_domain_boundary\n\nWe need to see if this test function is defined and wired etc. The diff shows modifications to tests/test_utils.py, adding a parametrize block but not the test function itself. The test function name is test_should_bypass_proxies_no_proxy_domain_boundary. We need to see if that function appears in diff. The diff snippet shows only part of file around line 844 etc. It adds a new parametrize block but not the test function definition. The test function likely already existed earlier in file, but not shown in diff. Since diff only includes changed lines, we need to see if the definition appears. The requirement says the symbol must be defined in that file. If the diff does not contain the definition, then it's omitted. The diff does not show a def test_should_bypass_proxies_no_proxy_domain_boundary. So it's omitted.\n\nThus output: {\"tests/test_utils.py::test_should_bypass_proxies_no_proxy_domain_boundary\": \"OMITTED\"}",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_utils.py::test_should_bypass_proxies_no_proxy_domain_boundary\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/requests/utils.py\n+++ b/src/requests/utils.py\n@@ -851,9 +851,11 @@\n                 host_with_port += f\":{parsed.port}\"\n \n             for host in no_proxy_hosts:\n+                host = host.lstrip(\".\")\n+                if hostname == host or host_with_port == host:\n+                    return True\n+                host = \".\" + host\n                 if hostname.endswith(host) or host_with_port.endswith(host):\n-                    # The URL does match something in no_proxy, so we don't want\n-                    # to apply the proxies on this URL.\n                     return True\n \n     with set_environ(\"no_proxy\", no_proxy_arg):\n\n--- a/tests/test_utils.py\n+++ b/tests/test_utils.py\n@@ -844,6 +844,22 @@\n     assert should_bypass_proxies(url, no_proxy=no_proxy) == expected\n \n \n+@pytest.mark.parametrize(\n+    \"url, expected\",\n+    (\n+        (\"http://localhost/\", True),\n+        (\"http://anotherdomain.com:8888/\", True),\n+        (\"http://newdomain.com:1234/\", True),\n+        (\"http://www.newdomain.com:1234/\", True),\n+        (\"http://foo.d.o.t/\", True),\n+        (\"http://d.o.t/\", True),\n+        (\"http://prelocalhost/\", False),\n+        (\"http://newdomain.com/\", False),\n+        (\"http://newdomain.com:1235/\", False),\n+    ),\n+)\n+\n+\n @pytest.mark.skipif(os.name != \"nt\", reason=\"Test only on Windows\")\n @pytest.mark.parametrize(\n     \"url, expected, override\",\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 249,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 217
+    },
+    "cost": 0.00048565,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.00018675,
+      "upstream_inference_cost": 0.00048565,
+      "upstream_inference_prompt_cost": 0.0002989
+    },
+    "is_byok": false,
+    "prompt_tokens": 854,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 256,
+      "video_tokens": 0
+    },
+    "total_tokens": 1103
+  },
+  "variance_seed": null
+}

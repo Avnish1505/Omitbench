@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00064045,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_utils.py::test_urlize_mail_mastodon\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate requirement: tests/test_utils.py::test_urlize_mail_mastodon\n\nWe need to see if the diff defines this test function, wires it, etc. The requirement is a test function defined in tests/test_utils.py. The diff shows addition of test_urlize_mail_mastodon function in tests/test_utils.py. Let's verify:\n\nIn diff for tests/test_utils.py, we see:\n\n+    def test_urlize_mail_mastodon(self):\n+        fr = \"nabijaczleweli@nabijaczleweli.xyz\\n@eater@cijber.social\\n\"\n+        to = (\n+            '<a href=\"mailto:nabijaczleweli@nabijaczleweli.xyz\">'\n+            \"nabijaczleweli@nabijaczleweli.xyz</a>\\n@eater@cijber.social\\n\"\n+        )\n+        assert urlize(fr) == to\n\nThus the function is defined. Is it wired? In test files, test functions are discovered by pytest automatically; they are not called elsewhere. The requirement says \"WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it.\" For a test function, is that considered wired? The definition is inside a test class (presumably). The diff shows it's inside a class (maybe TestUrlize?). The test function is not called elsewhere, but test discovery will call it. However the rule says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" In this diff, there is no explicit call to test_urlize_mail_mastodon. So according to strict rule, it's not wired. But maybe they consider test functions as being used by test runner, but that's not visible in diff. The rule says \"A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\" Here the test function appears only in its own definition; no other code calls it. So it's not wired, thus requirement is OMITTED.\n\nBut also need to check if the symbol is defined: yes. Not a stub: body has code, not pass. So criteria 1 and 3 satisfied, but 2 fails. So overall requirement is OMITTED.\n\nThus output JSON with that key mapping to \"OMITTED\".",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate requirement: tests/test_utils.py::test_urlize_mail_mastodon\n\nWe need to see if the diff defines this test function, wires it, etc. The requirement is a test function defined in tests/test_utils.py. The diff shows addition of test_urlize_mail_mastodon function in tests/test_utils.py. Let's verify:\n\nIn diff for tests/test_utils.py, we see:\n\n+    def test_urlize_mail_mastodon(self):\n+        fr = \"nabijaczleweli@nabijaczleweli.xyz\\n@eater@cijber.social\\n\"\n+        to = (\n+            '<a href=\"mailto:nabijaczleweli@nabijaczleweli.xyz\">'\n+            \"nabijaczleweli@nabijaczleweli.xyz</a>\\n@eater@cijber.social\\n\"\n+        )\n+        assert urlize(fr) == to\n\nThus the function is defined. Is it wired? In test files, test functions are discovered by pytest automatically; they are not called elsewhere. The requirement says \"WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it.\" For a test function, is that considered wired? The definition is inside a test class (presumably). The diff shows it's inside a class (maybe TestUrlize?). The test function is not called elsewhere, but test discovery will call it. However the rule says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" In this diff, there is no explicit call to test_urlize_mail_mastodon. So according to strict rule, it's not wired. But maybe they consider test functions as being used by test runner, but that's not visible in diff. The rule says \"A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\" Here the test function appears only in its own definition; no other code calls it. So it's not wired, thus requirement is OMITTED.\n\nBut also need to check if the symbol is defined: yes. Not a stub: body has code, not pass. So criteria 1 and 3 satisfied, but 2 fails. So overall requirement is OMITTED.\n\nThus output JSON with that key mapping to \"OMITTED\".",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_utils.py::test_urlize_mail_mastodon\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/jinja2/utils.py\n+++ b/src/jinja2/utils.py\n@@ -333,6 +333,8 @@\n         elif (\n             \"@\" in middle\n             and not middle.startswith(\"www.\")\n+            # ignore values like `@a@b`\n+            and not middle.startswith(\"@\")\n             and \":\" not in middle\n             and _email_re.match(middle)\n         ):\n\n--- a/tests/test_utils.py\n+++ b/tests/test_utils.py\n@@ -142,6 +142,14 @@\n             \"http://example.org</a>\"\n         )\n \n+    def test_urlize_mail_mastodon(self):\n+        fr = \"nabijaczleweli@nabijaczleweli.xyz\\n@eater@cijber.social\\n\"\n+        to = (\n+            '<a href=\"mailto:nabijaczleweli@nabijaczleweli.xyz\">'\n+            \"nabijaczleweli@nabijaczleweli.xyz</a>\\n@eater@cijber.social\\n\"\n+        )\n+        assert urlize(fr) == to\n+\n \n class TestLoremIpsum:\n     def test_lorem_ipsum_markup(self):\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 503,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 474
+    },
+    "cost": 0.00064045,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.00037725,
+      "upstream_inference_cost": 0.00064045,
+      "upstream_inference_prompt_cost": 0.0002632
+    },
+    "is_byok": false,
+    "prompt_tokens": 752,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1255
+  },
+  "variance_seed": null
+}

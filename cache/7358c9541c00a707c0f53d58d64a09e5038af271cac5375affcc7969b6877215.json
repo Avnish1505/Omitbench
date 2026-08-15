@@ -1,0 +1,41 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0007424,
+  "cost_source": "reported",
+  "judge_id": "B5 LLM judge (mid-tier)",
+  "message": {
+    "content": "```json\n{\n    \"tests/test_loader.py::ImportHook\": \"IMPLEMENTED\",\n    \"tests/test_loader.py::create_module\": \"IMPLEMENTED\",\n    \"tests/test_loader.py::exec_module\": \"IMPLEMENTED\",\n    \"tests/test_loader.py::find_spec\": \"IMPLEMENTED\",\n    \"tests/test_loader.py::test_pep_451_import_hook\": \"IMPLEMENTED\"\n}\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_loader.py::ImportHook\n- tests/test_loader.py::create_module\n- tests/test_loader.py::exec_module\n- tests/test_loader.py::find_spec\n- tests/test_loader.py::test_pep_451_import_hook\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/jinja2/loaders.py\n+++ b/src/jinja2/loaders.py\n@@ -1,10 +1,11 @@\n \"\"\"API and implementations for loading templates from different data\n sources.\n \"\"\"\n+import importlib.util\n import os\n-import pkgutil\n import sys\n import weakref\n+import zipimport\n from collections import abc\n from hashlib import sha1\n from importlib import import_module\n@@ -253,21 +254,19 @@\n         # Make sure the package exists. This also makes namespace\n         # packages work, otherwise get_loader returns None.\n         import_module(package_name)\n-        self._loader = loader = pkgutil.get_loader(package_name)\n-\n-        # Zip loader's archive attribute points at the zip.\n-        self._archive = getattr(loader, \"archive\", None)\n+        spec = importlib.util.find_spec(package_name)\n+        self._loader = spec.loader\n+\n+        self._archive = None\n         self._template_root = None\n-\n-        if hasattr(loader, \"get_filename\"):\n-            # A standard directory package, or a zip package.\n-            self._template_root = os.path.join(\n-                os.path.dirname(loader.get_filename(package_name)), package_path\n-            )\n-        elif hasattr(loader, \"_path\"):\n-            # A namespace package, limited support. Find the first\n-            # contributor with the template directory.\n-            for root in loader._path:\n+        if isinstance(spec.loader, zipimport.zipimporter):\n+            self._archive = spec.loader.archive\n+            pkgdir = next(iter(spec.submodule_search_locations))\n+            self._template_root = os.path.join(pkgdir, package_path)\n+        elif spec.submodule_search_locations:\n+            # this will be one element for \"packages\" and multiple for\n+            # namespace packages\n+            for root in spec.submodule_search_locations:\n                 root = os.path.join(root, package_path)\n \n                 if os.path.isdir(root):\n\n--- a/tests/test_loader.py\n+++ b/tests/test_loader.py\n@@ -1,3 +1,6 @@\n+import importlib.abc\n+import importlib.machinery\n+import importlib.util\n import os\n import platform\n import shutil\n@@ -348,3 +351,41 @@\n def test_package_zip_list(package_zip_loader):\n     assert package_zip_loader.list_templates() == [\"foo/test.html\", \"test.html\"]\n \n+\n+def test_pep_451_import_hook(tmp_path):\n+    package_name = \"_my_pep451_pkg\"\n+    pkg = tmp_path.joinpath(package_name)\n+    pkg.mkdir()\n+    pkg.joinpath(\"__init__.py\").touch()\n+    templates = pkg.joinpath(\"templates\")\n+    templates.mkdir()\n+    templates.joinpath(\"foo.html\").write_text(\"hello world\")\n+\n+    class ImportHook(importlib.abc.MetaPathFinder, importlib.abc.Loader):\n+        def find_spec(self, name, path=None, target=None):\n+            if name != package_name:\n+                return None\n+            path = [str(tmp_path)]\n+            spec = importlib.machinery.PathFinder.find_spec(name, path=path)\n+            return importlib.util.spec_from_file_location(\n+                name,\n+                spec.origin,\n+                loader=self,\n+                submodule_search_locations=spec.submodule_search_locations,\n+            )\n+\n+        def create_module(self, spec):\n+            return None  # default behaviour is fine\n+\n+        def exec_module(self, module):\n+            return None  # we need this to satisfy the interface, it's wrong\n+\n+    # ensure we restore `sys.meta_path` after putting in our loader\n+    before = sys.meta_path[:]\n+    try:\n+        sys.meta_path.insert(0, ImportHook())\n+        package_loader = PackageLoader(package_name)\n+        assert package_loader.list_templates() == [\"foo.html\"]\n+    finally:\n+        sys.meta_path[:] = before\n+\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 91,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.0007424,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.000182,
+      "upstream_inference_cost": 0.0007424,
+      "upstream_inference_prompt_cost": 0.0005604
+    },
+    "is_byok": false,
+    "prompt_tokens": 1401,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1492
+  },
+  "variance_seed": null
+}

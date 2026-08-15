@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00067635,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_utils.py::test_should_bypass_proxies_win_registry_bad_values\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate requirement: tests/test_utils.py::test_should_bypass_proxies_win_registry_bad_values\n\nWe need to see if this symbol (function) is defined in the target file tests/test_utils.py and is wired (called) and not a stub.\n\nThe diff shows addition of a test function definition in tests/test_utils.py. The diff includes the function definition:\n\n+def test_should_bypass_proxies_win_registry_bad_values(monkeypatch):\n+    \"\"\"Tests for function should_bypass_proxies to check if proxy\n+    can be bypassed or not with Windows invalid registry settings.\n+    \"\"\"\n+    import winreg\n...\n+    assert should_bypass_proxies(\"http://172.16.1.1/\", None) is False\n\nThus the function is defined (def). It is a test function, not a stub; it contains code. It is wired? The definition itself is the function; but \"wired\" means something else in the diff calls, instantiates, or otherwise uses it. The function is not called elsewhere in the diff; but test functions are discovered by pytest, not called directly. However the requirement's criteria: \"WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it.\" In this diff, there is no call to test_should_bypass_proxies_win_registry_bad_values. The function is defined but not used elsewhere. Does that count as wired? The definition itself is not a call. The test function is not called elsewhere. According to the strict criteria, a symbol must be used somewhere else in the diff. Since there is no call, it's not wired. Therefore requirement is OMITTED.\n\nBut maybe they consider the test function being used by pytest as \"wired\"? The criteria says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" The diff does not contain a call. So it's omitted.\n\nThus output: {\"tests/test_utils.py::test_should_bypass_proxies_win_registry_bad_values\": \"OMITTED\"}",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate requirement: tests/test_utils.py::test_should_bypass_proxies_win_registry_bad_values\n\nWe need to see if this symbol (function) is defined in the target file tests/test_utils.py and is wired (called) and not a stub.\n\nThe diff shows addition of a test function definition in tests/test_utils.py. The diff includes the function definition:\n\n+def test_should_bypass_proxies_win_registry_bad_values(monkeypatch):\n+    \"\"\"Tests for function should_bypass_proxies to check if proxy\n+    can be bypassed or not with Windows invalid registry settings.\n+    \"\"\"\n+    import winreg\n...\n+    assert should_bypass_proxies(\"http://172.16.1.1/\", None) is False\n\nThus the function is defined (def). It is a test function, not a stub; it contains code. It is wired? The definition itself is the function; but \"wired\" means something else in the diff calls, instantiates, or otherwise uses it. The function is not called elsewhere in the diff; but test functions are discovered by pytest, not called directly. However the requirement's criteria: \"WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it.\" In this diff, there is no call to test_should_bypass_proxies_win_registry_bad_values. The function is defined but not used elsewhere. Does that count as wired? The definition itself is not a call. The test function is not called elsewhere. According to the strict criteria, a symbol must be used somewhere else in the diff. Since there is no call, it's not wired. Therefore requirement is OMITTED.\n\nBut maybe they consider the test function being used by pytest as \"wired\"? The criteria says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" The diff does not contain a call. So it's omitted.\n\nThus output: {\"tests/test_utils.py::test_should_bypass_proxies_win_registry_bad_values\": \"OMITTED\"}",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_utils.py::test_should_bypass_proxies_win_registry_bad_values\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/requests/utils.py\n+++ b/requests/utils.py\n@@ -83,7 +83,7 @@\n             proxyEnable = int(winreg.QueryValueEx(internetSettings, \"ProxyEnable\")[0])\n             # ProxyOverride is almost always a string\n             proxyOverride = winreg.QueryValueEx(internetSettings, \"ProxyOverride\")[0]\n-        except OSError:\n+        except (OSError, ValueError):\n             return False\n         if not proxyEnable or not proxyOverride:\n             return False\n\n--- a/tests/test_utils.py\n+++ b/tests/test_utils.py\n@@ -864,6 +864,39 @@\n     assert should_bypass_proxies(url, None) == expected\n \n \n+@pytest.mark.skipif(os.name != \"nt\", reason=\"Test only on Windows\")\n+def test_should_bypass_proxies_win_registry_bad_values(monkeypatch):\n+    \"\"\"Tests for function should_bypass_proxies to check if proxy\n+    can be bypassed or not with Windows invalid registry settings.\n+    \"\"\"\n+    import winreg\n+\n+    class RegHandle:\n+        def Close(self):\n+            pass\n+\n+    ie_settings = RegHandle()\n+\n+    def OpenKey(key, subkey):\n+        return ie_settings\n+\n+    def QueryValueEx(key, value_name):\n+        if key is ie_settings:\n+            if value_name == \"ProxyEnable\":\n+                # Invalid response; Should be an int or int-y value\n+                return [\"\"]\n+            elif value_name == \"ProxyOverride\":\n+                return [\"192.168.*;127.0.0.1;localhost.localdomain;172.16.1.1\"]\n+\n+    monkeypatch.setenv(\"http_proxy\", \"\")\n+    monkeypatch.setenv(\"https_proxy\", \"\")\n+    monkeypatch.setenv(\"no_proxy\", \"\")\n+    monkeypatch.setenv(\"NO_PROXY\", \"\")\n+    monkeypatch.setattr(winreg, \"OpenKey\", OpenKey)\n+    monkeypatch.setattr(winreg, \"QueryValueEx\", QueryValueEx)\n+    assert should_bypass_proxies(\"http://172.16.1.1/\", None) is False\n+\n+\n @pytest.mark.parametrize(\n     \"env_name, value\",\n     (\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 444,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 412
+    },
+    "cost": 0.00067635,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.000333,
+      "upstream_inference_cost": 0.00067635,
+      "upstream_inference_prompt_cost": 0.00034335
+    },
+    "is_byok": false,
+    "prompt_tokens": 981,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 128,
+      "video_tokens": 0
+    },
+    "total_tokens": 1425
+  },
+  "variance_seed": null
+}

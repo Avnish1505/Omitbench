@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00054495,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_debug.py::test_include_syntax_error_source\": \"OMITTED\"}",
+    "reasoning": "We need to judge requirement: tests/test_debug.py::test_include_syntax_error_source\n\nWe need to see if this test function is defined and wired etc. The diff shows modifications to tests/test_debug.py, but we need to see if test_include_syntax_error_source is present. Let's examine diff.\n\nIn tests/test_debug.py diff, we see changes around imports and test_syntax_error etc. No mention of test_include_syntax_error_source. The diff only shows modifications to test_debug.py but not the definition of that test. The requirement is a test function name. The symbol is a function defined in tests/test_debug.py. We need to see if the diff defines it. The diff snippet shows only part of file: imports, then test_syntax_error, test_local_extraction. No test_include_syntax_error_source appears. So the diff does not define that function. Therefore requirement is omitted.\n\nThus output: {\"tests/test_debug.py::test_include_syntax_error_source\": \"OMITTED\"}",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to judge requirement: tests/test_debug.py::test_include_syntax_error_source\n\nWe need to see if this test function is defined and wired etc. The diff shows modifications to tests/test_debug.py, but we need to see if test_include_syntax_error_source is present. Let's examine diff.\n\nIn tests/test_debug.py diff, we see changes around imports and test_syntax_error etc. No mention of test_include_syntax_error_source. The diff only shows modifications to test_debug.py but not the definition of that test. The requirement is a test function name. The symbol is a function defined in tests/test_debug.py. We need to see if the diff defines it. The diff snippet shows only part of file: imports, then test_syntax_error, test_local_extraction. No test_include_syntax_error_source appears. So the diff does not define that function. Therefore requirement is omitted.\n\nThus output: {\"tests/test_debug.py::test_include_syntax_error_source\": \"OMITTED\"}",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_debug.py::test_include_syntax_error_source\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/jinja2/debug.py\n+++ b/jinja2/debug.py\n@@ -21,14 +21,10 @@\n     :return: A :meth:`sys.exc_info` tuple that can be re-raised.\n     \"\"\"\n     exc_type, exc_value, tb = sys.exc_info()\n-    # The new stack of traceback objects, to be joined together by\n-    # tb_set_next later.\n-    stack = []\n-\n-    if isinstance(exc_value, TemplateSyntaxError):\n+\n+    if isinstance(exc_value, TemplateSyntaxError) and not exc_value.translated:\n+        exc_value.translated = True\n         exc_value.source = source\n-        # The exception doesn't need to output location info manually.\n-        exc_value.translated = True\n \n         try:\n             # Remove the old traceback on Python 3, otherwise the frames\n@@ -45,6 +41,8 @@\n     else:\n         # Skip the frame for the render function.\n         tb = tb.tb_next\n+\n+    stack = []\n \n     # Build the stack of traceback object, replacing any in template\n     # code with the source file and line information.\n\n--- a/tests/test_debug.py\n+++ b/tests/test_debug.py\n@@ -14,6 +14,8 @@\n import sys\n from traceback import format_exception\n \n+from jinja2 import ChoiceLoader\n+from jinja2 import DictLoader\n from jinja2 import Environment, TemplateSyntaxError\n \n \n@@ -51,10 +53,9 @@\n ''')\n \n     def test_syntax_error(self, fs_env):\n-        # XXX: the .*? is necessary for python3 which does not hide\n-        # some of the stack frames we don't want to show.  Not sure\n-        # what's up with that, but that is not that critical.  Should\n-        # be fixed though.\n+        # The trailing .*? is for PyPy 2 and 3, which don't seem to\n+        # clear the exception's original traceback, leaving the syntax\n+        # error in the middle of other compiler frames.\n         self.assert_traceback_matches(lambda: fs_env.get_template('syntaxerror.html'), r'''(?sm)\n   File \".*?syntaxerror.html\", line 4, in (template|<module>)\n     \\{% endif %\\}.*?\n@@ -69,6 +70,7 @@\n     raise TemplateSyntaxError\\('wtf', 42\\)\n (jinja2\\.exceptions\\.)?TemplateSyntaxError: wtf\n   line 42''')\n+\n \n     def test_local_extraction(self):\n         from jinja2.debug import get_template_locals\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 231,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 203
+    },
+    "cost": 0.00054495,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.00017325,
+      "upstream_inference_cost": 0.00054495,
+      "upstream_inference_prompt_cost": 0.0003717
+    },
+    "is_byok": false,
+    "prompt_tokens": 1062,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1293
+  },
+  "variance_seed": null
+}

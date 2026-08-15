@@ -1,0 +1,41 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0005328,
+  "cost_source": "reported",
+  "judge_id": "B5 LLM judge (mid-tier)",
+  "message": {
+    "content": "```json\n{\"tests/test_loader.py::test_filename_normpath\": \"IMPLEMENTED\"}\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_loader.py::test_filename_normpath\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/jinja2/loaders.py\n+++ b/src/jinja2/loaders.py\n@@ -213,7 +213,8 @@\n                 except OSError:\n                     return False\n \n-            return contents, filename, uptodate\n+            # Use normpath to convert Windows altsep to sep.\n+            return contents, os.path.normpath(filename), uptodate\n         raise TemplateNotFound(template)\n \n     def list_templates(self) -> t.List[str]:\n@@ -330,8 +331,11 @@\n         self, environment: \"Environment\", template: str\n     ) -> t.Tuple[str, str, t.Optional[t.Callable[[], bool]]]:\n         # Use posixpath even on Windows to avoid \"drive:\" or UNC\n-        # segments breaking out of the search directory.\n-        p = posixpath.join(self._template_root, *split_template_path(template))\n+        # segments breaking out of the search directory. Use normpath to\n+        # convert Windows altsep to sep.\n+        p = os.path.normpath(\n+            posixpath.join(self._template_root, *split_template_path(template))\n+        )\n         up_to_date: t.Optional[t.Callable[[], bool]]\n \n         if self._archive is None:\n\n--- a/tests/test_loader.py\n+++ b/tests/test_loader.py\n@@ -3,7 +3,6 @@\n import importlib.util\n import os\n import platform\n-import posixpath\n import shutil\n import sys\n import tempfile\n@@ -172,6 +171,15 @@\n         t = e.get_template(\"mojibake.txt\")\n         assert t.render() == expect\n \n+    def test_filename_normpath(self):\n+        \"\"\"Nested template names should only contain ``os.sep`` in the\n+        loaded filename.\n+        \"\"\"\n+        loader = loaders.FileSystemLoader(self.searchpath)\n+        e = Environment(loader=loader)\n+        t = e.get_template(\"foo/test.html\")\n+        assert t.filename == str(self.searchpath / \"foo\" / \"test.html\")\n+\n \n class TestModuleLoader:\n     archive = None\n@@ -304,7 +312,7 @@\n def test_package_dir_source(package_dir_loader, template, expect):\n     source, name, up_to_date = package_dir_loader.get_source(None, template)\n     assert source.rstrip() == expect\n-    assert name.endswith(posixpath.join(*split_template_path(template)))\n+    assert name.endswith(os.path.join(*split_template_path(template)))\n     assert up_to_date()\n \n \n@@ -326,7 +334,7 @@\n def test_package_file_source(package_file_loader, template, expect):\n     source, name, up_to_date = package_file_loader.get_source(None, template)\n     assert source.rstrip() == expect\n-    assert name.endswith(posixpath.join(*split_template_path(template)))\n+    assert name.endswith(os.path.join(*split_template_path(template)))\n     assert up_to_date()\n \n \n@@ -349,7 +357,7 @@\n def test_package_zip_source(package_zip_loader, template, expect):\n     source, name, up_to_date = package_zip_loader.get_source(None, template)\n     assert source.rstrip() == expect\n-    assert name.endswith(posixpath.join(*split_template_path(template)))\n+    assert name.endswith(os.path.join(*split_template_path(template)))\n     assert up_to_date is None\n \n \n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 21,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.0005328,
+    "cost_details": {
+      "upstream_inference_completions_cost": 4.2e-05,
+      "upstream_inference_cost": 0.0005328,
+      "upstream_inference_prompt_cost": 0.0004908
+    },
+    "is_byok": false,
+    "prompt_tokens": 1227,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1248
+  },
+  "variance_seed": null
+}

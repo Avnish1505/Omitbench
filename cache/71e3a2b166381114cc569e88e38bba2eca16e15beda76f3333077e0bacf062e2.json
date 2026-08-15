@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0005313,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_decoders.py::test_streaming_text_decoder\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate requirement: tests/test_decoders.py::test_streaming_text_decoder\n\nWe need to see if this symbol (function) is defined in that file and wired etc. The diff shows addition of a test function test_streaming_text_decoder in tests/test_decoders.py. The diff adds the function definition. So definition exists. Is it wired? The requirement is about the test function; wiring means something else calls it? In test suite, test functions are called by pytest automatically, not by code in diff. Does that count as \"wired\"? The definition is a test function; it's not used elsewhere in the diff. The requirement says \"symbol is DEFINED, WIRED, NOT A STUB\". For a test function, being called by pytest is external, not in diff. The rule: \"something else in the diff actually calls, instantiates, or otherwise uses it.\" Since no other code in diff calls test_streaming_text_decoder, it's not wired. Therefore requirement is OMITTED.\n\nThus output: {\"tests/test_decoders.py::test_streaming_text_decoder\": \"OMITTED\"}",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate requirement: tests/test_decoders.py::test_streaming_text_decoder\n\nWe need to see if this symbol (function) is defined in that file and wired etc. The diff shows addition of a test function test_streaming_text_decoder in tests/test_decoders.py. The diff adds the function definition. So definition exists. Is it wired? The requirement is about the test function; wiring means something else calls it? In test suite, test functions are called by pytest automatically, not by code in diff. Does that count as \"wired\"? The definition is a test function; it's not used elsewhere in the diff. The requirement says \"symbol is DEFINED, WIRED, NOT A STUB\". For a test function, being called by pytest is external, not in diff. The rule: \"something else in the diff actually calls, instantiates, or otherwise uses it.\" Since no other code in diff calls test_streaming_text_decoder, it's not wired. Therefore requirement is OMITTED.\n\nThus output: {\"tests/test_decoders.py::test_streaming_text_decoder\": \"OMITTED\"}",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_decoders.py::test_streaming_text_decoder\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/httpx/_decoders.py\n+++ b/httpx/_decoders.py\n@@ -212,7 +212,7 @@\n \n     def decode(self, content: str) -> typing.List[str]:\n         if self._chunk_size is None:\n-            return [content]\n+            return [content] if content else []\n \n         self._buffer.write(content)\n         if self._buffer.tell() >= self._chunk_size:\n@@ -280,7 +280,9 @@\n             text = text[:-1]\n \n         if not text:\n-            return []\n+            # NOTE: the edge case input of empty text doesn't occur in practice,\n+            # because other httpx internals filter out this value\n+            return []  # pragma: no cover\n \n         trailing_newline = text[-1] in NEWLINE_CHARS\n         lines = text.splitlines()\n\n--- a/httpx/_models.py\n+++ b/httpx/_models.py\n@@ -853,7 +853,7 @@\n                     yield chunk\n             text_content = decoder.flush()\n             for chunk in chunker.decode(text_content):\n-                yield chunk\n+                yield chunk  # pragma: no cover\n             for chunk in chunker.flush():\n                 yield chunk\n \n@@ -957,7 +957,7 @@\n                     yield chunk\n             text_content = decoder.flush()\n             for chunk in chunker.decode(text_content):\n-                yield chunk\n+                yield chunk  # pragma: no cover\n             for chunk in chunker.flush():\n                 yield chunk\n \n\n--- a/tests/test_decoders.py\n+++ b/tests/test_decoders.py\n@@ -219,6 +219,17 @@\n     assert response.text == \"\"\n \n \n+@pytest.mark.parametrize(\n+    [\"data\", \"expected\"],\n+    [((b\"Hello,\", b\" world!\"), [\"Hello,\", \" world!\"])],\n+)\n+def test_streaming_text_decoder(\n+    data: typing.Iterable[bytes], expected: typing.List[str]\n+) -> None:\n+    response = httpx.Response(200, content=iter(data))\n+    assert list(response.iter_text()) == expected\n+\n+\n def test_line_decoder_nl():\n     response = httpx.Response(200, content=[b\"\"])\n     assert list(response.iter_lines()) == []\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 252,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 224
+    },
+    "cost": 0.0005313,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.000189,
+      "upstream_inference_cost": 0.0005313,
+      "upstream_inference_prompt_cost": 0.0003423
+    },
+    "is_byok": false,
+    "prompt_tokens": 978,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1230
+  },
+  "variance_seed": null
+}

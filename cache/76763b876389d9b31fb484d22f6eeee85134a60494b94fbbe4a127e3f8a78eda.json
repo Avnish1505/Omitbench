@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00060805,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_multipart.py::test_multipart_rewinds_files\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate requirement: tests/test_multipart.py::test_multipart_rewinds_files\n\nWe need to see if this symbol (function) is defined and wired and not a stub.\n\nThe diff shows modifications to tests/test_multipart.py: added a new test function test_multipart_rewinds_files. The diff shows its definition (def test_multipart_rewinds_files():). So definition exists.\n\nNow, is it wired? The requirement is about the test function itself. \"Wired\" means something else in the diff calls, instantiates, or otherwise uses it. For a test function, being defined is enough? The rule: \"something else in the diff actually calls, instantiates, or otherwise uses it.\" For a test function, it's not called elsewhere in the diff. Usually test frameworks discover and run it, but that's not explicit in diff. According to strict rule, the test function is not wired because nothing else calls it. However, maybe they consider test functions as being used by test runner, but the rule says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" The test runner is not in diff. So likely it's considered not wired, thus requirement omitted.\n\nBut the requirement is about test function; maybe they want to ensure the test exists, not that it's used. However the criteria given is generic for any symbol. So we must apply.\n\nThus test_multipart_rewinds_files is defined, but not wired. So fails condition 2, thus OMITTED.\n\nCheck if any other code uses it? No.\n\nThus output: {\"tests/test_multipart.py::test_multipart_rewinds_files\": \"OMITTED\"}",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate requirement: tests/test_multipart.py::test_multipart_rewinds_files\n\nWe need to see if this symbol (function) is defined and wired and not a stub.\n\nThe diff shows modifications to tests/test_multipart.py: added a new test function test_multipart_rewinds_files. The diff shows its definition (def test_multipart_rewinds_files():). So definition exists.\n\nNow, is it wired? The requirement is about the test function itself. \"Wired\" means something else in the diff calls, instantiates, or otherwise uses it. For a test function, being defined is enough? The rule: \"something else in the diff actually calls, instantiates, or otherwise uses it.\" For a test function, it's not called elsewhere in the diff. Usually test frameworks discover and run it, but that's not explicit in diff. According to strict rule, the test function is not wired because nothing else calls it. However, maybe they consider test functions as being used by test runner, but the rule says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" The test runner is not in diff. So likely it's considered not wired, thus requirement omitted.\n\nBut the requirement is about test function; maybe they want to ensure the test exists, not that it's used. However the criteria given is generic for any symbol. So we must apply.\n\nThus test_multipart_rewinds_files is defined, but not wired. So fails condition 2, thus OMITTED.\n\nCheck if any other code uses it? No.\n\nThus output: {\"tests/test_multipart.py::test_multipart_rewinds_files\": \"OMITTED\"}",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_multipart.py::test_multipart_rewinds_files\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/httpx/_multipart.py\n+++ b/httpx/_multipart.py\n@@ -113,7 +113,6 @@\n         self.filename = filename\n         self.file = fileobj\n         self.headers = headers\n-        self._consumed = False\n \n     def get_length(self) -> int:\n         headers = self.render_headers()\n@@ -158,9 +157,8 @@\n             yield self._data\n             return\n \n-        if self._consumed:  # pragma: nocover\n+        if hasattr(self.file, \"seek\"):\n             self.file.seek(0)\n-        self._consumed = True\n \n         chunk = self.file.read(self.CHUNK_SIZE)\n         while chunk:\n\n--- a/tests/test_multipart.py\n+++ b/tests/test_multipart.py\n@@ -1,6 +1,7 @@\n import cgi\n import io\n import os\n+import tempfile\n import typing\n from unittest import mock\n \n@@ -339,6 +340,25 @@\n     assert content == b\"\".join(stream)\n \n \n+def test_multipart_rewinds_files():\n+    with tempfile.TemporaryFile() as upload:\n+        upload.write(b\"Hello, world!\")\n+\n+        transport = httpx.MockTransport(echo_request_content)\n+        client = httpx.Client(transport=transport)\n+\n+        files = {\"file\": upload}\n+        response = client.post(\"http://127.0.0.1:8000/\", files=files)\n+        assert response.status_code == 200\n+        assert b\"\\r\\nHello, world!\\r\\n\" in response.content\n+\n+        # POSTing the same file instance a second time should have the same content.\n+        files = {\"file\": upload}\n+        response = client.post(\"http://127.0.0.1:8000/\", files=files)\n+        assert response.status_code == 200\n+        assert b\"\\r\\nHello, world!\\r\\n\" in response.content\n+\n+\n class TestHeaderParamHTML5Formatting:\n     def test_unicode(self):\n         param = format_form_param(\"filename\", \"n\\u00e4me\")\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 366,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 337
+    },
+    "cost": 0.00060805,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.0002745,
+      "upstream_inference_cost": 0.00060805,
+      "upstream_inference_prompt_cost": 0.00033355
+    },
+    "is_byok": false,
+    "prompt_tokens": 953,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1319
+  },
+  "variance_seed": null
+}

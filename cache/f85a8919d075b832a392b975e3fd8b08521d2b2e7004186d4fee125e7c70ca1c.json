@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00050295,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_version_info.py::test_hash\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate requirement: tests/test_version_info.py::test_hash\n\nWe need to see if the symbol test_hash is defined in tests/test_version_info.py and is wired and not a stub.\n\nLook at diff for tests/test_version_info.py. It shows modifications:\n\n- At line 7, fixture definition changed: def fixture_vi(): -> def _vi(): (but not relevant)\n\n- At bottom, added:\n\n+    def test_hash(self, vi):\n+        raise NotImplementedError\n\nSo test_hash is defined (as a method inside a class? Let's see context. The diff snippet shows indentation of 4 spaces before def test_hash, same as other test methods. Likely inside a test class (maybe TestVersionInfo). The diff shows that test_hash method body is raise NotImplementedError, which is a stub. According to criteria: NOT A STUB required. Since body is raise NotImplementedError, it's a stub, so fails condition 3. Also need to be wired: something else calls it? In tests, pytest will discover and call test_hash, but does the diff show any usage? The test method itself is defined, but not called elsewhere. However, \"wired\" means something else in the diff actually calls, instantiates, or otherwise uses it. In this diff, there is no call to test_hash. The test framework would call it, but that's not visible in diff. So condition 2 fails as well. So requirement is OMITTED.\n\nThus output: {\"tests/test_version_info.py::test_hash\": \"OMITTED\"}",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate requirement: tests/test_version_info.py::test_hash\n\nWe need to see if the symbol test_hash is defined in tests/test_version_info.py and is wired and not a stub.\n\nLook at diff for tests/test_version_info.py. It shows modifications:\n\n- At line 7, fixture definition changed: def fixture_vi(): -> def _vi(): (but not relevant)\n\n- At bottom, added:\n\n+    def test_hash(self, vi):\n+        raise NotImplementedError\n\nSo test_hash is defined (as a method inside a class? Let's see context. The diff snippet shows indentation of 4 spaces before def test_hash, same as other test methods. Likely inside a test class (maybe TestVersionInfo). The diff shows that test_hash method body is raise NotImplementedError, which is a stub. According to criteria: NOT A STUB required. Since body is raise NotImplementedError, it's a stub, so fails condition 3. Also need to be wired: something else calls it? In tests, pytest will discover and call test_hash, but does the diff show any usage? The test method itself is defined, but not called elsewhere. However, \"wired\" means something else in the diff actually calls, instantiates, or otherwise uses it. In this diff, there is no call to test_hash. The test framework would call it, but that's not visible in diff. So condition 2 fails as well. So requirement is OMITTED.\n\nThus output: {\"tests/test_version_info.py::test_hash\": \"OMITTED\"}",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_version_info.py::test_hash\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/attr/_version_info.py\n+++ b/src/attr/_version_info.py\n@@ -85,3 +85,6 @@\n         # have to do anything special with releaselevel for now.\n         return us < them\n \n+    def __hash__(self):\n+        return hash((self.year, self.minor, self.micro, self.releaselevel))\n+\n\n--- a/tests/test_version_info.py\n+++ b/tests/test_version_info.py\n@@ -7,7 +7,7 @@\n \n \n @pytest.fixture(name=\"vi\")\n-def fixture_vi():\n+def _vi():\n     return VersionInfo(19, 2, 0, \"final\")\n \n \n@@ -56,3 +56,6 @@\n         assert vi > (19, 2, 0, \"dev0\")\n         assert vi < (19, 2, 0, \"post1\")\n \n+    def test_hash(self, vi):\n+        raise NotImplementedError\n+\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 343,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 318
+    },
+    "cost": 0.00050295,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.00025725,
+      "upstream_inference_cost": 0.00050295,
+      "upstream_inference_prompt_cost": 0.0002457
+    },
+    "is_byok": false,
+    "prompt_tokens": 702,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 256,
+      "video_tokens": 0
+    },
+    "total_tokens": 1045
+  },
+  "variance_seed": null
+}

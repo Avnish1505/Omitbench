@@ -7,6 +7,14 @@ dependencies = []          # core is stdlib-only by design: ast, difflib, re
 
 [project.optional-dependencies]
 dev = ["pytest>=7.0"]
+# Only omitbench/judges.py (the B4/B5/B6 LLM-judge baselines) needs this.
+# One OpenAI-compatible SDK covers all three backends -- OpenRouter (B4, B5)
+# and NVIDIA NIM (B6) both speak the OpenAI chat-completions wire format, so
+# a single client class with a different base_url per judge is enough; no
+# per-vendor SDK needed. The rest of the core is stdlib-only by design --
+# see CLAUDE.md -- and `openai` is imported lazily inside judges.py so that
+# promise holds even with this extra uninstalled.
+judge = ["openai>=1.40"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

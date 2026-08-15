@@ -1,0 +1,41 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00025928,
+  "cost_source": "reported",
+  "judge_id": "B5 LLM judge (mid-tier)",
+  "message": {
+    "content": "```json\n{\"tests/test_validators.py::TestOr\": \"OMITTED\"}\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_validators.py::TestOr\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/attr/validators.py\n+++ b/src/attr/validators.py\n@@ -35,6 +35,7 @@\n     \"min_len\",\n     \"not_\",\n     \"optional\",\n+    \"or_\",\n     \"set_disabled\",\n ]\n \n@@ -615,3 +616,46 @@\n         exc_types = (exc_types,)\n     return _NotValidator(validator, msg, exc_types)\n \n+\n+@attrs(repr=False, slots=True, hash=True)\n+class _OrValidator:\n+    validators = attrib()\n+\n+    def __call__(self, inst, attr, value):\n+        for v in self.validators:\n+            try:\n+                v(inst, attr, value)\n+            except Exception:  # noqa: BLE001, PERF203, S112\n+                continue\n+            else:\n+                return\n+\n+        msg = f\"None of {self.validators!r} satisfied for value {value!r}\"\n+        raise ValueError(msg)\n+\n+    def __repr__(self):\n+        return f\"<or validator wrapping {self.validators!r}>\"\n+\n+\n+def or_(*validators):\n+    \"\"\"\n+    A validator that composes multiple validators into one.\n+\n+    When called on a value, it runs all wrapped validators until one of them\n+    is satisfied.\n+\n+    :param ~collections.abc.Iterable[typing.Callable] validators: Arbitrary\n+        number of validators.\n+\n+    :raises ValueError: If no validator is satisfied. Raised with a\n+        human-readable error message listing all the wrapped validators and\n+        the value that failed all of them.\n+\n+    .. versionadded:: 24.1.0\n+    \"\"\"\n+    vals = []\n+    for v in validators:\n+        vals.extend(v.validators if isinstance(v, _OrValidator) else [v])\n+\n+    return _OrValidator(tuple(vals))\n+\n\n--- a/tests/test_validators.py\n+++ b/tests/test_validators.py\n@@ -30,6 +30,7 @@\n     min_len,\n     not_,\n     optional,\n+    or_,\n )\n \n from .utils import simple_attr\n@@ -1262,3 +1263,7 @@\n             \"(got <class 'str'>).\"\n         ) == e.value.args[0]\n \n+\n+class TestOr:\n+    raise NotImplementedError\n+\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 21,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.00025928,
+    "cost_details": {
+      "upstream_inference_completions_cost": 4.2e-05,
+      "upstream_inference_cost": 0.00025928,
+      "upstream_inference_prompt_cost": 0.00021728
+    },
+    "is_byok": false,
+    "prompt_tokens": 1004,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 512,
+      "video_tokens": 0
+    },
+    "total_tokens": 1025
+  },
+  "variance_seed": null
+}

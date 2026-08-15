@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00062645,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_requests.py::test_env_cert_bundles\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate requirement: tests/test_requests.py::test_env_cert_bundles\n\nWe need to see if the diff implements that test. The requirement is a test function named test_env_cert_bundles in tests/test_requests.py. In the diff, we see modifications to tests/test_requests.py, adding a parametrize block but not the test function itself. Let's examine diff: In tests/test_requests.py, after existing test_http_with_certificate, they added a parametrize decorator and then the test function? Actually the diff shows:\n\n```\n+    @pytest.mark.parametrize(\n+        'env, expected', (\n+            ({}, True),\n+            ({'REQUESTS_CA_BUNDLE': '/some/path'}, '/some/path'),\n...\n+        )\n+    )\n \n     def test_http_with_certificate(self, httpbin):\n         r = requests.get(httpbin(), cert='.')\n```\n\nIt seems they added a parametrize decorator before test_http_with_certificate, but the test function name is test_http_with_certificate, not test_env_cert_bundles. The requirement is test_env_cert_bundles. The diff does not define a function named test_env_cert_bundles. So requirement is omitted.\n\nBut we must check if maybe test_env_cert_bundles is defined elsewhere in the diff? No, only this snippet. There's no definition of test_env_cert_bundles. So according to criteria, it's omitted.\n\nThus output JSON with that key mapping to \"OMITTED\".",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate requirement: tests/test_requests.py::test_env_cert_bundles\n\nWe need to see if the diff implements that test. The requirement is a test function named test_env_cert_bundles in tests/test_requests.py. In the diff, we see modifications to tests/test_requests.py, adding a parametrize block but not the test function itself. Let's examine diff: In tests/test_requests.py, after existing test_http_with_certificate, they added a parametrize decorator and then the test function? Actually the diff shows:\n\n```\n+    @pytest.mark.parametrize(\n+        'env, expected', (\n+            ({}, True),\n+            ({'REQUESTS_CA_BUNDLE': '/some/path'}, '/some/path'),\n...\n+        )\n+    )\n \n     def test_http_with_certificate(self, httpbin):\n         r = requests.get(httpbin(), cert='.')\n```\n\nIt seems they added a parametrize decorator before test_http_with_certificate, but the test function name is test_http_with_certificate, not test_env_cert_bundles. The requirement is test_env_cert_bundles. The diff does not define a function named test_env_cert_bundles. So requirement is omitted.\n\nBut we must check if maybe test_env_cert_bundles is defined elsewhere in the diff? No, only this snippet. There's no definition of test_env_cert_bundles. So according to criteria, it's omitted.\n\nThus output JSON with that key mapping to \"OMITTED\".",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_requests.py::test_env_cert_bundles\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/requests/sessions.py\n+++ b/requests/sessions.py\n@@ -702,11 +702,14 @@\n             for (k, v) in env_proxies.items():\n                 proxies.setdefault(k, v)\n \n-            # Look for requests environment configuration and be compatible\n-            # with cURL.\n+            # Look for requests environment configuration\n+            # and be compatible with cURL.\n             if verify is True or verify is None:\n-                verify = (os.environ.get('REQUESTS_CA_BUNDLE') or\n-                          os.environ.get('CURL_CA_BUNDLE'))\n+                verify = (\n+                    os.environ.get('REQUESTS_CA_BUNDLE')\n+                    or os.environ.get('CURL_CA_BUNDLE')\n+                    or verify\n+                )\n \n         # Merge all the kwargs.\n         proxies = merge_setting(proxies, self.proxies)\n@@ -714,8 +717,12 @@\n         verify = merge_setting(verify, self.verify)\n         cert = merge_setting(cert, self.cert)\n \n-        return {'verify': verify, 'proxies': proxies, 'stream': stream,\n-                'cert': cert}\n+        return {\n+            'proxies': proxies,\n+            'stream': stream,\n+            'verify': verify,\n+            'cert': cert\n+        }\n \n     def get_adapter(self, url):\n         \"\"\"\n\n--- a/tests/test_requests.py\n+++ b/tests/test_requests.py\n@@ -897,6 +897,31 @@\n         with pytest.raises(IOError) as e:\n             requests.get(httpbin_secure(), cert=('.', INVALID_PATH))\n         assert str(e.value) == 'Could not find the TLS key file, invalid path: {}'.format(INVALID_PATH)\n+\n+    @pytest.mark.parametrize(\n+        'env, expected', (\n+            ({}, True),\n+            ({'REQUESTS_CA_BUNDLE': '/some/path'}, '/some/path'),\n+            ({'REQUESTS_CA_BUNDLE': ''}, True),\n+            ({'CURL_CA_BUNDLE': '/some/path'}, '/some/path'),\n+            ({'CURL_CA_BUNDLE': ''}, True),\n+            ({'REQUESTS_CA_BUNDLE': '', 'CURL_CA_BUNDLE': ''}, True),\n+            (\n+                {\n+                    'REQUESTS_CA_BUNDLE': '/some/path',\n+                    'CURL_CA_BUNDLE': '/curl/path',\n+                },\n+                '/some/path',\n+            ),\n+            (\n+                {\n+                    'REQUESTS_CA_BUNDLE': '',\n+                    'CURL_CA_BUNDLE': '/curl/path',\n+                },\n+                '/curl/path',\n+            ),\n+        )\n+    )\n \n     def test_http_with_certificate(self, httpbin):\n         r = requests.get(httpbin(), cert='.')\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 328,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 300
+    },
+    "cost": 0.00062645,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.000246,
+      "upstream_inference_cost": 0.00062645,
+      "upstream_inference_prompt_cost": 0.00038045
+    },
+    "is_byok": false,
+    "prompt_tokens": 1087,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 384,
+      "video_tokens": 0
+    },
+    "total_tokens": 1415
+  },
+  "variance_seed": null
+}

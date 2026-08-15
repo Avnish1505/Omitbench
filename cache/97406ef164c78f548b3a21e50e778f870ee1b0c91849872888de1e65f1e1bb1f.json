@@ -1,0 +1,41 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00027152,
+  "cost_source": "reported",
+  "judge_id": "B5 LLM judge (mid-tier)",
+  "message": {
+    "content": "```json\n{\"tests/test_basic.py::from_list\": \"OMITTED\"}\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_basic.py::from_list\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/flask/app.py\n+++ b/src/flask/app.py\n@@ -1830,6 +1830,9 @@\n             ``dict``\n                 A dictionary that will be jsonify'd before being returned.\n \n+            ``list``\n+                A list that will be jsonify'd before being returned.\n+\n             ``generator`` or ``iterator``\n                 A generator that returns ``str`` or ``bytes`` to be\n                 streamed as the response.\n@@ -1855,6 +1858,7 @@\n \n         .. versionchanged:: 2.2\n             A generator will be converted to a streaming response.\n+            A list will be converted to a JSON response.\n \n         .. versionchanged:: 1.1\n             A dict will be converted to a JSON response.\n@@ -1907,7 +1911,7 @@\n                     headers=headers,  # type: ignore[arg-type]\n                 )\n                 status = headers = None\n-            elif isinstance(rv, dict):\n+            elif isinstance(rv, (dict, list)):\n                 rv = jsonify(rv)\n             elif isinstance(rv, BaseResponse) or callable(rv):\n                 # evaluate a WSGI callable, or coerce a different response\n@@ -1920,14 +1924,14 @@\n                     raise TypeError(\n                         f\"{e}\\nThe view function did not return a valid\"\n                         \" response. The return type must be a string,\"\n-                        \" dict, tuple, Response instance, or WSGI\"\n+                        \" dict, list, tuple, Response instance, or WSGI\"\n                         f\" callable, but it was a {type(rv).__name__}.\"\n                     ).with_traceback(sys.exc_info()[2]) from None\n             else:\n                 raise TypeError(\n                     \"The view function did not return a valid\"\n                     \" response. The return type must be a string,\"\n-                    \" dict, tuple, Response instance, or WSGI\"\n+                    \" dict, list, tuple, Response instance, or WSGI\"\n                     f\" callable, but it was a {type(rv).__name__}.\"\n                 )\n \n\n--- a/src/flask/typing.py\n+++ b/src/flask/typing.py\n@@ -7,7 +7,7 @@\n \n # The possible types that are directly convertible or are a Response object.\n ResponseValue = t.Union[\n-    \"Response\", str, bytes, t.Dict[str, t.Any], t.Iterator[str], t.Iterator[bytes]\n+    \"Response\", str, bytes, list, t.Dict[str, t.Any], t.Iterator[str], t.Iterator[bytes]\n ]\n \n # the possible types for an individual HTTP header\n\n--- a/tests/test_basic.py\n+++ b/tests/test_basic.py\n@@ -1166,6 +1166,10 @@\n     def from_dict():\n         return {\"foo\": \"bar\"}, 201\n \n+    @app.route(\"/list\")\n+    def from_list():\n+        raise NotImplementedError\n+\n     assert client.get(\"/text\").data == \"H\u00e4llo W\u00f6rld\".encode()\n     assert client.get(\"/bytes\").data == \"H\u00e4llo W\u00f6rld\".encode()\n \n@@ -1203,6 +1207,10 @@\n \n     rv = client.get(\"/dict\")\n     assert rv.json == {\"foo\": \"bar\"}\n+    assert rv.status_code == 201\n+\n+    rv = client.get(\"/list\")\n+    assert rv.json == [\"foo\", \"bar\"]\n     assert rv.status_code == 201\n \n \n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 21,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.00027152,
+    "cost_details": {
+      "upstream_inference_completions_cost": 4.2e-05,
+      "upstream_inference_cost": 0.00027152,
+      "upstream_inference_prompt_cost": 0.00022952
+    },
+    "is_byok": false,
+    "prompt_tokens": 1265,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 768,
+      "video_tokens": 0
+    },
+    "total_tokens": 1286
+  },
+  "variance_seed": null
+}

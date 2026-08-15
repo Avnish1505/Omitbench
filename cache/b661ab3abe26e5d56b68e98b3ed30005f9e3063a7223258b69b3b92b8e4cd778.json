@@ -1,0 +1,41 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0002496,
+  "cost_source": "reported",
+  "judge_id": "B5 LLM judge (mid-tier)",
+  "message": {
+    "content": "```json\n{\"tests/test_slots.py::test_slots_unpickle_is_backward_compatible\": \"OMITTED\"}\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_slots.py::test_slots_unpickle_is_backward_compatible\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/attr/_make.py\n+++ b/src/attr/_make.py\n@@ -934,9 +934,15 @@\n             Automatically created by attrs.\n             \"\"\"\n             __bound_setattr = _obj_setattr.__get__(self)\n-            for name in state_attr_names:\n-                if name in state:\n-                    __bound_setattr(name, state[name])\n+            if isinstance(state, tuple):\n+                # Backward compatibility with attrs instances pickled with\n+                # attrs versions before v22.2.0 which stored tuples.\n+                for name, value in zip(state_attr_names, state):\n+                    __bound_setattr(name, value)\n+            else:\n+                for name in state_attr_names:\n+                    if name in state:\n+                        __bound_setattr(name, state[name])\n \n             # The hash code cache is not included when the object is\n             # serialized, but it still needs to be initialized to None to\n\n--- a/tests/test_slots.py\n+++ b/tests/test_slots.py\n@@ -754,13 +754,12 @@\n     c = attr.ib()\n \n \n-@pytest.mark.parametrize(\"cls\", [A])\n-def test_slots_unpickle_after_attr_removed(cls):\n+def test_slots_unpickle_after_attr_removed():\n     \"\"\"\n     We don't assign attributes we don't have anymore if the class has\n     removed it.\n     \"\"\"\n-    a = cls(1, 2, 3)\n+    a = A(1, 2, 3)\n     a_pickled = pickle.dumps(a)\n     a_unpickled = pickle.loads(a_pickled)\n     assert a_unpickled == a\n@@ -778,12 +777,11 @@\n         assert not hasattr(new_a, \"b\")\n \n \n-@pytest.mark.parametrize(\"cls\", [A])\n-def test_slots_unpickle_after_attr_added(cls, frozen):\n+def test_slots_unpickle_after_attr_added(frozen):\n     \"\"\"\n     We don't assign attribute we haven't had before if the class has one added.\n     \"\"\"\n-    a = cls(1, 2, 3)\n+    a = A(1, 2, 3)\n     a_pickled = pickle.dumps(a)\n     a_unpickled = pickle.loads(a_pickled)\n \n@@ -804,3 +802,7 @@\n         assert new_a.c == 3\n         assert not hasattr(new_a, \"d\")\n \n+\n+def test_slots_unpickle_is_backward_compatible(frozen):\n+    raise NotImplementedError\n+\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 30,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.0002496,
+    "cost_details": {
+      "upstream_inference_completions_cost": 6e-05,
+      "upstream_inference_cost": 0.0002496,
+      "upstream_inference_prompt_cost": 0.0001896
+    },
+    "is_byok": false,
+    "prompt_tokens": 1050,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 640,
+      "video_tokens": 0
+    },
+    "total_tokens": 1080
+  },
+  "variance_seed": null
+}

@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00069645,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_datastructures.py::test_str\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate requirement: tests/test_datastructures.py::test_str\n\nWe need to see if the symbol test_str is defined in that file and wired etc. The diff shows addition of a test method inside tests/test_datastructures.py. Let's examine diff.\n\nIn tests/test_datastructures.py, after some existing code, they added:\n\n+    def test_str(self) -> None:\n+        headers = ds.EnvironHeaders({\"CONTENT_LENGTH\": \"50\", \"HTTP_HOST\": \"test\"})\n+        assert str(headers) == \"Content-Length: 50\\r\\nHost: test\\r\\n\\r\\n\"\n\nSo test_str is a method inside a class (likely TestHeaders?). Let's locate context: earlier diff shows a class TestHeaders? The diff snippet shows earlier part:\n\n@@ -884,6 +884,10 @@\n \n         with pytest.raises(TypeError):\n             headers |= {\"y\": \"2\"}\n+\n+    def test_str(self) -> None:\n+        headers = ds.EnvironHeaders({\"CONTENT_LENGTH\": \"50\", \"HTTP_HOST\": \"test\"})\n+        assert str(headers) == \"Content-Length: 50\\r\\nHost: test\\r\\n\\r\\n\"\n \n \n class TestHeaderSet:\n\nThus test_str is defined as a method inside a class (maybe TestHeaders). The requirement is tests/test_datastructures.py::test_str. That refers to a function or method named test_str in that file. The diff shows its definition. So condition 1: DEFINED - yes, there is a def test_str.\n\nCondition 2: WIRED - something else in the diff calls, instantiates, or otherwise uses it. The test itself is a test function; wiring would be that pytest will discover and run it. But does the diff show any other code calling test_str? No. However, the requirement's definition of WIRED: \"something else in the diff actually calls, instantiates, or otherwise uses it.\" For a test function, the test runner uses it, but that's not in the diff. The diff does not show any other code calling test_str. So likely fails WIRED. But maybe they consider that defining a test method inside a test class is enough? The spec says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" The test function is not used elsewhere in the diff. So it's omitted.\n\nBut maybe they consider that the test is being used by pytest automatically, but that's external. The spec says \"something else in the diff\". So not satisfied.\n\nThus requirement is OMITTED.\n\nReturn JSON with that key mapping to \"OMITTED\".",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate requirement: tests/test_datastructures.py::test_str\n\nWe need to see if the symbol test_str is defined in that file and wired etc. The diff shows addition of a test method inside tests/test_datastructures.py. Let's examine diff.\n\nIn tests/test_datastructures.py, after some existing code, they added:\n\n+    def test_str(self) -> None:\n+        headers = ds.EnvironHeaders({\"CONTENT_LENGTH\": \"50\", \"HTTP_HOST\": \"test\"})\n+        assert str(headers) == \"Content-Length: 50\\r\\nHost: test\\r\\n\\r\\n\"\n\nSo test_str is a method inside a class (likely TestHeaders?). Let's locate context: earlier diff shows a class TestHeaders? The diff snippet shows earlier part:\n\n@@ -884,6 +884,10 @@\n \n         with pytest.raises(TypeError):\n             headers |= {\"y\": \"2\"}\n+\n+    def test_str(self) -> None:\n+        headers = ds.EnvironHeaders({\"CONTENT_LENGTH\": \"50\", \"HTTP_HOST\": \"test\"})\n+        assert str(headers) == \"Content-Length: 50\\r\\nHost: test\\r\\n\\r\\n\"\n \n \n class TestHeaderSet:\n\nThus test_str is defined as a method inside a class (maybe TestHeaders). The requirement is tests/test_datastructures.py::test_str. That refers to a function or method named test_str in that file. The diff shows its definition. So condition 1: DEFINED - yes, there is a def test_str.\n\nCondition 2: WIRED - something else in the diff calls, instantiates, or otherwise uses it. The test itself is a test function; wiring would be that pytest will discover and run it. But does the diff show any other code calling test_str? No. However, the requirement's definition of WIRED: \"something else in the diff actually calls, instantiates, or otherwise uses it.\" For a test function, the test runner uses it, but that's not in the diff. The diff does not show any other code calling test_str. So likely fails WIRED. But maybe they consider that defining a test method inside a test class is enough? The spec says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" The test function is not used elsewhere in the diff. So it's omitted.\n\nBut maybe they consider that the test is being used by pytest automatically, but that's external. The spec says \"something else in the diff\". So not satisfied.\n\nThus requirement is OMITTED.\n\nReturn JSON with that key mapping to \"OMITTED\".",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_datastructures.py::test_str\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/werkzeug/datastructures/headers.py\n+++ b/src/werkzeug/datastructures/headers.py\n@@ -568,13 +568,13 @@\n     def __str__(self) -> str:\n         \"\"\"Returns formatted headers suitable for HTTP transmission.\"\"\"\n         strs = []\n-        for key, value in self._list:\n+        for key, value in self.to_wsgi_list():\n             strs.append(f\"{key}: {value}\")\n         strs.append(\"\\r\\n\")\n         return \"\\r\\n\".join(strs)\n \n     def __repr__(self) -> str:\n-        return f\"{type(self).__name__}({self._list!r})\"\n+        return f\"{type(self).__name__}({list(self)!r})\"\n \n \n def _options_header_vkw(value: str, kw: dict[str, t.Any]) -> str:\n\n--- a/tests/test_datastructures.py\n+++ b/tests/test_datastructures.py\n@@ -884,6 +884,10 @@\n \n         with pytest.raises(TypeError):\n             headers |= {\"y\": \"2\"}\n+\n+    def test_str(self) -> None:\n+        headers = ds.EnvironHeaders({\"CONTENT_LENGTH\": \"50\", \"HTTP_HOST\": \"test\"})\n+        assert str(headers) == \"Content-Length: 50\\r\\nHost: test\\r\\n\\r\\n\"\n \n \n class TestHeaderSet:\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 559,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 533
+    },
+    "cost": 0.00069645,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.00041925,
+      "upstream_inference_cost": 0.00069645,
+      "upstream_inference_prompt_cost": 0.0002772
+    },
+    "is_byok": false,
+    "prompt_tokens": 792,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1351
+  },
+  "variance_seed": null
+}

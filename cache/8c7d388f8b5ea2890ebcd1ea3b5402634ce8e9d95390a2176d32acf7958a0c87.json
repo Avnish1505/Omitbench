@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0004265,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_blueprints.py::test_empty_name_not_allowed\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate requirement: tests/test_blueprints.py::test_empty_name_not_allowed\n\nWe need to see if the diff implements that test. The requirement refers to a test function named test_empty_name_not_allowed in tests/test_blueprints.py. The diff shows modifications to src/flask/blueprints.py adding a check for empty name raising ValueError. Also diff shows addition of blank lines after test_dotted_name_not_allowed, but not the test itself. The test function test_empty_name_not_allowed is not present in diff. The requirement expects that test to be implemented (i.e., the test function exists and is wired). But we need to check if the diff defines that test function. It does not appear. The diff only adds lines after test_dotted_name_not_allowed, but no new test function. So the requirement is omitted.\n\nBut we must follow the criteria: For requirement, we need to see if the symbol (function) is defined in target file (tests/test_blueprints.py). The diff does not show definition of test_empty_name_not_allowed. So fails definition. Therefore OMITTED.\n\nThus output JSON with that key mapping to \"OMITTED\".",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate requirement: tests/test_blueprints.py::test_empty_name_not_allowed\n\nWe need to see if the diff implements that test. The requirement refers to a test function named test_empty_name_not_allowed in tests/test_blueprints.py. The diff shows modifications to src/flask/blueprints.py adding a check for empty name raising ValueError. Also diff shows addition of blank lines after test_dotted_name_not_allowed, but not the test itself. The test function test_empty_name_not_allowed is not present in diff. The requirement expects that test to be implemented (i.e., the test function exists and is wired). But we need to check if the diff defines that test function. It does not appear. The diff only adds lines after test_dotted_name_not_allowed, but no new test function. So the requirement is omitted.\n\nBut we must follow the criteria: For requirement, we need to see if the symbol (function) is defined in target file (tests/test_blueprints.py). The diff does not show definition of test_empty_name_not_allowed. So fails definition. Therefore OMITTED.\n\nThus output JSON with that key mapping to \"OMITTED\".",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_blueprints.py::test_empty_name_not_allowed\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/flask/blueprints.py\n+++ b/src/flask/blueprints.py\n@@ -190,6 +190,9 @@\n             root_path=root_path,\n         )\n \n+        if not name:\n+            raise ValueError(\"'name' may not be empty.\")\n+\n         if \".\" in name:\n             raise ValueError(\"'name' may not contain a dot '.' character.\")\n \n\n--- a/tests/test_blueprints.py\n+++ b/tests/test_blueprints.py\n@@ -254,6 +254,8 @@\n def test_dotted_name_not_allowed(app, client):\n     with pytest.raises(ValueError):\n         flask.Blueprint(\"app.ui\", __name__)\n+\n+\n \n \n def test_dotted_names_from_app(app, client):\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 263,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 235
+    },
+    "cost": 0.0004265,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.00019725,
+      "upstream_inference_cost": 0.0004265,
+      "upstream_inference_prompt_cost": 0.00022925
+    },
+    "is_byok": false,
+    "prompt_tokens": 655,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 256,
+      "video_tokens": 0
+    },
+    "total_tokens": 918
+  },
+  "variance_seed": null
+}

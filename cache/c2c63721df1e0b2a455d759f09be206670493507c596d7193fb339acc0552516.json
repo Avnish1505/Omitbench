@@ -1,0 +1,41 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0006288,
+  "cost_source": "reported",
+  "judge_id": "B5 LLM judge (mid-tier)",
+  "message": {
+    "content": "```json\n{\"tests/test_funcs.py::test_non_atomic_types\": \"IMPLEMENTED\"}\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_funcs.py::test_non_atomic_types\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/attr/_funcs.py\n+++ b/src/attr/_funcs.py\n@@ -6,6 +6,23 @@\n from ._compat import get_generic_base\n from ._make import _OBJ_SETATTR, NOTHING, fields\n from .exceptions import AttrsAttributeNotFoundError\n+\n+\n+_ATOMIC_TYPES = frozenset(\n+    {\n+        type(None),\n+        bool,\n+        int,\n+        float,\n+        str,\n+        complex,\n+        bytes,\n+        type(...),\n+        type,\n+        range,\n+        property,\n+    }\n+)\n \n \n def asdict(\n@@ -71,7 +88,10 @@\n             v = value_serializer(inst, a, v)\n \n         if recurse is True:\n-            if has(v.__class__):\n+            value_type = type(v)\n+            if value_type in _ATOMIC_TYPES:\n+                rv[a.name] = v\n+            elif has(value_type):\n                 rv[a.name] = asdict(\n                     v,\n                     recurse=True,\n@@ -80,8 +100,8 @@\n                     retain_collection_types=retain_collection_types,\n                     value_serializer=value_serializer,\n                 )\n-            elif isinstance(v, (tuple, list, set, frozenset)):\n-                cf = v.__class__ if retain_collection_types is True else list\n+            elif issubclass(value_type, (tuple, list, set, frozenset)):\n+                cf = value_type if retain_collection_types is True else list\n                 items = [\n                     _asdict_anything(\n                         i,\n@@ -101,7 +121,7 @@\n                     # Workaround for TypeError: cf.__new__() missing 1 required\n                     # positional argument (which appears, for a namedturle)\n                     rv[a.name] = cf(*items)\n-            elif isinstance(v, dict):\n+            elif issubclass(value_type, dict):\n                 df = dict_factory\n                 rv[a.name] = df(\n                     (\n@@ -142,7 +162,12 @@\n     \"\"\"\n     ``asdict`` only works on attrs instances, this works on anything.\n     \"\"\"\n-    if getattr(val.__class__, \"__attrs_attrs__\", None) is not None:\n+    val_type = type(val)\n+    if val_type in _ATOMIC_TYPES:\n+        rv = val\n+        if value_serializer is not None:\n+            rv = value_serializer(None, None, rv)\n+    elif getattr(val_type, \"__attrs_attrs__\", None) is not None:\n         # Attrs class.\n         rv = asdict(\n             val,\n@@ -152,7 +177,7 @@\n             retain_collection_types=retain_collection_types,\n             value_serializer=value_serializer,\n         )\n-    elif isinstance(val, (tuple, list, set, frozenset)):\n+    elif issubclass(val_type, (tuple, list, set, frozenset)):\n         if retain_collection_types is True:\n             cf = val.__class__\n         elif is_key:\n@@ -173,7 +198,7 @@\n                 for i in val\n             ]\n         )\n-    elif isinstance(val, dict):\n+    elif issubclass(val_type, dict):\n         df = dict_factory\n         rv = df(\n             (\n\n--- a/tests/test_funcs.py\n+++ b/tests/test_funcs.py\n@@ -65,6 +65,22 @@\n         assert {\"x\": {\"x\": 1, \"y\": 2}, \"y\": {\"x\": 3, \"y\": 4}} == asdict(\n             C(C(1, 2), C(3, 4)), dict_factory=dict_class\n         )\n+\n+    def test_non_atomic_types(self, C):\n+        \"\"\"\n+        Non-atomic types that don't have special treatment for are serialized\n+        and the types are retained.\n+        \"\"\"\n+\n+        class Int(int):\n+            pass\n+\n+        c = C(Int(10), [Int(1), 2])\n+        expected = {\"x\": 10, \"y\": [1, 2]}\n+\n+        assert expected == asdict(c)\n+        assert type(asdict(c)[\"x\"]) is Int\n+        assert type(asdict(c)[\"y\"][0]) is Int\n \n     def test_nested_lists(self, C):\n         \"\"\"\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 24,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.0006288,
+    "cost_details": {
+      "upstream_inference_completions_cost": 4.8e-05,
+      "upstream_inference_cost": 0.0006288,
+      "upstream_inference_prompt_cost": 0.0005808
+    },
+    "is_byok": false,
+    "prompt_tokens": 1452,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1476
+  },
+  "variance_seed": null
+}

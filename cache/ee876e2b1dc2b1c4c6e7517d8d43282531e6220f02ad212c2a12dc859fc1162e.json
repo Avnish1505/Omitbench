@@ -1,0 +1,41 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0004092,
+  "cost_source": "reported",
+  "judge_id": "B5 LLM judge (mid-tier)",
+  "message": {
+    "content": "```json\n{\"tests/test_itsdangerous/test_jws.py::test_secret_keys\": \"IMPLEMENTED\", \"tests/test_itsdangerous/test_signer.py::test_secret_keys\": \"IMPLEMENTED\"}\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_itsdangerous/test_jws.py::test_secret_keys\n- tests/test_itsdangerous/test_signer.py::test_secret_keys\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/tests/test_itsdangerous/test_jws.py\n+++ b/tests/test_itsdangerous/test_jws.py\n@@ -67,6 +67,17 @@\n \n         assert match in str(exc_info.value)\n \n+    def test_secret_keys(self):\n+        with pytest.deprecated_call():\n+            serializer = JSONWebSignatureSerializer(\"a\")\n+\n+        dumped = serializer.dumps(\"value\")\n+\n+        with pytest.deprecated_call():\n+            serializer = JSONWebSignatureSerializer([\"a\", \"b\"])\n+\n+        assert serializer.loads(dumped) == \"value\"\n+\n \n class TestTimedJWSSerializer(TestJWSSerializer, TestTimedSerializer):\n     @pytest.fixture()\n\n--- a/tests/test_itsdangerous/test_signer.py\n+++ b/tests/test_itsdangerous/test_signer.py\n@@ -91,6 +91,16 @@\n         if algorithm is None:\n             assert signer.algorithm.digest_method == signer.digest_method\n \n+    def test_secret_keys(self):\n+        signer = Signer(\"a\")\n+        signed = signer.sign(\"my string\")\n+        assert isinstance(signed, bytes)\n+\n+        signer = Signer([\"a\", \"b\"])\n+        assert signer.validate(signed)\n+        out = signer.unsign(signed)\n+        assert out == b\"my string\"\n+\n \n def test_abstract_algorithm():\n     alg = SigningAlgorithm()\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 47,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.0004092,
+    "cost_details": {
+      "upstream_inference_completions_cost": 9.4e-05,
+      "upstream_inference_cost": 0.0004092,
+      "upstream_inference_prompt_cost": 0.0003152
+    },
+    "is_byok": false,
+    "prompt_tokens": 788,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 835
+  },
+  "variance_seed": null
+}

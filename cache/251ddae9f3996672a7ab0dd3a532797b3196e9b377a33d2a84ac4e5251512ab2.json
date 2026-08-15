@@ -1,0 +1,41 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0005044,
+  "cost_source": "reported",
+  "judge_id": "B5 LLM judge (mid-tier)",
+  "message": {
+    "content": "```json\n{\"tests/test_regression.py::test_cached_extends\": \"IMPLEMENTED\", \"tests/test_regression.py::test_cached_includes\": \"IMPLEMENTED\"}\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_regression.py::test_cached_extends\n- tests/test_regression.py::test_cached_includes\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/jinja2/environment.py\n+++ b/src/jinja2/environment.py\n@@ -811,6 +811,16 @@\n             if template is not None and (\n                 not self.auto_reload or template.is_up_to_date\n             ):\n+                # update globals if changed\n+                new_globals = globals.items() - template.globals.items()\n+                if new_globals:\n+                    # it is possible for the template and environment to share\n+                    # a globals object, in which case, a new copy should be\n+                    # made to avoid affecting other templates\n+                    if template.globals is self.globals:\n+                        template.globals = dict(template.globals, **globals)\n+                    else:\n+                        template.globals.update(dict(new_globals))\n                 return template\n         template = self.loader.load(self, name, globals)\n         if self.cache is not None:\n\n--- a/tests/test_regression.py\n+++ b/tests/test_regression.py\n@@ -717,3 +717,37 @@\n         # show up outside of it\n         assert tmpl.render() == \"42\\n0\\n24\\n0\\n42\\n1\\n24\\n1\\n42\"\n \n+    def test_cached_extends(self):\n+        env = Environment(\n+            loader=DictLoader(\n+                {\"parent\": \"{{ foo }}\", \"child\": \"{% extends 'parent' %}\"}\n+            )\n+        )\n+        tmpl = env.get_template(\"child\", globals={\"foo\": \"bar\"})\n+        assert tmpl.render() == \"bar\"\n+\n+        tmpl = env.get_template(\"parent\", globals={\"foo\": 42})\n+        assert tmpl.render() == \"42\"\n+\n+        tmpl = env.get_template(\"child\")\n+        assert tmpl.render() == \"bar\"\n+\n+        tmpl = env.get_template(\"parent\")\n+        assert tmpl.render() == \"42\"\n+\n+    def test_cached_includes(self):\n+        env = Environment(\n+            loader=DictLoader({\"base\": \"{{ foo }}\", \"main\": \"{% include 'base' %}\"})\n+        )\n+        tmpl = env.get_template(\"main\", globals={\"foo\": \"bar\"})\n+        assert tmpl.render() == \"bar\"\n+\n+        tmpl = env.get_template(\"base\", globals={\"foo\": 42})\n+        assert tmpl.render() == \"42\"\n+\n+        tmpl = env.get_template(\"main\")\n+        assert tmpl.render() == \"bar\"\n+\n+        tmpl = env.get_template(\"base\")\n+        assert tmpl.render() == \"42\"\n+\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 41,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.0005044,
+    "cost_details": {
+      "upstream_inference_completions_cost": 8.2e-05,
+      "upstream_inference_cost": 0.0005044,
+      "upstream_inference_prompt_cost": 0.0004224
+    },
+    "is_byok": false,
+    "prompt_tokens": 1056,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1097
+  },
+  "variance_seed": null
+}

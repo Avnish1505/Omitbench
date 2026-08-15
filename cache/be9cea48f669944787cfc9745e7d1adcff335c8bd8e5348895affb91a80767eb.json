@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00064625,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_requests.py::test_content_length_for_bytes_data\": \"OMITTED\", \"tests/test_requests.py::test_content_length_for_string_data_counts_bytes\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate two requirements: tests/test_requests.py::test_content_length_for_bytes_data and tests/test_requests.py::test_content_length_for_string_data_counts_bytes.\n\nWe have diff snippet showing modifications to tests/test_requests.py. The diff adds a new test method test_content_length_for_string_data_counts_bytes. Also earlier there is test_autoset_header_values_are_native, but not relevant.\n\nThe requirement test_content_length_for_bytes_data is not present in diff. The diff does not show that test. So it's omitted.\n\nThe requirement test_content_length_for_string_data_counts_bytes appears in diff: we see a new test method defined:\n\ndef test_content_length_for_string_data_counts_bytes(self, httpbin):\n    data = \"This is a string containing multi-byte UTF-8 \u2603\ufe0f\"\n    length = str(len(data.encode(\"utf-8\")))\n    req = requests.Request(\"POST\", httpbin(\"post\"), data=data)\n    p = req.prepare()\n\nBut the diff snippet ends there; we need to see if the test asserts something. The diff shows only up to p = req.prepare(). It doesn't show any assertion. However the requirement is about test implementation. The requirement is that the test exists (definition) and is wired (used). Since this is a test function, it's defined. It is wired? The test function is called by test runner, but within diff we need to see if something else calls it. The requirement's criteria: \"DEFINED -- its def statement exists in the target file.\" Yes. \"WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it.\" For a test function, the test runner will call it, but that's not in diff. The diff does not show any other code calling this test. So per criteria, it's not wired. However maybe they consider test definitions as being used by test runner automatically, but the rule says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" Since there is no explicit call in diff, it's not wired. So requirement would be OMITTED.\n\nBut maybe they consider the test function itself as being used (wired) because the test runner will discover it. However the rule is strict: must be called somewhere else in diff. So likely omitted.\n\nAlso test_content_length_for_bytes_data is not present at all, so omitted.\n\nThus both are OMITTED.\n\nReturn JSON with both keys mapping to \"OMITTED\".",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate two requirements: tests/test_requests.py::test_content_length_for_bytes_data and tests/test_requests.py::test_content_length_for_string_data_counts_bytes.\n\nWe have diff snippet showing modifications to tests/test_requests.py. The diff adds a new test method test_content_length_for_string_data_counts_bytes. Also earlier there is test_autoset_header_values_are_native, but not relevant.\n\nThe requirement test_content_length_for_bytes_data is not present in diff. The diff does not show that test. So it's omitted.\n\nThe requirement test_content_length_for_string_data_counts_bytes appears in diff: we see a new test method defined:\n\ndef test_content_length_for_string_data_counts_bytes(self, httpbin):\n    data = \"This is a string containing multi-byte UTF-8 \u2603\ufe0f\"\n    length = str(len(data.encode(\"utf-8\")))\n    req = requests.Request(\"POST\", httpbin(\"post\"), data=data)\n    p = req.prepare()\n\nBut the diff snippet ends there; we need to see if the test asserts something. The diff shows only up to p = req.prepare(). It doesn't show any assertion. However the requirement is about test implementation. The requirement is that the test exists (definition) and is wired (used). Since this is a test function, it's defined. It is wired? The test function is called by test runner, but within diff we need to see if something else calls it. The requirement's criteria: \"DEFINED -- its def statement exists in the target file.\" Yes. \"WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it.\" For a test function, the test runner will call it, but that's not in diff. The diff does not show any other code calling this test. So per criteria, it's not wired. However maybe they consider test definitions as being used by test runner automatically, but the rule says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" Since there is no explicit call in diff, it's not wired. So requirement would be OMITTED.\n\nBut maybe they consider the test function itself as being used (wired) because the test runner will discover it. However the rule is strict: must be called somewhere else in diff. So likely omitted.\n\nAlso test_content_length_for_bytes_data is not present at all, so omitted.\n\nThus both are OMITTED.\n\nReturn JSON with both keys mapping to \"OMITTED\".",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_requests.py::test_content_length_for_bytes_data\n- tests/test_requests.py::test_content_length_for_string_data_counts_bytes\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/tests/test_requests.py\n+++ b/tests/test_requests.py\n@@ -1803,6 +1803,15 @@\n     def test_autoset_header_values_are_native(self, httpbin):\n         data = \"this is a string\"\n         length = \"16\"\n+        req = requests.Request(\"POST\", httpbin(\"post\"), data=data)\n+        p = req.prepare()\n+\n+        assert p.headers[\"Content-Length\"] == length\n+\n+\n+    def test_content_length_for_string_data_counts_bytes(self, httpbin):\n+        data = \"This is a string containing multi-byte UTF-8 \u2603\ufe0f\"\n+        length = str(len(data.encode(\"utf-8\")))\n         req = requests.Request(\"POST\", httpbin(\"post\"), data=data)\n         p = req.prepare()\n \n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 542,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 493
+    },
+    "cost": 0.00064625,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.0004065,
+      "upstream_inference_cost": 0.00064625,
+      "upstream_inference_prompt_cost": 0.00023975
+    },
+    "is_byok": false,
+    "prompt_tokens": 685,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 128,
+      "video_tokens": 0
+    },
+    "total_tokens": 1227
+  },
+  "variance_seed": null
+}

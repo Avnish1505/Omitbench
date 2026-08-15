@@ -1,0 +1,41 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.000508,
+  "cost_source": "reported",
+  "judge_id": "B5 LLM judge (mid-tier)",
+  "message": {
+    "content": "```json\n{\"itsdangerous.py::BadHeader\": \"IMPLEMENTED\"}\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- itsdangerous.py::BadHeader\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/itsdangerous.py\n+++ b/itsdangerous.py\n@@ -124,6 +124,10 @@\n     that.  The original exception that caused that will be stored on the\n     exception as :attr:`original_error`.\n \n+    This can also happen with a :class:`JSONWebSignatureSerializer` that\n+    is subclassed and uses a different serializer for the payload than\n+    the expected one.\n+\n     .. versionadded:: 0.15\n     \"\"\"\n \n@@ -164,6 +168,27 @@\n         #:\n         #: .. versionadded:: 0.14\n         self.date_signed = date_signed\n+\n+\n+class BadHeader(BadSignature):\n+    \"\"\"Raised if a signed header is invalid in some form.  This only\n+    happens for serializers that have a header that goes with the\n+    signature.\n+\n+    .. versionadded:: 0.24\n+    \"\"\"\n+\n+    def __init__(self, message, payload=None, header=None,\n+                 original_error=None):\n+        BadSignature.__init__(self, message, payload)\n+\n+        #: If the header is actually available but just malformed it\n+        #: might be stored here.\n+        self.header = header\n+\n+        #: If available, the error that indicates why the payload\n+        #: was not valid.  This might be `None`.\n+        self.original_error = original_error\n \n \n class SignatureExpired(BadTimeSignature):\n@@ -657,14 +682,23 @@\n         base64d_header, base64d_payload = payload.split(b'.', 1)\n         try:\n             json_header = base64_decode(base64d_header)\n+        except Exception as e:\n+            raise BadHeader('Could not base64 decode the header because of '\n+                'an exception', original_error=e)\n+        try:\n             json_payload = base64_decode(base64d_payload)\n         except Exception as e:\n             raise BadPayload('Could not base64 decode the payload because of '\n                 'an exception', original_error=e)\n-        header = Serializer.load_payload(self, json_header,\n-            serializer=json)\n+        try:\n+            header = Serializer.load_payload(self, json_header,\n+                serializer=json)\n+        except BadData as e:\n+            raise BadHeader('Could not unserialize header because it was '\n+                'malformed', original_error=e)\n         if not isinstance(header, dict):\n-            raise BadPayload('Header payload is not a JSON object')\n+            raise BadHeader('Header payload is not a JSON object',\n+                header=header)\n         payload = Serializer.load_payload(self, json_payload)\n         if return_header:\n             return payload, header\n@@ -712,7 +746,8 @@\n             self.make_signer(salt, self.algorithm).unsign(want_bytes(s)),\n             return_header=True)\n         if header.get('alg') != self.algorithm_name:\n-            raise BadSignature('Algorithm mismatch')\n+            raise BadHeader('Algorithm mismatch', header=header,\n+                            payload=payload)\n         if return_header:\n             return payload, header\n         return payload\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 19,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.000508,
+    "cost_details": {
+      "upstream_inference_completions_cost": 3.8e-05,
+      "upstream_inference_cost": 0.000508,
+      "upstream_inference_prompt_cost": 0.00047
+    },
+    "is_byok": false,
+    "prompt_tokens": 1175,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1194
+  },
+  "variance_seed": null
+}

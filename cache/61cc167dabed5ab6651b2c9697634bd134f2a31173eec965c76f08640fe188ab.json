@@ -1,0 +1,41 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00053504,
+  "cost_source": "reported",
+  "judge_id": "B5 LLM judge (mid-tier)",
+  "message": {
+    "content": "```json\n{\n    \"tests/test_basic.py::cli_optional\": \"IMPLEMENTED\",\n    \"tests/test_basic.py::cli_variadic\": \"IMPLEMENTED\",\n    \"tests/test_basic.py::test_choice_argument_optional_metavar\": \"IMPLEMENTED\",\n    \"tests/test_basic.py::test_datetime_argument_optional_metavar\": \"OMITTED\"\n}\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_basic.py::cli_optional\n- tests/test_basic.py::cli_variadic\n- tests/test_basic.py::test_choice_argument_optional_metavar\n- tests/test_basic.py::test_datetime_argument_optional_metavar\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/click/core.py\n+++ b/src/click/core.py\n@@ -3571,9 +3571,14 @@\n         var = self.type.get_metavar(param=self, ctx=ctx)\n         if not var:\n             var = self.name.upper()\n+        # Types like ``Choice`` and ``DateTime`` already surround their metavar\n+        # with square brackets to enumerate the allowed values. Reuse those\n+        # outer brackets as the optional-argument indicator instead of wrapping\n+        # the metavar in a second pair, which would produce ``[[a|b|c]]``.\n+        already_bracketed = var.startswith(\"[\") and var.endswith(\"]\")\n         if self.deprecated:\n             var += \"!\"\n-        if not self.required:\n+        if not self.required and not already_bracketed:\n             var = f\"[{var}]\"\n         if self.nargs != 1:\n             var += \"...\"\n\n--- a/tests/test_basic.py\n+++ b/tests/test_basic.py\n@@ -569,6 +569,37 @@\n     assert result.output.startswith(\"Usage: cli [OPTIONS] {not-none|none}\\n\")\n \n \n+def test_choice_argument_optional_metavar(runner):\n+    \"\"\"Optional Choice arguments reuse the type's brackets instead of doubling.\n+\n+    Without this the usage line for a ``Choice`` argument with ``nargs=-1`` or\n+    ``required=False`` rendered as ``[[a|b|c]]``: one pair from ``Choice`` to\n+    enumerate values, a second pair from ``Argument`` to mark it optional.\n+    \"\"\"\n+\n+    @click.command()\n+    @click.argument(\"method\", type=click.Choice([\"foo\", \"bar\", \"baz\"]), nargs=-1)\n+    def cli_variadic(method):\n+        pass\n+\n+    @click.command()\n+    @click.argument(\"method\", type=click.Choice([\"foo\", \"bar\", \"baz\"]), required=False)\n+    def cli_optional(method):\n+        pass\n+\n+    variadic = runner.invoke(cli_variadic, [\"--help\"]).output\n+    assert \"Usage: cli-variadic [OPTIONS] [foo|bar|baz]...\\n\" in variadic\n+    assert \"[[foo|bar|baz]]\" not in variadic\n+\n+    optional = runner.invoke(cli_optional, [\"--help\"]).output\n+    assert \"Usage: cli-optional [OPTIONS] [foo|bar|baz]\\n\" in optional\n+    assert \"[[foo|bar|baz]]\" not in optional\n+\n+\n+def test_datetime_argument_optional_metavar(runner):\n+    raise NotImplementedError\n+\n+\n def test_datetime_option_default(runner):\n     @click.command()\n     @click.option(\"--start_date\", type=click.DateTime())\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 87,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.00053504,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.000174,
+      "upstream_inference_cost": 0.00053504,
+      "upstream_inference_prompt_cost": 0.00036104
+    },
+    "is_byok": false,
+    "prompt_tokens": 1133,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 256,
+      "video_tokens": 0
+    },
+    "total_tokens": 1220
+  },
+  "variance_seed": null
+}

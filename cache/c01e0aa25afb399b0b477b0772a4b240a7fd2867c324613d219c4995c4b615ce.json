@@ -1,0 +1,41 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0005572,
+  "cost_source": "reported",
+  "judge_id": "B5 LLM judge (mid-tier)",
+  "message": {
+    "content": "```json\n{\"tests/test_asyncfilters.py::customfilter\": \"OMITTED\", \"tests/test_asyncfilters.py::test_custom_async_filter\": \"IMPLEMENTED\", \"tests/test_asyncfilters.py::test_custom_async_iteratable_filter\": \"IMPLEMENTED\"}\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_asyncfilters.py::customfilter\n- tests/test_asyncfilters.py::test_custom_async_filter\n- tests/test_asyncfilters.py::test_custom_async_iteratable_filter\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/jinja2/nodes.py\n+++ b/src/jinja2/nodes.py\n@@ -2,6 +2,7 @@\n some node tree helper functions used by the parser and compiler in order\n to normalize nodes.\n \"\"\"\n+import inspect\n import operator\n from collections import deque\n from typing import Any\n@@ -649,10 +650,12 @@\n         if filter_ is None or getattr(filter_, \"contextfilter\", False) is True:\n             raise Impossible()\n \n-        # We cannot constant handle async filters, so we need to make sure\n-        # to not go down this path.\n-        if eval_ctx.environment.is_async and getattr(\n-            filter_, \"asyncfiltervariant\", False\n+        # We cannot constant handle async filters, so we need to make\n+        # sure to not go down this path. Account for both sync/async and\n+        # pure-async filters.\n+        if eval_ctx.environment.is_async and (\n+            getattr(filter_, \"asyncfiltervariant\", False)\n+            or inspect.iscoroutinefunction(filter_)\n         ):\n             raise Impossible()\n \n\n--- a/tests/test_asyncfilters.py\n+++ b/tests/test_asyncfilters.py\n@@ -3,6 +3,7 @@\n import pytest\n \n from jinja2 import Environment\n+from jinja2.asyncsupport import auto_aiter\n from jinja2.utils import Markup\n \n \n@@ -223,3 +224,31 @@\n         \"[[0, 1, 2, 3], [4, 5, 6, 'X'], [7, 8, 9, 'X']]\"\n     )\n \n+\n+def test_custom_async_filter(env_async):\n+    async def customfilter(val):\n+        return str(val)\n+\n+    env_async.filters[\"customfilter\"] = customfilter\n+    tmpl = env_async.from_string(\"{{ 'static'|customfilter }} {{ arg|customfilter }}\")\n+    out = tmpl.render(arg=\"dynamic\")\n+    assert out == \"static dynamic\"\n+\n+\n+@mark_dualiter(\"items\", lambda: range(10))\n+def test_custom_async_iteratable_filter(env_async, items):\n+    async def customfilter(iterable):\n+        items = []\n+        async for item in auto_aiter(iterable):\n+            items.append(str(item))\n+            if len(items) == 3:\n+                break\n+        return \",\".join(items)\n+\n+    env_async.filters[\"customfilter\"] = customfilter\n+    tmpl = env_async.from_string(\n+        \"{{ items()|customfilter }} .. {{ [3, 4, 5, 6]|customfilter }}\"\n+    )\n+    out = tmpl.render(items=items)\n+    assert out == \"0,1,2 .. 3,4,5\"\n+\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 57,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.0005572,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.000114,
+      "upstream_inference_cost": 0.0005572,
+      "upstream_inference_prompt_cost": 0.0004432
+    },
+    "is_byok": false,
+    "prompt_tokens": 1108,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1165
+  },
+  "variance_seed": null
+}

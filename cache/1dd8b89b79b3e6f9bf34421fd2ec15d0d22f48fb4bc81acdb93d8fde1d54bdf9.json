@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00058505,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"src/requests/adapters.py::get_connection_with_tls_context\": \"IMPLEMENTED\"}",
+    "reasoning": "We need to evaluate requirement: src/requests/adapters.py::get_connection_with_tls_context\n\nWe have diff showing that function definition added: def get_connection_with_tls_context(self, request, verify, proxies=None, cert=None): with docstring and body.\n\nWe need to check three criteria:\n\n1. DEFINED: yes, def exists in target file.\n\n2. WIRED: something else in diff calls, instantiates, or otherwise uses it. In diff, later in code, they replace call to self._get_connection with self.get_connection_with_tls_context. Indeed at line around 529, they call self.get_connection_with_tls_context(...). So the function is used. That's wiring.\n\n3. NOT A STUB: body does real work. Let's examine body: after docstring, they have:\n\nproxy = select_proxy(request.url, proxies)\ntry:\n    host_params, pool_kwargs = _urllib3_request_context(request, verify, cert)\n    # ... (some code omitted?) Actually we need to see full body. The diff shows only part of function: after docstring, they have proxy = select_proxy..., then try block, then later return conn. The body includes logic to get connection. So not a stub. So meets criteria.\n\nThus requirement is IMPLEMENTED.\n\nReturn JSON with that key mapping to \"IMPLEMENTED\".",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate requirement: src/requests/adapters.py::get_connection_with_tls_context\n\nWe have diff showing that function definition added: def get_connection_with_tls_context(self, request, verify, proxies=None, cert=None): with docstring and body.\n\nWe need to check three criteria:\n\n1. DEFINED: yes, def exists in target file.\n\n2. WIRED: something else in diff calls, instantiates, or otherwise uses it. In diff, later in code, they replace call to self._get_connection with self.get_connection_with_tls_context. Indeed at line around 529, they call self.get_connection_with_tls_context(...). So the function is used. That's wiring.\n\n3. NOT A STUB: body does real work. Let's examine body: after docstring, they have:\n\nproxy = select_proxy(request.url, proxies)\ntry:\n    host_params, pool_kwargs = _urllib3_request_context(request, verify, cert)\n    # ... (some code omitted?) Actually we need to see full body. The diff shows only part of function: after docstring, they have proxy = select_proxy..., then try block, then later return conn. The body includes logic to get connection. So not a stub. So meets criteria.\n\nThus requirement is IMPLEMENTED.\n\nReturn JSON with that key mapping to \"IMPLEMENTED\".",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- src/requests/adapters.py::get_connection_with_tls_context\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/requests/adapters.py\n+++ b/src/requests/adapters.py\n@@ -374,10 +374,20 @@\n \n         return response\n \n-    def _get_connection(self, request, verify, proxies=None, cert=None):\n-        # Replace the existing get_connection without breaking things and\n-        # ensure that TLS settings are considered when we interact with\n-        # urllib3 HTTP Pools\n+    def get_connection_with_tls_context(self, request, verify, proxies=None, cert=None):\n+        \"\"\"Returns a urllib3 connection for the given request and TLS settings.\n+        This should not be called from user code, and is only exposed for use\n+        when subclassing the :class:`HTTPAdapter <requests.adapters.HTTPAdapter>`.\n+\n+        :param request: The :class:`PreparedRequest <PreparedRequest>` object\n+            to be sent over the connection.\n+        :param verify: Either a boolean, in which case it controls whether\n+            we verify the server's TLS certificate, or a string, in which case it\n+            must be a path to a CA bundle to use.\n+        :param proxies: (optional) The proxies dictionary to apply to the request.\n+        :param cert: (optional) Any user-provided SSL certificate to be trusted.\n+        :rtype: urllib3.ConnectionPool\n+        \"\"\"\n         proxy = select_proxy(request.url, proxies)\n         try:\n             host_params, pool_kwargs = _urllib3_request_context(request, verify, cert)\n@@ -404,7 +414,10 @@\n         return conn\n \n     def get_connection(self, url, proxies=None):\n-        \"\"\"Returns a urllib3 connection for the given URL. This should not be\n+        \"\"\"DEPRECATED: Users should move to `get_connection_with_tls_context`\n+        for all subclasses of HTTPAdapter using Requests>=2.32.2.\n+\n+        Returns a urllib3 connection for the given URL. This should not be\n         called from user code, and is only exposed for use when subclassing the\n         :class:`HTTPAdapter <requests.adapters.HTTPAdapter>`.\n \n@@ -529,7 +542,9 @@\n         \"\"\"\n \n         try:\n-            conn = self._get_connection(request, verify, proxies=proxies, cert=cert)\n+            conn = self.get_connection_with_tls_context(\n+                request, verify, proxies=proxies, cert=cert\n+            )\n         except LocationValueError as e:\n             raise InvalidURL(e, request=request)\n \n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 298,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 270
+    },
+    "cost": 0.00058505,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.0002235,
+      "upstream_inference_cost": 0.00058505,
+      "upstream_inference_prompt_cost": 0.00036155
+    },
+    "is_byok": false,
+    "prompt_tokens": 1033,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1331
+  },
+  "variance_seed": null
+}

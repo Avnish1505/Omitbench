@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00053035,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_wrappers.py::test_advertise_accept_ranges\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate requirement: tests/test_wrappers.py::test_advertise_accept_ranges\n\nWe need to see if this test function is defined and implemented in the diff. The diff shows modifications to src/werkzeug/wrappers/response.py and tests/test_wrappers.py. In tests diff, we see addition of blank lines but not the test function. The test function test_advertise_accept_ranges is not present in the diff snippet. The diff only shows modifications around test_range_request_basic, but not the test_advertise_accept_ranges. So requirement is omitted.\n\nBut we must check if the test function appears elsewhere in the diff. The diff only includes part of tests file; we see lines around 595 etc. No mention of test_advertise_accept_ranges. So it's omitted.\n\nThus output: {\"tests/test_wrappers.py::test_advertise_accept_ranges\": \"OMITTED\"}",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate requirement: tests/test_wrappers.py::test_advertise_accept_ranges\n\nWe need to see if this test function is defined and implemented in the diff. The diff shows modifications to src/werkzeug/wrappers/response.py and tests/test_wrappers.py. In tests diff, we see addition of blank lines but not the test function. The test function test_advertise_accept_ranges is not present in the diff snippet. The diff only shows modifications around test_range_request_basic, but not the test_advertise_accept_ranges. So requirement is omitted.\n\nBut we must check if the test function appears elsewhere in the diff. The diff only includes part of tests file; we see lines around 595 etc. No mention of test_advertise_accept_ranges. So it's omitted.\n\nThus output: {\"tests/test_wrappers.py::test_advertise_accept_ranges\": \"OMITTED\"}",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_wrappers.py::test_advertise_accept_ranges\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/werkzeug/wrappers/response.py\n+++ b/src/werkzeug/wrappers/response.py\n@@ -667,22 +667,26 @@\n         :raises: :class:`~werkzeug.exceptions.RequestedRangeNotSatisfiable`\n                  if `Range` header could not be parsed or satisfied.\n \n+        .. versionchanged:: 3.2\n+            Adds the ``Accept-Ranges`` header if ``accept_ranges`` is passed,\n+            even if this is not a satisfiable range request.\n+\n         .. versionchanged:: 2.0\n             Returns ``False`` if the length is 0.\n         \"\"\"\n         from ..exceptions import RequestedRangeNotSatisfiable\n \n-        if (\n-            not accept_ranges\n-            or complete_length is None\n-            or complete_length == 0\n-            or not self._is_range_request_processable(environ)\n-        ):\n+        if not accept_ranges:\n             return False\n \n         if accept_ranges is True:\n             accept_ranges = \"bytes\"\n \n+        self.accept_ranges = accept_ranges\n+\n+        if not (complete_length and self._is_range_request_processable(environ)):\n+            return False\n+\n         parsed_range = parse_range_header(environ.get(\"HTTP_RANGE\"))\n \n         if parsed_range is None:\n@@ -695,8 +699,7 @@\n             raise RequestedRangeNotSatisfiable(complete_length)\n \n         content_length = range_tuple[1] - range_tuple[0]\n-        self.headers[\"Content-Length\"] = str(content_length)\n-        self.headers[\"Accept-Ranges\"] = accept_ranges\n+        self.content_length = content_length\n         self.content_range = content_range_header\n         self.status_code = 206\n         self._wrap_range_response(range_tuple[0], content_length)\n@@ -742,6 +745,10 @@\n                                 Range Requests completion.\n         :raises: :class:`~werkzeug.exceptions.RequestedRangeNotSatisfiable`\n                  if `Range` header could not be parsed or satisfied.\n+\n+        .. versionchangedd: 3.2\n+            Adds the ``Accept-Ranges`` header if ``accept_ranges`` is passed,\n+            even if this is not a satisfiable range request.\n \n         .. versionchanged:: 2.0\n             Range processing is skipped if length is 0 instead of\n\n--- a/tests/test_wrappers.py\n+++ b/tests/test_wrappers.py\n@@ -595,6 +595,8 @@\n     assert response.content_length == 999\n \n \n+\n+\n def test_range_request_basic():\n     env = create_environ()\n     response = wrappers.Response(\"Hello World\")\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 212,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 183
+    },
+    "cost": 0.00053035,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.000159,
+      "upstream_inference_cost": 0.00053035,
+      "upstream_inference_prompt_cost": 0.00037135
+    },
+    "is_byok": false,
+    "prompt_tokens": 1061,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 640,
+      "video_tokens": 0
+    },
+    "total_tokens": 1273
+  },
+  "variance_seed": null
+}

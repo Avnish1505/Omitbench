@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0005749,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_requests.py::test_json_decode_persists_doc_attr\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate requirement: tests/test_requests.py::test_json_decode_persists_doc_attr\n\nWe need to see if this test function is defined and wired etc.\n\nIn diff, we see modifications to tests/test_requests.py. At the bottom, we see:\n\n```\n+    @pytest.mark.skipif(not is_py3, reason=\"doc attribute is only present on py3\")\n+    def test_json_decode_persists_doc_attr(self, httpbin):\n+        raise NotImplementedError\n+\n```\n\nSo the test function is defined (def test_json_decode_persists_doc_attr). It appears inside a class? Let's see context. The diff shows earlier part of file imports etc. The test is likely inside a class (maybe TestRequests?). The diff shows indentation of 4 spaces before @pytest.mark... and def, so it's inside a class. The function body is just raise NotImplementedError. That's a stub. According to criteria: NOT A STUB required. Since body is raise NotImplementedError, it's a stub. So requirement is omitted.\n\nAlso need to check wiring: does anything else call it? No. It's just defined. So fails wiring and stub. So result: \"OMITTED\".\n\nThus output JSON with that key mapping to \"OMITTED\".",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate requirement: tests/test_requests.py::test_json_decode_persists_doc_attr\n\nWe need to see if this test function is defined and wired etc.\n\nIn diff, we see modifications to tests/test_requests.py. At the bottom, we see:\n\n```\n+    @pytest.mark.skipif(not is_py3, reason=\"doc attribute is only present on py3\")\n+    def test_json_decode_persists_doc_attr(self, httpbin):\n+        raise NotImplementedError\n+\n```\n\nSo the test function is defined (def test_json_decode_persists_doc_attr). It appears inside a class? Let's see context. The diff shows earlier part of file imports etc. The test is likely inside a class (maybe TestRequests?). The diff shows indentation of 4 spaces before @pytest.mark... and def, so it's inside a class. The function body is just raise NotImplementedError. That's a stub. According to criteria: NOT A STUB required. Since body is raise NotImplementedError, it's a stub. So requirement is omitted.\n\nAlso need to check wiring: does anything else call it? No. It's just defined. So fails wiring and stub. So result: \"OMITTED\".\n\nThus output JSON with that key mapping to \"OMITTED\".",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_requests.py::test_json_decode_persists_doc_attr\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/requests/exceptions.py\n+++ b/requests/exceptions.py\n@@ -33,6 +33,16 @@\n \n class JSONDecodeError(InvalidJSONError, CompatJSONDecodeError):\n     \"\"\"Couldn't decode the text into json\"\"\"\n+\n+    def __init__(self, *args, **kwargs):\n+        \"\"\"\n+        Construct the JSONDecodeError instance first with all\n+        args. Then use it's args to construct the IOError so that\n+        the json specific args aren't used as IOError specific args\n+        and the error message from JSONDecodeError is preserved.\n+        \"\"\"\n+        CompatJSONDecodeError.__init__(self, *args)\n+        InvalidJSONError.__init__(self, *self.args, **kwargs)\n \n \n class HTTPError(RequestException):\n\n--- a/tests/test_requests.py\n+++ b/tests/test_requests.py\n@@ -23,14 +23,14 @@\n     cookiejar_from_dict, morsel_to_cookie)\n from requests.exceptions import (\n     ConnectionError, ConnectTimeout, InvalidSchema, InvalidURL,\n-    MissingSchema, ReadTimeout, Timeout, RetryError, TooManyRedirects,\n+    MissingSchema, ReadTimeout, Timeout, RetryError, RequestException, TooManyRedirects,\n     ProxyError, InvalidHeader, UnrewindableBodyError, SSLError, InvalidProxyURL, InvalidJSONError)\n from requests.models import PreparedRequest\n from requests.structures import CaseInsensitiveDict\n from requests.sessions import SessionRedirectMixin\n from requests.models import urlencode\n from requests.hooks import default_hooks\n-from requests.compat import MutableMapping\n+from requests.compat import JSONDecodeError, is_py3, MutableMapping\n \n from .compat import StringIO, u\n from .utils import override_environ\n@@ -2585,6 +2585,13 @@\n \n     def test_json_decode_compatibility(self, httpbin):\n         r = requests.get(httpbin('bytes/20'))\n-        with pytest.raises(requests.exceptions.JSONDecodeError):\n+        with pytest.raises(requests.exceptions.JSONDecodeError) as excinfo:\n             r.json()\n-\n+        assert isinstance(excinfo.value, RequestException)\n+        assert isinstance(excinfo.value, JSONDecodeError)\n+        assert r.text not in str(excinfo.value)\n+\n+    @pytest.mark.skipif(not is_py3, reason=\"doc attribute is only present on py3\")\n+    def test_json_decode_persists_doc_attr(self, httpbin):\n+        raise NotImplementedError\n+\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 291,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 261
+    },
+    "cost": 0.0005749,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.00021825,
+      "upstream_inference_cost": 0.0005749,
+      "upstream_inference_prompt_cost": 0.00035665
+    },
+    "is_byok": false,
+    "prompt_tokens": 1019,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 512,
+      "video_tokens": 0
+    },
+    "total_tokens": 1310
+  },
+  "variance_seed": null
+}

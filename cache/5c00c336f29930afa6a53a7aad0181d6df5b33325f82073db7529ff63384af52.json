@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0006419,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_timeouts.py::test_async_client_new_request_send_timeout\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate requirement: tests/test_timeouts.py::test_async_client_new_request_send_timeout\n\nWe need to see if this symbol (function) is defined and wired and not a stub.\n\nIn diff, we have modifications to tests/test_timeouts.py adding a new test function:\n\n```\n+@pytest.mark.anyio\n+async def test_async_client_new_request_send_timeout(server):\n+    timeout = httpx.Timeout(1e-6)\n+\n+    async with httpx.AsyncClient(timeout=timeout) as client:\n+        with pytest.raises(httpx.TimeoutException):\n+            await client.send(\n+                httpx.Request(\"GET\", server.url.copy_with(path=\"/slow_response\"))\n+            )\n+\n```\n\nThus the function test_async_client_new_request_send_timeout is defined in tests/test_timeouts.py. That's the target file. So definition exists.\n\nNow \"wired\": something else in diff calls, instantiates, or otherwise uses it. The function is a test; it's not called elsewhere in diff. The requirement says \"WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it.\" For a test function, typically test runner will call it, but that's not in diff. The diff does not show any other code calling this function. So is that considered \"wired\"? The definition is a test function; the test runner will discover and call it, but that's external. The requirement says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" Since there is no call to test_async_client_new_request_send_timeout within the diff, it's not wired. However, maybe they consider that the test function is used by pytest automatically, but that's not in diff. The rule says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" So we need to see if any other code in diff references it. No. So fails wired.\n\nThus requirement is OMITTED.\n\nBut also check stub: body has real code, not stub. So passes stub. But fails wired.\n\nThus overall OMITTED.\n\nReturn JSON with that key.\n\n",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate requirement: tests/test_timeouts.py::test_async_client_new_request_send_timeout\n\nWe need to see if this symbol (function) is defined and wired and not a stub.\n\nIn diff, we have modifications to tests/test_timeouts.py adding a new test function:\n\n```\n+@pytest.mark.anyio\n+async def test_async_client_new_request_send_timeout(server):\n+    timeout = httpx.Timeout(1e-6)\n+\n+    async with httpx.AsyncClient(timeout=timeout) as client:\n+        with pytest.raises(httpx.TimeoutException):\n+            await client.send(\n+                httpx.Request(\"GET\", server.url.copy_with(path=\"/slow_response\"))\n+            )\n+\n```\n\nThus the function test_async_client_new_request_send_timeout is defined in tests/test_timeouts.py. That's the target file. So definition exists.\n\nNow \"wired\": something else in diff calls, instantiates, or otherwise uses it. The function is a test; it's not called elsewhere in diff. The requirement says \"WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it.\" For a test function, typically test runner will call it, but that's not in diff. The diff does not show any other code calling this function. So is that considered \"wired\"? The definition is a test function; the test runner will discover and call it, but that's external. The requirement says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" Since there is no call to test_async_client_new_request_send_timeout within the diff, it's not wired. However, maybe they consider that the test function is used by pytest automatically, but that's not in diff. The rule says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" So we need to see if any other code in diff references it. No. So fails wired.\n\nThus requirement is OMITTED.\n\nBut also check stub: body has real code, not stub. So passes stub. But fails wired.\n\nThus overall OMITTED.\n\nReturn JSON with that key.\n\n",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_timeouts.py::test_async_client_new_request_send_timeout\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/httpx/_client.py\n+++ b/httpx/_client.py\n@@ -562,6 +562,15 @@\n \n         return request.stream\n \n+    def _set_timeout(self, request: Request) -> None:\n+        if \"timeout\" not in request.extensions:\n+            timeout = (\n+                self.timeout\n+                if isinstance(self.timeout, UseClientDefault)\n+                else Timeout(self.timeout)\n+            )\n+            request.extensions = dict(**request.extensions, timeout=timeout.as_dict())\n+\n \n class Client(BaseClient):\n     \"\"\"\n@@ -911,6 +920,8 @@\n             else follow_redirects\n         )\n \n+        self._set_timeout(request)\n+\n         auth = self._build_request_auth(request, auth)\n \n         response = self._send_handling_auth(\n@@ -1658,6 +1669,8 @@\n             else follow_redirects\n         )\n \n+        self._set_timeout(request)\n+\n         auth = self._build_request_auth(request, auth)\n \n         response = await self._send_handling_auth(\n\n--- a/tests/test_timeouts.py\n+++ b/tests/test_timeouts.py\n@@ -43,3 +43,14 @@\n             async with client.stream(\"GET\", server.url):\n                 await client.get(server.url)\n \n+\n+@pytest.mark.anyio\n+async def test_async_client_new_request_send_timeout(server):\n+    timeout = httpx.Timeout(1e-6)\n+\n+    async with httpx.AsyncClient(timeout=timeout) as client:\n+        with pytest.raises(httpx.TimeoutException):\n+            await client.send(\n+                httpx.Request(\"GET\", server.url.copy_with(path=\"/slow_response\"))\n+            )\n+\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 455,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 425
+    },
+    "cost": 0.0006419,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.00034125,
+      "upstream_inference_cost": 0.0006419,
+      "upstream_inference_prompt_cost": 0.00030065
+    },
+    "is_byok": false,
+    "prompt_tokens": 859,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1314
+  },
+  "variance_seed": null
+}

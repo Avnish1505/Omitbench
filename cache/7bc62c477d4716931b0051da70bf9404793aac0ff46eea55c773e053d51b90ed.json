@@ -1,0 +1,41 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0003648,
+  "cost_source": "reported",
+  "judge_id": "B5 LLM judge (mid-tier)",
+  "message": {
+    "content": "```json\n{\"tests/test_next_gen.py::test_field_type\": \"IMPLEMENTED\"}\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_next_gen.py::test_field_type\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/attr/_next_gen.py\n+++ b/src/attr/_next_gen.py\n@@ -167,6 +167,7 @@\n     hash=None,\n     init=True,\n     metadata=None,\n+    type=None,\n     converter=None,\n     factory=None,\n     kw_only=False,\n@@ -179,6 +180,10 @@\n     Identical to `attr.ib`, except keyword-only and with some arguments\n     removed.\n \n+    .. versionadded:: 22.3.0\n+       The *type* parameter has been re-added; mostly for\n+       {func}`attrs.make_class`. Please note that type checkers ignore this\n+       metadata.\n     .. versionadded:: 20.1.0\n     \"\"\"\n     return attrib(\n@@ -188,6 +193,7 @@\n         hash=hash,\n         init=init,\n         metadata=metadata,\n+        type=type,\n         converter=converter,\n         factory=factory,\n         kw_only=kw_only,\n\n--- a/tests/test_next_gen.py\n+++ b/tests/test_next_gen.py\n@@ -27,6 +27,16 @@\n         Instantiation works.\n         \"\"\"\n         C(\"1\", 2)\n+\n+    def test_field_type(self):\n+        \"\"\"\n+        Make class with attrs.field and type parameter.\n+        \"\"\"\n+        classFields = {\"testint\": attrs.field(type=int)}\n+\n+        A = attrs.make_class(\"A\", classFields)\n+\n+        assert int == attrs.fields(A).testint.type\n \n     def test_no_slots(self):\n         \"\"\"\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 21,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.0003648,
+    "cost_details": {
+      "upstream_inference_completions_cost": 4.2e-05,
+      "upstream_inference_cost": 0.0003648,
+      "upstream_inference_prompt_cost": 0.0003228
+    },
+    "is_byok": false,
+    "prompt_tokens": 807,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 828
+  },
+  "variance_seed": null
+}

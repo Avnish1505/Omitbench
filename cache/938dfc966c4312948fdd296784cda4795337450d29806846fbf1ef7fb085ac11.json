@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00066815,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_itsdangerous/test_timed.py::test_sig_error_date_signed\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate requirement: tests/test_itsdangerous/test_timed.py::test_sig_error_date_signed\n\nWe need to see if this test function is defined and wired etc. The requirement mentions a symbol (function) test_sig_error_date_signed in test file. The diff shows modifications to test file, but does it include definition of that test? Let's examine diff snippet.\n\nIn test file diff, we see modifications around test_missing_timestamp? Actually we see code:\n\n@@ -54,6 +54,7 @@\n             signer.unsign(signed)\n \n         assert \"missing\" in str(exc_info.value)\n+        assert exc_info.value.date_signed is None\n\n    def test_malformed_timestamp(self, signer):\n...\n\nLater:\n\n@@ -63,13 +64,17 @@\n             signer.unsign(signed)\n \n         assert \"Malformed\" in str(exc_info.value)\n+        assert exc_info.value.date_signed is None\n\n    def test_future_age(self, signer):\n...\n\nLater:\n\n@@ -63,13 +64,17 @@\n...\n         with freeze_time(\"1971-05-31\"):\n-            with pytest.raises(SignatureExpired):\n+            with pytest.raises(SignatureExpired) as exc_info:\n                 signer.unsign(signed, max_age=10)\n+\n+        assert isinstance(exc_info.value.date_signed, datetime)\n+\n\nThus the diff modifies existing test functions but does not show definition of test_sig_error_date_signed. The test file likely already contains a test named test_sig_error_date_signed earlier, but diff does not show its definition. The requirement is to check if the symbol is defined, wired, not stub. Since the diff does not contain the definition of test_sig_error_date_signed, we cannot see it. The diff is the entire change; but the test file may have that function defined elsewhere unchanged. However the requirement is to judge based on diff only. The instruction: \"You are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\" So we only consider diff. If the symbol is not present in diff, it's omitted.\n\nThus test_sig_error_date_signed is not present in diff. So requirement is omitted.\n\nThus output JSON with that key mapping to \"OMITTED\".",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate requirement: tests/test_itsdangerous/test_timed.py::test_sig_error_date_signed\n\nWe need to see if this test function is defined and wired etc. The requirement mentions a symbol (function) test_sig_error_date_signed in test file. The diff shows modifications to test file, but does it include definition of that test? Let's examine diff snippet.\n\nIn test file diff, we see modifications around test_missing_timestamp? Actually we see code:\n\n@@ -54,6 +54,7 @@\n             signer.unsign(signed)\n \n         assert \"missing\" in str(exc_info.value)\n+        assert exc_info.value.date_signed is None\n\n    def test_malformed_timestamp(self, signer):\n...\n\nLater:\n\n@@ -63,13 +64,17 @@\n             signer.unsign(signed)\n \n         assert \"Malformed\" in str(exc_info.value)\n+        assert exc_info.value.date_signed is None\n\n    def test_future_age(self, signer):\n...\n\nLater:\n\n@@ -63,13 +64,17 @@\n...\n         with freeze_time(\"1971-05-31\"):\n-            with pytest.raises(SignatureExpired):\n+            with pytest.raises(SignatureExpired) as exc_info:\n                 signer.unsign(signed, max_age=10)\n+\n+        assert isinstance(exc_info.value.date_signed, datetime)\n+\n\nThus the diff modifies existing test functions but does not show definition of test_sig_error_date_signed. The test file likely already contains a test named test_sig_error_date_signed earlier, but diff does not show its definition. The requirement is to check if the symbol is defined, wired, not stub. Since the diff does not contain the definition of test_sig_error_date_signed, we cannot see it. The diff is the entire change; but the test file may have that function defined elsewhere unchanged. However the requirement is to judge based on diff only. The instruction: \"You are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\" So we only consider diff. If the symbol is not present in diff, it's omitted.\n\nThus test_sig_error_date_signed is not present in diff. So requirement is omitted.\n\nThus output JSON with that key mapping to \"OMITTED\".",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_itsdangerous/test_timed.py::test_sig_error_date_signed\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/itsdangerous/timed.py\n+++ b/src/itsdangerous/timed.py\n@@ -86,6 +86,9 @@\n         # Signature is *not* okay. Raise a proper error now that we have\n         # split the value and the timestamp.\n         if sig_error is not None:\n+            if timestamp is not None:\n+                timestamp = self.timestamp_to_datetime(timestamp)\n+\n             raise BadTimeSignature(str(sig_error), payload=value, date_signed=timestamp)\n \n         # Signature was okay but the timestamp is actually not there or\n\n--- a/tests/test_itsdangerous/test_timed.py\n+++ b/tests/test_itsdangerous/test_timed.py\n@@ -54,6 +54,7 @@\n             signer.unsign(signed)\n \n         assert \"missing\" in str(exc_info.value)\n+        assert exc_info.value.date_signed is None\n \n     def test_malformed_timestamp(self, signer):\n         other = Signer(\"secret-key\")\n@@ -63,13 +64,17 @@\n             signer.unsign(signed)\n \n         assert \"Malformed\" in str(exc_info.value)\n+        assert exc_info.value.date_signed is None\n \n     def test_future_age(self, signer):\n         signed = signer.sign(\"value\")\n \n         with freeze_time(\"1971-05-31\"):\n-            with pytest.raises(SignatureExpired):\n+            with pytest.raises(SignatureExpired) as exc_info:\n                 signer.unsign(signed, max_age=10)\n+\n+        assert isinstance(exc_info.value.date_signed, datetime)\n+\n \n \n class TestTimedSerializer(FreezeMixin, TestSerializer):\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 497,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 464
+    },
+    "cost": 0.00066815,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.00037275,
+      "upstream_inference_cost": 0.00066815,
+      "upstream_inference_prompt_cost": 0.0002954
+    },
+    "is_byok": false,
+    "prompt_tokens": 844,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 256,
+      "video_tokens": 0
+    },
+    "total_tokens": 1341
+  },
+  "variance_seed": null
+}

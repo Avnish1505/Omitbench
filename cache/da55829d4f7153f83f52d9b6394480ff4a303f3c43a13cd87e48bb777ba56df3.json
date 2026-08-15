@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00060625,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_nativetypes.py::test_macro\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate requirement: tests/test_nativetypes.py::test_macro\n\nWe need to see if symbol test_macro is defined in tests/test_nativetypes.py and wired etc. Let's examine diff for tests/test_nativetypes.py. The diff shows only a small change at end: added blank lines. No definition of test_macro appears. So the symbol test_macro is not defined in the diff. Therefore requirement is OMITTED.\n\nBut we must ensure there is no definition elsewhere in diff. The diff only shows modifications to tests/test_nativetypes.py at lines near end. No definition of test_macro. So omitted.\n\nThus output JSON with that key mapping to \"OMITTED\".",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate requirement: tests/test_nativetypes.py::test_macro\n\nWe need to see if symbol test_macro is defined in tests/test_nativetypes.py and wired etc. Let's examine diff for tests/test_nativetypes.py. The diff shows only a small change at end: added blank lines. No definition of test_macro appears. So the symbol test_macro is not defined in the diff. Therefore requirement is OMITTED.\n\nBut we must ensure there is no definition elsewhere in diff. The diff only shows modifications to tests/test_nativetypes.py at lines near end. No definition of test_macro. So omitted.\n\nThus output JSON with that key mapping to \"OMITTED\".",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_nativetypes.py::test_macro\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/jinja2/compiler.py\n+++ b/src/jinja2/compiler.py\n@@ -724,6 +724,7 @@\n         \"\"\"\n         self.writeline(\"resolve = context.resolve_or_missing\")\n         self.writeline(\"undefined = environment.undefined\")\n+        self.writeline(\"concat = environment.concat\")\n         # always use the standard Undefined class for the implicit else of\n         # conditional expressions\n         self.writeline(\"cond_expr_undefined = Undefined\")\n\n--- a/src/jinja2/environment.py\n+++ b/src/jinja2/environment.py\n@@ -280,6 +280,8 @@\n     #: the class that is used for code generation.  See\n     #: :class:`~jinja2.compiler.CodeGenerator` for more information.\n     code_generator_class: t.Type[\"CodeGenerator\"] = CodeGenerator\n+\n+    concat = \"\".join\n \n     #: the context class that is used for templates.  See\n     #: :class:`~jinja2.runtime.Context` for more information.\n@@ -1282,7 +1284,7 @@\n         ctx = self.new_context(dict(*args, **kwargs))\n \n         try:\n-            return concat(self.root_render_func(ctx))  # type: ignore\n+            return self.environment.concat(self.root_render_func(ctx))  # type: ignore\n         except Exception:\n             self.environment.handle_exception()\n \n@@ -1303,7 +1305,9 @@\n         ctx = self.new_context(dict(*args, **kwargs))\n \n         try:\n-            return concat([n async for n in self.root_render_func(ctx)])  # type: ignore\n+            return self.environment.concat(  # type: ignore\n+                [n async for n in self.root_render_func(ctx)]  # type: ignore\n+            )\n         except Exception:\n             return self.environment.handle_exception()\n \n\n--- a/src/jinja2/nativetypes.py\n+++ b/src/jinja2/nativetypes.py\n@@ -3,6 +3,7 @@\n from ast import parse\n from itertools import chain\n from itertools import islice\n+from types import GeneratorType\n \n from . import nodes\n from .compiler import CodeGenerator\n@@ -31,7 +32,9 @@\n         if not isinstance(raw, str):\n             return raw\n     else:\n-        raw = \"\".join([str(v) for v in chain(head, values)])\n+        if isinstance(values, GeneratorType):\n+            values = chain(head, values)\n+        raw = \"\".join([str(v) for v in values])\n \n     try:\n         return literal_eval(\n@@ -86,6 +89,7 @@\n     \"\"\"An environment that renders templates to native Python types.\"\"\"\n \n     code_generator_class = NativeCodeGenerator\n+    concat = staticmethod(native_concat)  # type: ignore\n \n \n class NativeTemplate(Template):\n@@ -101,7 +105,9 @@\n         ctx = self.new_context(dict(*args, **kwargs))\n \n         try:\n-            return native_concat(self.root_render_func(ctx))  # type: ignore\n+            return self.environment_class.concat(  # type: ignore\n+                self.root_render_func(ctx)  # type: ignore\n+            )\n         except Exception:\n             return self.environment.handle_exception()\n \n@@ -114,7 +120,7 @@\n         ctx = self.new_context(dict(*args, **kwargs))\n \n         try:\n-            return native_concat(\n+            return self.environment_class.concat(  # type: ignore\n                 [n async for n in self.root_render_func(ctx)]  # type: ignore\n             )\n         except Exception:\n\n--- a/src/jinja2/runtime.py\n+++ b/src/jinja2/runtime.py\n@@ -49,7 +49,6 @@\n     \"Markup\",\n     \"TemplateRuntimeError\",\n     \"missing\",\n-    \"concat\",\n     \"escape\",\n     \"markup_join\",\n     \"str_join\",\n\n--- a/tests/test_nativetypes.py\n+++ b/tests/test_nativetypes.py\n@@ -154,3 +154,5 @@\n     result = t.render()\n     assert result == \" True\"\n \n+\n+\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 169,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 142
+    },
+    "cost": 0.00060625,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.00012675,
+      "upstream_inference_cost": 0.00060625,
+      "upstream_inference_prompt_cost": 0.0004795
+    },
+    "is_byok": false,
+    "prompt_tokens": 1370,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1539
+  },
+  "variance_seed": null
+}

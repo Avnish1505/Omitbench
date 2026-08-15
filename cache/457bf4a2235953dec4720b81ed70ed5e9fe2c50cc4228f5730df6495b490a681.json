@@ -1,0 +1,41 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00047,
+  "cost_source": "reported",
+  "judge_id": "B5 LLM judge (mid-tier)",
+  "message": {
+    "content": "```json\n{\"tests/test_compat.py::attribute\": \"OMITTED\", \"tests/test_compat.py::test_attrsinstance_subclass_protocol\": \"IMPLEMENTED\"}\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_compat.py::attribute\n- tests/test_compat.py::test_attrsinstance_subclass_protocol\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/attr/__init__.py\n+++ b/src/attr/__init__.py\n@@ -9,6 +9,7 @@\n \n from . import converters, exceptions, filters, setters, validators\n from ._cmp import cmp_using\n+from ._compat import Protocol\n from ._config import get_run_validators, set_run_validators\n from ._funcs import asdict, assoc, astuple, evolve, has, resolve_types\n from ._make import (\n@@ -31,7 +32,7 @@\n dataclass = partial(attrs, auto_attribs=True)  # happy Easter ;)\n \n \n-class AttrsInstance:\n+class AttrsInstance(Protocol):\n     pass\n \n \n\n--- a/src/attr/_compat.py\n+++ b/src/attr/_compat.py\n@@ -16,6 +16,15 @@\n PY_3_9_PLUS = sys.version_info[:2] >= (3, 9)\n PY310 = sys.version_info[:2] >= (3, 10)\n PY_3_12_PLUS = sys.version_info[:2] >= (3, 12)\n+\n+\n+if sys.version_info < (3, 8):\n+    try:\n+        from typing_extensions import Protocol\n+    except ImportError:  # pragma: no cover\n+        Protocol = object\n+else:\n+    from typing import Protocol  # noqa: F401\n \n \n def just_warn(*args, **kw):\n\n--- a/tests/test_compat.py\n+++ b/tests/test_compat.py\n@@ -3,6 +3,8 @@\n import types\n \n import pytest\n+\n+import attr\n \n \n @pytest.fixture(name=\"mp\")\n@@ -51,3 +53,13 @@\n         with pytest.raises(AttributeError, match=\"no attribute 'setdefault'\"):\n             mp.setdefault(\"x\")\n \n+\n+def test_attrsinstance_subclass_protocol():\n+    \"\"\"\n+    It's possible to subclass AttrsInstance and Protocol at once.\n+    \"\"\"\n+\n+    class Foo(attr.AttrsInstance, attr._compat.Protocol):\n+        def attribute(self) -> int:\n+            ...\n+\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 41,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.00047,
+    "cost_details": {
+      "upstream_inference_completions_cost": 8.2e-05,
+      "upstream_inference_cost": 0.00047,
+      "upstream_inference_prompt_cost": 0.000388
+    },
+    "is_byok": false,
+    "prompt_tokens": 970,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1011
+  },
+  "variance_seed": null
+}

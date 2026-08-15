@@ -1,0 +1,41 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00035784,
+  "cost_source": "reported",
+  "judge_id": "B5 LLM judge (mid-tier)",
+  "message": {
+    "content": "```json\n{\"tests/test_defaults.py::test_default_map_nargs\": \"IMPLEMENTED\"}\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_defaults.py::test_default_map_nargs\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/docs/conf.py\n+++ b/docs/conf.py\n@@ -31,6 +31,7 @@\n intersphinx_mapping = {\n     \"python\": (\"https://docs.python.org/3/\", None),\n }\n+myst_heading_anchors = 3\n \n # HTML -----------------------------------------------------------------\n \n\n--- a/src/click/core.py\n+++ b/src/click/core.py\n@@ -2356,6 +2356,11 @@\n                 value = default_map_value\n                 source = ParameterSource.DEFAULT_MAP\n \n+                # A string from default_map must be split for multi-value\n+                # parameters, matching value_from_envvar behavior.\n+                if isinstance(value, str) and self.nargs != 1:\n+                    value = self.type.split_envvar_value(value)\n+\n         if value is UNSET:\n             default_value = self.get_default(ctx)\n             if default_value is not UNSET:\n\n--- a/tests/test_defaults.py\n+++ b/tests/test_defaults.py\n@@ -357,6 +357,28 @@\n     assert result.output == repr(expected)\n \n \n+@pytest.mark.parametrize(\n+    (\"default_map\", \"option_kwargs\", \"cli_args\", \"expected\"),\n+    [\n+        # String is split for nargs=2 option.\n+        ({\"point\": \"3 4\"}, {\"nargs\": 2, \"type\": int}, [], (3, 4)),\n+        # String is split for explicit Tuple type.\n+        ({\"point\": \"hello world\"}, {\"type\": (str, str)}, [], (\"hello\", \"world\")),\n+        # Already-structured tuple passes through unchanged.\n+        ({\"point\": (\"a\", \"b\")}, {\"nargs\": 2}, [], (\"a\", \"b\")),\n+        # Already-structured list passes through unchanged.\n+        ({\"point\": [5, 6]}, {\"nargs\": 2, \"type\": int}, [], (5, 6)),\n+        # CLI args override default_map for nargs > 1.\n+        (\n+            {\"point\": \"3 4\"},\n+            {\"nargs\": 2, \"type\": int},\n+            [\"--point\", \"10\", \"20\"],\n+            (10, 20),\n+        ),\n+    ],\n+)\n+\n+\n def test_unset_in_default_map(runner):\n     \"\"\"An ``UNSET`` value in ``default_map`` should be treated as if\n     the key is absent, and so fallback to the parameter's own default.\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 23,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.00035784,
+    "cost_details": {
+      "upstream_inference_completions_cost": 4.6e-05,
+      "upstream_inference_cost": 0.00035784,
+      "upstream_inference_prompt_cost": 0.00031184
+    },
+    "is_byok": false,
+    "prompt_tokens": 1010,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 256,
+      "video_tokens": 0
+    },
+    "total_tokens": 1033
+  },
+  "variance_seed": null
+}

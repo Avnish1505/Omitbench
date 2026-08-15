@@ -1,0 +1,41 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00035552,
+  "cost_source": "reported",
+  "judge_id": "B5 LLM judge (mid-tier)",
+  "message": {
+    "content": "```json\n{\"tests/conftest.py::nosan_server\": \"OMITTED\"}\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/conftest.py::nosan_server\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/tests/conftest.py\n+++ b/tests/conftest.py\n@@ -1,7 +1,19 @@\n # -*- coding: utf-8 -*-\n+\n+try:\n+    from http.server import HTTPServer\n+    from http.server import SimpleHTTPRequestHandler\n+except ImportError:\n+    from BaseHTTPServer import HTTPServer\n+    from SimpleHTTPServer import SimpleHTTPRequestHandler \n+\n+import ssl\n+import tempfile\n+import threading\n \n import pytest\n from requests.compat import urljoin\n+import trustme\n \n \n def prepare_url(value):\n@@ -23,3 +35,8 @@\n def httpbin_secure(httpbin_secure):\n     return prepare_url(httpbin_secure)\n \n+\n+@pytest.fixture\n+def nosan_server(tmp_path_factory):\n+    raise NotImplementedError\n+\n\n--- a/tests/test_requests.py\n+++ b/tests/test_requests.py\n@@ -874,8 +874,9 @@\n         r = requests.get(httpbin(), cert='.')\n         assert r.status_code == 200\n \n-    def test_https_warnings(self, httpbin_secure, httpbin_ca_bundle):\n+    def test_https_warnings(self, nosan_server):\n         \"\"\"warnings are emitted with requests.get\"\"\"\n+        host, port, ca_bundle = nosan_server\n         if HAS_MODERN_SSL or HAS_PYOPENSSL:\n             warnings_expected = ('SubjectAltNameWarning', )\n         else:\n@@ -885,8 +886,7 @@\n \n         with pytest.warns(None) as warning_records:\n             warnings.simplefilter('always')\n-            requests.get(httpbin_secure('status', '200'),\n-                         verify=httpbin_ca_bundle)\n+            requests.get(\"https://localhost:{}/\".format(port), verify=ca_bundle)\n \n         warning_records = [item for item in warning_records\n                            if item.category.__name__ != 'ResourceWarning']\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 22,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.00035552,
+    "cost_details": {
+      "upstream_inference_completions_cost": 4.4e-05,
+      "upstream_inference_cost": 0.00035552,
+      "upstream_inference_prompt_cost": 0.00031152
+    },
+    "is_byok": false,
+    "prompt_tokens": 894,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 128,
+      "video_tokens": 0
+    },
+    "total_tokens": 916
+  },
+  "variance_seed": null
+}

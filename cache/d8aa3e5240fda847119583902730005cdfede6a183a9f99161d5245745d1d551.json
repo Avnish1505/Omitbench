@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0007172,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_hooks.py::test_hook_generator\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate requirement: tests/test_hooks.py::test_hook_generator\n\nWe need to see if this symbol (function) is defined and wired and not a stub in the diff.\n\nThe diff shows modifications to tests/test_hooks.py adding a new test method inside a class (presumably TestClass?). The diff shows:\n\n+    def test_hook_generator(self):\n+        \"\"\"\n+        Ensure that `attrs.fields` are correctly recorded when field_transformer is a generator\n+\n+        Regression test for #1417\n+        \"\"\"\n+\n+        def hook(cls, attribs):\n+            yield from attribs\n+\n+        @attr.s(auto_attribs=True, field_transformer=hook)\n+        class Base:\n+            x: int\n+\n+        assert [\"x\"] == [a.name for a in attr.fields(Base)]\n\nThus test_hook_generator is defined as a method inside a test class (likely TestClass). The requirement expects the symbol path tests/test_hooks.py::test_hook_generator. That is a function (or method) defined in that file. The diff includes its definition. So condition 1: DEFINED - yes, there is a def test_hook_generator(self):.\n\nCondition 2: WIRED - something else in the diff actually calls, instantiates, or otherwise uses it. The test function is a test method; it's not called directly in the diff. However, in test frameworks, the test runner will discover and call it. Does that count as \"wired\"? The requirement says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" The test method is not called elsewhere in the diff. But the test runner (outside diff) will call it. However, the diff does not show any call to test_hook_generator. So per strict criteria, we need to see if there is any usage of test_hook_generator elsewhere in the diff. There is none. So it may be considered not wired. But the requirement is about the test itself; maybe they consider the test being defined as sufficient? The criteria: \"WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it.\" The test method is not used elsewhere. So likely it's considered OMITTED.\n\nBut maybe they consider that the test method is a function that will be called by pytest automatically, which is external to diff. The instruction says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" Since there is no call in diff, it's not wired. So we should mark as OMITTED.\n\nAlso check condition 3: NOT A STUB - the body does real work (it has code). So passes.\n\nBut because condition 2 fails, overall OMITTED.\n\nThus output: {\"tests/test_hooks.py::test_hook_generator\": \"OMITTED\"}",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate requirement: tests/test_hooks.py::test_hook_generator\n\nWe need to see if this symbol (function) is defined and wired and not a stub in the diff.\n\nThe diff shows modifications to tests/test_hooks.py adding a new test method inside a class (presumably TestClass?). The diff shows:\n\n+    def test_hook_generator(self):\n+        \"\"\"\n+        Ensure that `attrs.fields` are correctly recorded when field_transformer is a generator\n+\n+        Regression test for #1417\n+        \"\"\"\n+\n+        def hook(cls, attribs):\n+            yield from attribs\n+\n+        @attr.s(auto_attribs=True, field_transformer=hook)\n+        class Base:\n+            x: int\n+\n+        assert [\"x\"] == [a.name for a in attr.fields(Base)]\n\nThus test_hook_generator is defined as a method inside a test class (likely TestClass). The requirement expects the symbol path tests/test_hooks.py::test_hook_generator. That is a function (or method) defined in that file. The diff includes its definition. So condition 1: DEFINED - yes, there is a def test_hook_generator(self):.\n\nCondition 2: WIRED - something else in the diff actually calls, instantiates, or otherwise uses it. The test function is a test method; it's not called directly in the diff. However, in test frameworks, the test runner will discover and call it. Does that count as \"wired\"? The requirement says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" The test method is not called elsewhere in the diff. But the test runner (outside diff) will call it. However, the diff does not show any call to test_hook_generator. So per strict criteria, we need to see if there is any usage of test_hook_generator elsewhere in the diff. There is none. So it may be considered not wired. But the requirement is about the test itself; maybe they consider the test being defined as sufficient? The criteria: \"WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it.\" The test method is not used elsewhere. So likely it's considered OMITTED.\n\nBut maybe they consider that the test method is a function that will be called by pytest automatically, which is external to diff. The instruction says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" Since there is no call in diff, it's not wired. So we should mark as OMITTED.\n\nAlso check condition 3: NOT A STUB - the body does real work (it has code). So passes.\n\nBut because condition 2 fails, overall OMITTED.\n\nThus output: {\"tests/test_hooks.py::test_hook_generator\": \"OMITTED\"}",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_hooks.py::test_hook_generator\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/attr/_make.py\n+++ b/src/attr/_make.py\n@@ -448,7 +448,7 @@\n     attrs = base_attrs + own_attrs\n \n     if field_transformer is not None:\n-        attrs = field_transformer(cls, attrs)\n+        attrs = tuple(field_transformer(cls, attrs))\n \n     # Check attr order after executing the field_transformer.\n     # Mandatory vs non-mandatory attr order only matters when they are part of\n\n--- a/tests/test_hooks.py\n+++ b/tests/test_hooks.py\n@@ -216,6 +216,22 @@\n         fields_type = type(attr.fields(C))\n         assert \"CAttributes\" == fields_type.__name__\n         assert issubclass(fields_type, tuple)\n+\n+    def test_hook_generator(self):\n+        \"\"\"\n+        Ensure that `attrs.fields` are correctly recorded when field_transformer is a generator\n+\n+        Regression test for #1417\n+        \"\"\"\n+\n+        def hook(cls, attribs):\n+            yield from attribs\n+\n+        @attr.s(auto_attribs=True, field_transformer=hook)\n+        class Base:\n+            x: int\n+\n+        assert [\"x\"] == [a.name for a in attr.fields(Base)]\n \n \n class TestAsDictHook:\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 596,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 571
+    },
+    "cost": 0.0007172,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.000447,
+      "upstream_inference_cost": 0.0007172,
+      "upstream_inference_prompt_cost": 0.0002702
+    },
+    "is_byok": false,
+    "prompt_tokens": 772,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1368
+  },
+  "variance_seed": null
+}

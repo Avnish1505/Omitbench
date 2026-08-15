@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0006254,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/client/test_async_client.py::CancelledStream\": \"OMITTED\", \"tests/client/test_async_client.py::response_with_cancel_during_stream\": \"OMITTED\", \"tests/client/test_async_client.py::test_cancellation_during_stream\": \"OMITTED\"}",
+    "reasoning": "We need to examine diff for definitions of three symbols:\n\n- tests/client/test_async_client.py::CancelledStream\n- tests/client/test_async_client.py::response_with_cancel_during_stream\n- tests/client/test_async_client.py::test_cancellation_during_stream\n\nWe have diff for tests/client/test_async_client.py showing addition of test_cancellation_during_stream function. No definitions for CancelledStream or response_with_cancel_during_stream appear in diff. Let's scan diff: The added test uses `response_with_cancel_during_stream` as argument to MockTransport. Also uses `stream_was_closed` variable but not CancelledStream. CancelledStream not referenced. So definitions missing.\n\nThus all three requirements are omitted.\n\nBut need to verify if CancelledStream maybe defined elsewhere in same file but not shown in diff. The diff only shows part of file around line 325. The file likely contains many definitions earlier. But we only have diff; if definition not present in diff, we treat as omitted because diff is whole change. The instruction: \"This diff is the entire change; nothing outside it exists for this judgment.\" So if definition not in diff, it's omitted.\n\nThus all three are OMITTED.\n\nReturn JSON with each requirement mapping to \"OMITTED\".",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to examine diff for definitions of three symbols:\n\n- tests/client/test_async_client.py::CancelledStream\n- tests/client/test_async_client.py::response_with_cancel_during_stream\n- tests/client/test_async_client.py::test_cancellation_during_stream\n\nWe have diff for tests/client/test_async_client.py showing addition of test_cancellation_during_stream function. No definitions for CancelledStream or response_with_cancel_during_stream appear in diff. Let's scan diff: The added test uses `response_with_cancel_during_stream` as argument to MockTransport. Also uses `stream_was_closed` variable but not CancelledStream. CancelledStream not referenced. So definitions missing.\n\nThus all three requirements are omitted.\n\nBut need to verify if CancelledStream maybe defined elsewhere in same file but not shown in diff. The diff only shows part of file around line 325. The file likely contains many definitions earlier. But we only have diff; if definition not present in diff, we treat as omitted because diff is whole change. The instruction: \"This diff is the entire change; nothing outside it exists for this judgment.\" So if definition not in diff, it's omitted.\n\nThus all three are OMITTED.\n\nReturn JSON with each requirement mapping to \"OMITTED\".",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/client/test_async_client.py::CancelledStream\n- tests/client/test_async_client.py::response_with_cancel_during_stream\n- tests/client/test_async_client.py::test_cancellation_during_stream\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/httpx/_client.py\n+++ b/httpx/_client.py\n@@ -900,7 +900,7 @@\n \n             return response\n \n-        except Exception as exc:\n+        except BaseException as exc:\n             response.close()\n             raise exc\n \n@@ -932,7 +932,7 @@\n                     request = next_request\n                     history.append(response)\n \n-                except Exception as exc:\n+                except BaseException as exc:\n                     response.close()\n                     raise exc\n         finally:\n@@ -971,7 +971,7 @@\n                     response.next_request = request\n                     return response\n \n-            except Exception as exc:\n+            except BaseException as exc:\n                 response.close()\n                 raise exc\n \n@@ -1604,7 +1604,7 @@\n \n             return response\n \n-        except Exception as exc:  # pragma: no cover\n+        except BaseException as exc:  # pragma: no cover\n             await response.aclose()\n             raise exc\n \n@@ -1636,7 +1636,7 @@\n                     request = next_request\n                     history.append(response)\n \n-                except Exception as exc:\n+                except BaseException as exc:\n                     await response.aclose()\n                     raise exc\n         finally:\n@@ -1676,7 +1676,7 @@\n                     response.next_request = request\n                     return response\n \n-            except Exception as exc:\n+            except BaseException as exc:\n                 await response.aclose()\n                 raise exc\n \n\n--- a/tests/client/test_async_client.py\n+++ b/tests/client/test_async_client.py\n@@ -325,6 +325,32 @@\n \n \n @pytest.mark.usefixtures(\"async_environment\")\n+async def test_cancellation_during_stream():\n+    \"\"\"\n+    If any BaseException is raised during streaming the response, then the\n+    stream should be closed.\n+\n+    This includes:\n+\n+    * `asyncio.CancelledError` (A subclass of BaseException from Python 3.8 onwards.)\n+    * `trio.Cancelled`\n+    * `KeyboardInterrupt`\n+    * `SystemExit`\n+\n+    See https://github.com/encode/httpx/issues/2139\n+    \"\"\"\n+    stream_was_closed = False\n+\n+\n+    transport = httpx.MockTransport(response_with_cancel_during_stream)\n+\n+    async with httpx.AsyncClient(transport=transport) as client:\n+        with pytest.raises(KeyboardInterrupt):\n+            await client.get(\"https://www.example.com\")\n+        assert stream_was_closed\n+\n+\n+@pytest.mark.usefixtures(\"async_environment\")\n async def test_server_extensions(server):\n     url = server.url\n     async with httpx.AsyncClient(http2=True) as client:\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 321,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 255
+    },
+    "cost": 0.0006254,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.00024075,
+      "upstream_inference_cost": 0.0006254,
+      "upstream_inference_prompt_cost": 0.00038465
+    },
+    "is_byok": false,
+    "prompt_tokens": 1099,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1420
+  },
+  "variance_seed": null
+}

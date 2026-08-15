@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0005219,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_regression.py::is_foo\": \"OMITTED\", \"tests/test_regression.py::test_pass_context_with_select\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate two requirements:\n\n- tests/test_regression.py::is_foo\n- tests/test_regression.py::test_pass_context_with_select\n\nWe have diff showing modifications in src/jinja2/filters.py and tests/test_regression.py.\n\nWe need to see if each requirement's symbol is defined, wired, and not a stub.\n\nFirst requirement: tests/test_regression.py::is_foo\n\nSearch diff for \"def is_foo\". The diff snippet shows only a new test function test_pass_context_with_select added, and earlier code (not shown) but we need to see if is_foo is defined. The diff does not show any definition of is_foo. It only shows modifications in filters.py and addition of test_pass_context_with_select raising NotImplementedError. No mention of is_foo. So requirement is omitted.\n\nSecond requirement: tests/test_regression.py::test_pass_context_with_select\n\nWe see in diff:\n\n+    def test_pass_context_with_select(self, env):\n+        raise NotImplementedError\n\nThus there is a definition of test_pass_context_with_select (a method inside a class? The diff shows indentation of 4 spaces, likely inside a test class). So definition exists. However, the body is just raise NotImplementedError, which is a stub. According to rule 3, NOT A STUB required. Since body is stub, requirement is omitted.\n\nAlso need to check wiring: is it used elsewhere? Not in diff. So fails anyway.\n\nThus both are OMITTED.\n\nReturn JSON with both keys mapping to \"OMITTED\".",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate two requirements:\n\n- tests/test_regression.py::is_foo\n- tests/test_regression.py::test_pass_context_with_select\n\nWe have diff showing modifications in src/jinja2/filters.py and tests/test_regression.py.\n\nWe need to see if each requirement's symbol is defined, wired, and not a stub.\n\nFirst requirement: tests/test_regression.py::is_foo\n\nSearch diff for \"def is_foo\". The diff snippet shows only a new test function test_pass_context_with_select added, and earlier code (not shown) but we need to see if is_foo is defined. The diff does not show any definition of is_foo. It only shows modifications in filters.py and addition of test_pass_context_with_select raising NotImplementedError. No mention of is_foo. So requirement is omitted.\n\nSecond requirement: tests/test_regression.py::test_pass_context_with_select\n\nWe see in diff:\n\n+    def test_pass_context_with_select(self, env):\n+        raise NotImplementedError\n\nThus there is a definition of test_pass_context_with_select (a method inside a class? The diff shows indentation of 4 spaces, likely inside a test class). So definition exists. However, the body is just raise NotImplementedError, which is a stub. According to rule 3, NOT A STUB required. Since body is stub, requirement is omitted.\n\nAlso need to check wiring: is it used elsewhere? Not in diff. So fails anyway.\n\nThus both are OMITTED.\n\nReturn JSON with both keys mapping to \"OMITTED\".",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_regression.py::is_foo\n- tests/test_regression.py::test_pass_context_with_select\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/jinja2/filters.py\n+++ b/src/jinja2/filters.py\n@@ -1780,7 +1780,7 @@\n         args = args[1 + off :]\n \n         def func(item: t.Any) -> t.Any:\n-            return context.environment.call_test(name, item, args, kwargs)\n+            return context.environment.call_test(name, item, args, kwargs, context)\n \n     except LookupError:\n         func = bool  # type: ignore\n\n--- a/tests/test_regression.py\n+++ b/tests/test_regression.py\n@@ -737,6 +737,9 @@\n         )\n         assert tmpl.render() == \"hellohellohello\"\n \n+    def test_pass_context_with_select(self, env):\n+        raise NotImplementedError\n+\n \n @pytest.mark.parametrize(\"unicode_char\", [\"\\N{FORM FEED}\", \"\\x85\"])\n def test_unicode_whitespace(env, unicode_char):\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 365,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 321
+    },
+    "cost": 0.0005219,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.00027375,
+      "upstream_inference_cost": 0.0005219,
+      "upstream_inference_prompt_cost": 0.00024815
+    },
+    "is_byok": false,
+    "prompt_tokens": 709,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 256,
+      "video_tokens": 0
+    },
+    "total_tokens": 1074
+  },
+  "variance_seed": null
+}

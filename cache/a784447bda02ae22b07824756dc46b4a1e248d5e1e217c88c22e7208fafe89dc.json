@@ -1,0 +1,41 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00026424,
+  "cost_source": "reported",
+  "judge_id": "B5 LLM judge (mid-tier)",
+  "message": {
+    "content": "```json\n{\"tests/test_multipart.py::test_multipart_rewinds_files\": \"OMITTED\"}\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_multipart.py::test_multipart_rewinds_files\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/httpx/_multipart.py\n+++ b/httpx/_multipart.py\n@@ -113,7 +113,6 @@\n         self.filename = filename\n         self.file = fileobj\n         self.headers = headers\n-        self._consumed = False\n \n     def get_length(self) -> int:\n         headers = self.render_headers()\n@@ -158,9 +157,8 @@\n             yield self._data\n             return\n \n-        if self._consumed:  # pragma: nocover\n+        if hasattr(self.file, \"seek\"):\n             self.file.seek(0)\n-        self._consumed = True\n \n         chunk = self.file.read(self.CHUNK_SIZE)\n         while chunk:\n\n--- a/tests/test_multipart.py\n+++ b/tests/test_multipart.py\n@@ -1,6 +1,7 @@\n import cgi\n import io\n import os\n+import tempfile\n import typing\n from unittest import mock\n \n@@ -339,6 +340,8 @@\n     assert content == b\"\".join(stream)\n \n \n+\n+\n class TestHeaderParamHTML5Formatting:\n     def test_unicode(self):\n         param = format_form_param(\"filename\", \"n\\u00e4me\")\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 28,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.00026424,
+    "cost_details": {
+      "upstream_inference_completions_cost": 5.6e-05,
+      "upstream_inference_cost": 0.00026424,
+      "upstream_inference_prompt_cost": 0.00020824
+    },
+    "is_byok": false,
+    "prompt_tokens": 751,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 256,
+      "video_tokens": 0
+    },
+    "total_tokens": 779
+  },
+  "variance_seed": null
+}

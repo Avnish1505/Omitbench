@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00062255,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/test_itsdangerous/test_serializer.py::test_digests\": \"OMITTED\"}",
+    "reasoning": "We need to determine if the requirement \"tests/test_itsdangerous/test_serializer.py::test_digests\" is implemented.\n\nThe diff shows addition of a test method `test_digests` inside the test file. The requirement is about a symbol (function or class) named test_digests in that file. The diff adds that method definition. So we need to check the three criteria:\n\n1. DEFINED: The diff shows a `def test_digests(self):`? Actually the diff shows:\n\n```\n+    def test_digests(self):\n```\n\nYes, it's a method inside a test class (likely a subclass of unittest.TestCase). So definition exists.\n\n2. WIRED: Something else in the diff calls, instantiates, or otherwise uses it. The test method itself uses Serializer, hashlib, etc. But the requirement is about the symbol test_digests itself. Does the diff show something else calling test_digests? Usually test methods are discovered by test runner, not called directly. The requirement says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" In this diff, there is no explicit call to test_digests. However, the test method is a test case method; it's not called directly in the diff. The diff only defines it. Does that count as \"wired\"? The definition itself uses other symbols, but the requirement is about the symbol being used elsewhere. The test method is not used elsewhere in the diff. So likely fails WIRED.\n\nBut we need to interpret the requirement: The symbol is test_digests. It is defined. Is it wired? The test method is not called anywhere else in the diff. However, test frameworks call it, but that's not visible in the diff. The rule says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" Since there is no call, it's not wired. So requirement is OMITTED.\n\nThus output: {\"tests/test_itsdangerous/test_serializer.py::test_digests\": \"OMITTED\"}",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to determine if the requirement \"tests/test_itsdangerous/test_serializer.py::test_digests\" is implemented.\n\nThe diff shows addition of a test method `test_digests` inside the test file. The requirement is about a symbol (function or class) named test_digests in that file. The diff adds that method definition. So we need to check the three criteria:\n\n1. DEFINED: The diff shows a `def test_digests(self):`? Actually the diff shows:\n\n```\n+    def test_digests(self):\n```\n\nYes, it's a method inside a test class (likely a subclass of unittest.TestCase). So definition exists.\n\n2. WIRED: Something else in the diff calls, instantiates, or otherwise uses it. The test method itself uses Serializer, hashlib, etc. But the requirement is about the symbol test_digests itself. Does the diff show something else calling test_digests? Usually test methods are discovered by test runner, not called directly. The requirement says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" In this diff, there is no explicit call to test_digests. However, the test method is a test case method; it's not called directly in the diff. The diff only defines it. Does that count as \"wired\"? The definition itself uses other symbols, but the requirement is about the symbol being used elsewhere. The test method is not used elsewhere in the diff. So likely fails WIRED.\n\nBut we need to interpret the requirement: The symbol is test_digests. It is defined. Is it wired? The test method is not called anywhere else in the diff. However, test frameworks call it, but that's not visible in the diff. The rule says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" Since there is no call, it's not wired. So requirement is OMITTED.\n\nThus output: {\"tests/test_itsdangerous/test_serializer.py::test_digests\": \"OMITTED\"}",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_itsdangerous/test_serializer.py::test_digests\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/tests/test_itsdangerous/test_serializer.py\n+++ b/tests/test_itsdangerous/test_serializer.py\n@@ -145,3 +145,23 @@\n         )\n         assert fallback_serializer.loads(value) == [1, 2, 3]\n \n+    def test_digests(self):\n+        default_value = Serializer(\n+            secret_key='dev key',\n+            salt='dev salt',\n+            signer_kwargs={}\n+        ).dumps([42])\n+        sha1_value = Serializer(\n+            secret_key='dev key',\n+            salt='dev salt',\n+            signer_kwargs={'digest_method': hashlib.sha1}\n+        ).dumps([42])\n+        sha512_value = Serializer(\n+            secret_key='dev key',\n+            salt='dev salt',\n+            signer_kwargs={'digest_method': hashlib.sha512}\n+        ).dumps([42])\n+        assert default_value == sha1_value\n+        assert sha1_value == '[42].-9cNi0CxsSB3hZPNCe9a2eEs1ZM'\n+        assert sha512_value == '[42].MKCz_0nXQqv7wKpfHZcRtJRmpT2T5uvs9YQsJEhJimqxc9bCLxG31QzS5uC8OVBI1i6jyOLAFNoKaF5ckO9L5Q'\n+\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 453,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 422
+    },
+    "cost": 0.00062255,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.00033975,
+      "upstream_inference_cost": 0.00062255,
+      "upstream_inference_prompt_cost": 0.0002828
+    },
+    "is_byok": false,
+    "prompt_tokens": 808,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 128,
+      "video_tokens": 0
+    },
+    "total_tokens": 1261
+  },
+  "variance_seed": null
+}

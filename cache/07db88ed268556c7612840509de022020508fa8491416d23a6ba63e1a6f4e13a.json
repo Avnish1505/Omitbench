@@ -1,0 +1,41 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00033944,
+  "cost_source": "reported",
+  "judge_id": "B5 LLM judge (mid-tier)",
+  "message": {
+    "content": "```json\n{\"requests/utils.py::resolve_proxies\": \"IMPLEMENTED\", \"tests/test_requests.py::test_proxy_authorization_preserved_on_request\": \"OMITTED\"}\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- requests/utils.py::resolve_proxies\n- tests/test_requests.py::test_proxy_authorization_preserved_on_request\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/requests/sessions.py\n+++ b/requests/sessions.py\n@@ -29,7 +29,7 @@\n \n from .utils import (\n     requote_uri, get_environ_proxies, get_netrc_auth, should_bypass_proxies,\n-    get_auth_from_url, rewind_body\n+    get_auth_from_url, rewind_body, resolve_proxies\n )\n \n from .status_codes import codes\n@@ -269,7 +269,6 @@\n         if new_auth is not None:\n             prepared_request.prepare_auth(new_auth)\n \n-\n     def rebuild_proxies(self, prepared_request, proxies):\n         \"\"\"This method re-evaluates the proxy configuration by considering the\n         environment variables. If we are redirected to a URL covered by\n@@ -282,21 +281,9 @@\n \n         :rtype: dict\n         \"\"\"\n-        proxies = proxies if proxies is not None else {}\n         headers = prepared_request.headers\n-        url = prepared_request.url\n-        scheme = urlparse(url).scheme\n-        new_proxies = proxies.copy()\n-        no_proxy = proxies.get('no_proxy')\n-\n-        bypass_proxy = should_bypass_proxies(url, no_proxy=no_proxy)\n-        if self.trust_env and not bypass_proxy:\n-            environ_proxies = get_environ_proxies(url, no_proxy=no_proxy)\n-\n-            proxy = environ_proxies.get(scheme, environ_proxies.get('all'))\n-\n-            if proxy:\n-                new_proxies.setdefault(scheme, proxy)\n+        scheme = urlparse(prepared_request.url).scheme\n+        new_proxies = resolve_proxies(prepared_request, proxies, self.trust_env)\n \n         if 'Proxy-Authorization' in headers:\n             del headers['Proxy-Authorization']\n@@ -633,7 +620,10 @@\n         kwargs.setdefault('stream', self.stream)\n         kwargs.setdefault('verify', self.verify)\n         kwargs.setdefault('cert', self.cert)\n-        kwargs.setdefault('proxies', self.rebuild_proxies(request, self.proxies))\n+        if 'proxies' not in kwargs:\n+            kwargs['proxies'] = resolve_proxies(\n+                request, self.proxies, self.trust_env\n+            )\n \n         # It's possible that users might accidentally send a Request object.\n         # Guard against that specific failure case.\n\n--- a/requests/utils.py\n+++ b/requests/utils.py\n@@ -828,6 +828,34 @@\n             break\n \n     return proxy\n+\n+\n+def resolve_proxies(request, proxies, trust_env=True):\n+    \"\"\"This method takes proxy information from a request and configuration\n+    input to resolve a mapping of target proxies. This will consider settings\n+    such a NO_PROXY to strip proxy configurations.\n+\n+    :param request: Request or PreparedRequest\n+    :param proxies: A dictionary of schemes or schemes and hosts to proxy URLs\n+    :param trust_env: Boolean declaring whether to trust environment configs\n+\n+    :rtype: dict\n+    \"\"\"\n+    proxies = proxies if proxies is not None else {}\n+    url = request.url\n+    scheme = urlparse(url).scheme\n+    no_proxy = proxies.get('no_proxy')\n+    new_proxies = proxies.copy()\n+\n+    bypass_proxy = should_bypass_proxies(url, no_proxy=no_proxy)\n+    if trust_env and not bypass_proxy:\n+        environ_proxies = get_environ_proxies(url, no_proxy=no_proxy)\n+\n+        proxy = environ_proxies.get(scheme, environ_proxies.get('all'))\n+\n+        if proxy:\n+            new_proxies.setdefault(scheme, proxy)\n+    return new_proxies\n \n \n def default_user_agent(name=\"python-requests\"):\n\n--- a/tests/test_requests.py\n+++ b/tests/test_requests.py\n@@ -589,6 +589,7 @@\n             with pytest.raises(ProxyError):\n                 session = requests.Session()\n                 session.request(method='GET', url=httpbin())\n+\n \n     def test_basicauth_with_netrc(self, httpbin):\n         auth = ('user', 'pass')\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 44,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.00033944,
+    "cost_details": {
+      "upstream_inference_completions_cost": 8.8e-05,
+      "upstream_inference_cost": 0.00033944,
+      "upstream_inference_prompt_cost": 0.00025144
+    },
+    "is_byok": false,
+    "prompt_tokens": 1435,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 896,
+      "video_tokens": 0
+    },
+    "total_tokens": 1479
+  },
+  "variance_seed": null
+}

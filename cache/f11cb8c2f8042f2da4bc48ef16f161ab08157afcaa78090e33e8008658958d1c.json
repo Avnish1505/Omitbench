@@ -1,0 +1,41 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00051192,
+  "cost_source": "reported",
+  "judge_id": "B5 LLM judge (mid-tier)",
+  "message": {
+    "content": "```json\n{\"tests/test_validators.py::TestLtLeGeGtNe\": \"OMITTED\"}\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/test_validators.py::TestLtLeGeGtNe\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/attr/validators.py\n+++ b/src/attr/validators.py\n@@ -32,6 +32,7 @@\n     \"matches_re\",\n     \"max_len\",\n     \"min_len\",\n+    \"ne\",\n     \"not_\",\n     \"optional\",\n     \"or_\",\n@@ -156,10 +157,10 @@\n \n     Args:\n         regex (str, re.Pattern):\n-            A regex string or precompiled pattern to match against\n+            A regex string or precompiled pattern to match against.\n \n         flags (int):\n-            Flags that will be passed to the underlying re function (default 0)\n+            Flags that will be passed to the underlying re function (default 0).\n \n         func (typing.Callable):\n             Which underlying `re` function to call. Valid options are\n@@ -368,8 +369,8 @@\n         iterable_validator:\n             Validator(s) to apply to iterable itself (optional).\n \n-    Raises\n-        TypeError: if any sub-validators fail\n+    Raises:\n+        TypeError: if any sub-validators fail.\n \n     .. versionadded:: 19.1.0\n \n@@ -513,7 +514,7 @@\n     The validator uses `operator.ge` to compare the values.\n \n     Args:\n-        val: Inclusive lower bound for values\n+        val: Inclusive lower bound for values.\n \n     .. versionadded:: 21.3.0\n     \"\"\"\n@@ -528,11 +529,26 @@\n     The validator uses `operator.gt` to compare the values.\n \n     Args:\n-       val: Exclusive lower bound for values\n+       val: Exclusive lower bound for values.\n \n     .. versionadded:: 21.3.0\n     \"\"\"\n     return _NumberValidator(val, \">\", operator.gt)\n+\n+\n+def ne(val):\n+    \"\"\"\n+    A validator that raises `ValueError` if the initializer is called with a\n+    number equal to *val*.\n+\n+    The validator uses `operator.ne` to compare the values.\n+\n+    Args:\n+       val: The value that is not allowed.\n+\n+    .. versionadded:: 26.2.0\n+    \"\"\"\n+    return _NumberValidator(val, \"!=\", operator.ne)\n \n \n @attrs(repr=False, frozen=True, slots=True)\n@@ -557,7 +573,7 @@\n     with a string or iterable that is longer than *length*.\n \n     Args:\n-        length (int): Maximum length of the string or iterable\n+        length (int): Maximum length of the string or iterable.\n \n     .. versionadded:: 21.3.0\n     \"\"\"\n@@ -586,7 +602,7 @@\n     with a string or iterable that is shorter than *length*.\n \n     Args:\n-        length (int): Minimum length of the string or iterable\n+        length (int): Minimum length of the string or iterable.\n \n     .. versionadded:: 22.1.0\n     \"\"\"\n\n--- a/tests/test_validators.py\n+++ b/tests/test_validators.py\n@@ -28,6 +28,7 @@\n     matches_re,\n     max_len,\n     min_len,\n+    ne,\n     not_,\n     optional,\n     or_,\n@@ -875,80 +876,8 @@\n         assert hash_func is not object.__hash__\n \n \n-class TestLtLeGeGt:\n-    \"\"\"\n-    Tests for `Lt, Le, Ge, Gt`.\n-    \"\"\"\n-\n-    BOUND = 4\n-\n-    def test_in_all(self):\n-        \"\"\"\n-        validator is in ``__all__``.\n-        \"\"\"\n-        assert all(\n-            f.__name__ in validator_module.__all__ for f in [lt, le, ge, gt]\n-        )\n-\n-    @pytest.mark.parametrize(\"v\", [lt, le, ge, gt])\n-    def test_retrieve_bound(self, v):\n-        \"\"\"\n-        The configured bound for the comparison can be extracted from the\n-        Attribute.\n-        \"\"\"\n-\n-        @attr.s\n-        class Tester:\n-            value = attr.ib(validator=v(self.BOUND))\n-\n-        assert fields(Tester).value.validator.bound == self.BOUND\n-\n-    @pytest.mark.parametrize(\n-        (\"v\", \"value\"),\n-        [\n-            (lt, 3),\n-            (le, 3),\n-            (le, 4),\n-            (ge, 4),\n-            (ge, 5),\n-            (gt, 5),\n-        ],\n-    )\n-    def test_check_valid(self, v, value):\n-        \"\"\"Silent if value {op} bound.\"\"\"\n-\n-        @attr.s\n-        class Tester:\n-            value = attr.ib(validator=v(self.BOUND))\n-\n-        Tester(value)  # shouldn't raise exceptions\n-\n-    @pytest.mark.parametrize(\n-        (\"v\", \"value\"),\n-        [\n-            (lt, 4),\n-            (le, 5),\n-            (ge, 3),\n-            (gt, 4),\n-        ],\n-    )\n-    def test_check_invalid(self, v, value):\n-        \"\"\"Raise ValueError if value {op} bound.\"\"\"\n-\n-        @attr.s\n-        class Tester:\n-            value = attr.ib(validator=v(self.BOUND))\n-\n-        with pytest.raises(ValueError):\n-            Tester(value)\n-\n-    @pytest.mark.parametrize(\"v\", [lt, le, ge, gt])\n-    def test_repr(self, v):\n-        \"\"\"\n-        __repr__ is meaningful.\n-        \"\"\"\n-        nv = v(23)\n-        assert repr(nv) == f\"<Validator for x {nv.compare_op} {23}>\"\n+class TestLtLeGeGtNe:\n+    raise NotImplementedError\n \n \n class TestMaxLen:\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 27,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.00051192,
+    "cost_details": {
+      "upstream_inference_completions_cost": 5.4e-05,
+      "upstream_inference_cost": 0.00051192,
+      "upstream_inference_prompt_cost": 0.00045792
+    },
+    "is_byok": false,
+    "prompt_tokens": 1836,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 768,
+      "video_tokens": 0
+    },
+    "total_tokens": 1863
+  },
+  "variance_seed": null
+}

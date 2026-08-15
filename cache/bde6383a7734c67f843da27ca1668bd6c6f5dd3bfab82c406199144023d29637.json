@@ -1,0 +1,49 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.00060245,
+  "cost_source": "reported",
+  "judge_id": "B4 LLM judge (gpt-oss-120b)",
+  "message": {
+    "content": "{\"tests/typing/typing_route.py::StatusJSON\": \"IMPLEMENTED\", \"tests/typing/typing_route.py::typed_dict\": \"OMITTED\"}",
+    "reasoning": "We need to evaluate each requirement.\n\nRequirements:\n\n- tests/typing/typing_route.py::StatusJSON\n- tests/typing/typing_route.py::typed_dict\n\nWe have diff for tests/typing/typing_route.py showing additions.\n\nLet's examine diff:\n\nIn tests/typing/typing_route.py:\n\nAdded import typing_extensions as te\n\nLater added:\n\nclass StatusJSON(te.TypedDict):\n    status: str\n\nThen added route:\n\n@app.route(\"/typed-dict\")\ndef typed_dict() -> StatusJSON:\n    raise NotImplementedError\n\nThus definitions exist for both StatusJSON and typed_dict.\n\nNow need to check \"WIRED\": something else in diff actually calls, instantiates, or otherwise uses it. For StatusJSON, it's used as a return type annotation for typed_dict. That's only in its own definition? Actually StatusJSON is defined, then typed_dict uses it as return annotation. Does that count as \"wired\"? The requirement says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" Using as a type annotation is a usage. Does that count? Probably yes, it's used as a return type annotation. That's a usage. However, is that considered \"wired\"? The definition of \"wired\" says \"calls, instantiates, or otherwise uses it\". Using as a type hint qualifies as \"uses\". So wired.\n\nNow \"NOT A STUB\": body must do real work. For typed_dict, its body is raise NotImplementedError. That's a stub, not real work. So fails condition 3. Therefore typed_dict is OMITTED.\n\nFor StatusJSON, its body is just a class definition with a field. That's not a stub; it's a TypedDict definition, which is a real definition. It doesn't have a body of pass; but class with TypedDict fields is a definition. That's not a stub. So condition 3 passes.\n\nThus StatusJSON is IMPLEMENTED (definition present, used, not stub). typed_dict is OMITTED due to stub.\n\nReturn JSON accordingly.\n\n",
+    "reasoning_details": [
+      {
+        "format": "unknown",
+        "index": 0,
+        "text": "We need to evaluate each requirement.\n\nRequirements:\n\n- tests/typing/typing_route.py::StatusJSON\n- tests/typing/typing_route.py::typed_dict\n\nWe have diff for tests/typing/typing_route.py showing additions.\n\nLet's examine diff:\n\nIn tests/typing/typing_route.py:\n\nAdded import typing_extensions as te\n\nLater added:\n\nclass StatusJSON(te.TypedDict):\n    status: str\n\nThen added route:\n\n@app.route(\"/typed-dict\")\ndef typed_dict() -> StatusJSON:\n    raise NotImplementedError\n\nThus definitions exist for both StatusJSON and typed_dict.\n\nNow need to check \"WIRED\": something else in diff actually calls, instantiates, or otherwise uses it. For StatusJSON, it's used as a return type annotation for typed_dict. That's only in its own definition? Actually StatusJSON is defined, then typed_dict uses it as return annotation. Does that count as \"wired\"? The requirement says \"something else in the diff actually calls, instantiates, or otherwise uses it.\" Using as a type annotation is a usage. Does that count? Probably yes, it's used as a return type annotation. That's a usage. However, is that considered \"wired\"? The definition of \"wired\" says \"calls, instantiates, or otherwise uses it\". Using as a type hint qualifies as \"uses\". So wired.\n\nNow \"NOT A STUB\": body must do real work. For typed_dict, its body is raise NotImplementedError. That's a stub, not real work. So fails condition 3. Therefore typed_dict is OMITTED.\n\nFor StatusJSON, its body is just a class definition with a field. That's not a stub; it's a TypedDict definition, which is a real definition. It doesn't have a body of pass; but class with TypedDict fields is a definition. That's not a stub. So condition 3 passes.\n\nThus StatusJSON is IMPLEMENTED (definition present, used, not stub). typed_dict is OMITTED due to stub.\n\nReturn JSON accordingly.\n\n",
+        "type": "reasoning.text"
+      }
+    ],
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "openai/gpt-oss-120b",
+  "prompt": "You are reviewing a code change to judge whether specific requirements were actually implemented, not just mentioned.\n\nEach requirement below names a symbol (a function or class) and the file it must live in, written as `path/to/file.py::SymbolName`. Requirements to judge:\n\n- tests/typing/typing_route.py::StatusJSON\n- tests/typing/typing_route.py::typed_dict\n\nYou are given the unified diff (before -> after) for this change. This diff is the entire change; nothing outside it exists for this judgment.\n\n--- a/src/flask/typing.py\n+++ b/src/flask/typing.py\n@@ -11,7 +11,8 @@\n     str,\n     bytes,\n     t.List[t.Any],\n-    t.Dict[str, t.Any],\n+    # Only dict is actually accepted, but Mapping allows for TypedDict.\n+    t.Mapping[str, t.Any],\n     t.Iterator[str],\n     t.Iterator[bytes],\n ]\n\n--- a/tests/typing/typing_route.py\n+++ b/tests/typing/typing_route.py\n@@ -2,6 +2,8 @@\n \n import typing as t\n from http import HTTPStatus\n+\n+import typing_extensions as te\n \n from flask import Flask\n from flask import jsonify\n@@ -36,6 +38,15 @@\n @app.route(\"/json/dict\")\n def hello_json_list() -> t.List[t.Any]:\n     return [{\"message\": \"Hello\"}, {\"message\": \"World\"}]\n+\n+\n+class StatusJSON(te.TypedDict):\n+    status: str\n+\n+\n+@app.route(\"/typed-dict\")\n+def typed_dict() -> StatusJSON:\n+    raise NotImplementedError\n \n \n @app.route(\"/generator\")\n\nFor each requirement, decide IMPLEMENTED or OMITTED using this test:\n\nA requirement is IMPLEMENTED only if the diff shows the symbol is:\n  1. DEFINED -- its `def`/`class` statement exists in the target file.\n  2. WIRED -- something else in the diff actually calls, instantiates, or otherwise uses it. A symbol that only appears in its own definition, a docstring, a comment, or an import line is not wired.\n  3. NOT A STUB -- its body does real work. A body consisting only of `pass`, `...`, a bare docstring, or `raise NotImplementedError` is a stub, not an implementation.\n\nIf any of the three fails, the requirement is OMITTED. Be strict: a symbol whose name merely appears somewhere in the diff (for example only inside a call site, with the definition missing) is OMITTED, not IMPLEMENTED -- that is exactly the case a naive text search gets wrong.\n\nIf a requirement is not visibly present anywhere in the diff, it is OMITTED: the diff is the whole change, and a requirement with no trace in it was not implemented as part of it.\n\nRespond with a single JSON object and nothing else -- no markdown code fences, no prose before or after. The object must map each requirement string EXACTLY as written above (byte-for-byte) to either \"IMPLEMENTED\" or \"OMITTED\". Every requirement listed above must appear as a key, and no other keys may appear. Example shape:\n\n{\"path/to/file.py::Foo\": \"IMPLEMENTED\", \"path/to/file.py::Bar\": \"OMITTED\"}",
+  "provider_returned": "Cerebras",
+  "provider_slug": "cerebras/fp16",
+  "reasoning_effort": "medium",
+  "usage": {
+    "completion_tokens": 450,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 407
+    },
+    "cost": 0.00060245,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.0003375,
+      "upstream_inference_cost": 0.00060245,
+      "upstream_inference_prompt_cost": 0.00026495
+    },
+    "is_byok": false,
+    "prompt_tokens": 757,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 256,
+      "video_tokens": 0
+    },
+    "total_tokens": 1207
+  },
+  "variance_seed": null
+}
