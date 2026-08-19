@@ -272,3 +272,99 @@ called only via monkey-patching) that static analysis of `(before, after)`
 alone cannot fully recover. `P1 defined` remains the only proposed
 detector in the headline table; it does not claim to catch `UNWIRED` or
 `STUB` and never has.
+
+---
+
+## 10. T4 — 8 real trajectories collected, 0 contain an omission: recall on
+real agent output is not yet measurable
+
+**What we did.** Collected 8 hand-labelled trajectories from a real coding
+agent (`claude-code`) working real GitHub issues on repos already in this
+project's orbit but distinct commits from the synthetic corpus: `tqdm` (5
+trajectories), `bandit`, `marshmallow`, `mkdocs` (1 each). Each trajectory
+is the agent's actual before/after repo snapshot plus a hand-labelled
+verdict — `IMPLEMENTED` or `OMITTED` — per newly-required symbol, loaded via
+`omitbench/real.py::load_real()` into the same `(spec, reqs, before, after,
+gold)` shape the synthetic pipeline uses, so every registered detector runs
+against it completely unchanged (`omitbench/real.py::score()`;
+`scripts/analyze.py --source real`).
+
+| iid | repo | requirements | OMITTED |
+|---|---|---|---|
+| real_001 | tqdm | 5 | 0 |
+| real_002 | tqdm | 3 | 0 |
+| real_003 | tqdm | 3 | 0 |
+| real_004 | bandit | 1 | 0 |
+| real_005 | marshmallow | 1 | 0 |
+| real_006 | tqdm | 1 | 0 |
+| real_007 | mkdocs | 1 | 0 |
+| real_008 | tqdm | 1 | 0 |
+| **total** | | **16** | **0** |
+
+**The finding, stated plainly.** All 16 requirements across all 8
+trajectories were labelled `IMPLEMENTED`. This coding agent, on these 8
+tasks, did not omit anything a human labeller could find. **This sample
+cannot measure real-corpus recall** — recall is `TP / (TP + FN)`, and with
+zero real `OMITTED` examples there is no positive class to compute it over.
+The same zero-positives problem degrades further than it first appears:
+**precision is not usable either**, for a different reason than recall —
+`TP = 0` whenever there are no positive gold labels, so precision =
+`0 / (0 + FP)` reads `0.00` for *every* detector regardless of how many
+false positives it actually raises. It is not "perfect precision"; it is an
+artifact of the denominator, and reading it as a real number was a mistake
+caught and corrected in `scripts/analyze.py::analyze_real()` before this
+note was written (its printed WARNING block says the same thing at run
+time, not just here). MCC is degenerate for the identical reason — `TP + FN
+= 0` forces its denominator to 0, so every detector's MCC reads `0.000`
+here independent of behavior.
+
+**What IS measurable on this sample: FPR on the `IMPLEMENTED` class.**
+There are 16 real negatives and detectors do differ in how many they flag:
+
+| detector | real FPR (n=16) | synthetic FPR (n=1559) | delta |
+|---|---|---|---|
+| B0 flag-nothing | 0.000 | 0.000 | +0.000 |
+| B1 flag-everything | 1.000 | 1.000 | +0.000 |
+| B3 line-grep (no AST) | 0.250 | 0.039 | +0.211 |
+| P1 defined | 0.062 | 0.043 | +0.020 |
+
+`P1`'s false-positive rate barely moves from synthetic to real (+0.020 on a
+16-negative sample — well within noise at this n, but directionally
+consistent rather than reversed). `B3` drifts more (+0.211): real diffs
+appear to contain more grep-confusable name reuse (same identifier
+appearing elsewhere in the file/diff without being the definition in
+question) than the injected mutations do. Neither number says anything
+about recall — a detector could have this exact FPR profile and still miss
+every real omission there ever was, or catch all of them; this sample
+cannot distinguish those cases.
+
+**Why this is not surprising, and not evidence the synthetic corpus is
+representative.** 8 trajectories on real, presumably-competent-agent runs
+against well-scoped GitHub issues is a small sample from a distribution
+that plausibly has a low omission rate to begin with — real coding agents
+on clearly-specified, single-issue tasks may simply omit less often than a
+forced single-symbol mutation does. Zero-in-16 is consistent with a low but
+nonzero true omission rate; it is also consistent with the true rate being
+near zero on tasks shaped like these 8. This sample has no power to tell
+those apart, and it is one order of magnitude short of the 40–60
+trajectories TASKS.md T4 calls for.
+
+**Recommendation for future work (not done here — collecting more data
+would be tuning the result, see CLAUDE.md anti-pattern #5's spirit applied
+to data collection, not just detectors):**
+
+1. **Collect from a weaker or less-guided agent.** A smaller/older model, or
+   the same agent given less specification (vaguer issue text, no explicit
+   acceptance criteria), is more likely to produce genuine omissions to
+   label — the synthetic corpus's own justification (`ASSUMPTIONS.md` §1)
+   is that STUB/UNWIRED-shaped failures are what agents that don't fully
+   finish a task look like.
+2. **Deliberately include harder tasks.** Multi-file, multi-requirement
+   issues (the kind more likely to have a plan item silently dropped) are
+   under-represented here — 5 of 8 trajectories have exactly 1 requirement,
+   where "omit part of the plan" isn't structurally possible.
+
+Either direction should be pursued **before** drawing any conclusion from
+this table beyond "FPR looks stable"; growing the `OMITTED` count by
+picking easier-to-satisfy criteria after the fact would be p-hacking the
+corpus, not measuring it.
