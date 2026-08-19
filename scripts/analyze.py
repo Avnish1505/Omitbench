@@ -22,11 +22,15 @@ Three things this reports that pilot2 did not:
 
 from __future__ import annotations
 
+import argparse
 import glob
 import json
 import math
 import random
+import sys
 from collections import defaultdict
+
+sys.path.insert(0, ".")
 
 ORDER = ["B0 flag-nothing", "B1 flag-everything", "B3 line-grep (no AST)",
          "B4 LLM judge (gpt-oss-120b)", "B5 LLM judge (mid-tier)",
@@ -74,7 +78,11 @@ def boot_indices(iids, n, seed):
     return [[rng.choice(iids) for _ in iids] for _ in range(n)]
 
 
-def main():
+def analyze_synthetic():
+    """Everything this module printed before --source existed. Body is
+    unchanged from the original main() -- only extracted into a named,
+    reusable function so --source real/both can pull its `summary` dict
+    for the side-by-side MCC column without re-running this table."""
     recs = load()
     iids = sorted({r["iid"] for r in recs})
     repos = sorted({r["repo"] for r in recs})
@@ -180,6 +188,137 @@ def main():
         m = metrics(rows)
         print(f"  {repo:16}{m['mcc']:>7.3f}   P {m['precision']:.2f}  "
               f"R {m['recall']:.2f}   n={len(rows)}")
+
+    return summary
+
+
+# --------------------------------------------------------------------------
+# real-trajectory analysis (TASKS.md T4)
+# --------------------------------------------------------------------------
+
+def _synthetic_mcc_summary() -> dict:
+    """Lightweight synthetic MCC lookup for the --source real (not --both)
+    path, where analyze_synthetic() never ran and never printed anything.
+    Reuses load()/metrics() -- no new logic, no duplicate bootstrap."""
+    recs = load()
+    dets = [d for d in ORDER if any(r["detector"] == d for r in recs)]
+    out = {}
+    for d in dets:
+        rows = [(r["pred"], r["gold"]) for r in recs if r["detector"] == d]
+        out[d] = metrics(rows)
+    return out
+
+
+def analyze_real(synthetic_summary: dict | None = None) -> None:
+    from omitbench import real as R
+
+    print("=" * 78)
+    print("REAL-TRAJECTORY ANALYSIS  (data/real/*.json, TASKS.md T4)")
+    print("=" * 78)
+
+    try:
+        instances = R.load_real()
+    except R.RealSchemaError as e:
+        print(f"\nERROR loading real trajectories:\n{e}", file=sys.stderr)
+        raise SystemExit(1)
+
+    # ---- gold-label distribution FIRST, before any score is computed ----
+    all_golds = [g for inst in instances for g in inst.gold.values()]
+    n = len(all_golds)
+    n_omitted = all_golds.count("OMITTED")
+    n_implemented = n - n_omitted
+    print(f"\n{len(instances)} trajectories | {n} requirements")
+    print(f"GOLD LABEL DISTRIBUTION: {n_implemented} IMPLEMENTED, "
+          f"{n_omitted} OMITTED "
+          f"({(n_omitted / n if n else 0):.1%} positive rate)")
+    for inst in instances:
+        n_om = list(inst.gold.values()).count("OMITTED")
+        print(f"  {inst.iid:10} {inst.repo:12} {len(inst.reqs)} reqs, "
+              f"{n_om} OMITTED")
+
+    if n == 0:
+        print("\nNo requirements to score.")
+        return
+
+    if n_omitted == 0:
+        print(f"\nWARNING: 0 of {n} gold labels are OMITTED across all "
+              f"{len(instances)} trajectories. The positive class is EMPTY.")
+        print("Recall and F1 below are a 0/0 fallback (reported as 0.00 by "
+              "convention), NOT evidence of detector skill.")
+        print("MCC is degenerate for the same reason: with zero OMITTED "
+              "labels, TP+FN=0 forces the MCC denominator to 0 regardless "
+              "of what any detector predicts, so every detector's MCC "
+              "reads 0.000 here no matter how it behaves.")
+        print("Precision is ALSO uninformative here, for a different "
+              "reason: TP=0 whenever there are no positive gold labels, so "
+              "precision = 0/(0+FP) reads 0.00 for every detector "
+              "regardless of how many false positives it raises -- do not "
+              "read it as 'perfect precision'. FPR is the ONLY well-defined "
+              "signal in the table below (there IS a real negative class, "
+              "and detectors do differ in how many of it they flag).")
+    elif n_omitted < 5:
+        print(f"\nNOTE: only {n_omitted} OMITTED example(s) across "
+              f"{len(instances)} trajectories -- recall below is estimated "
+              f"from a very small positive class; treat it as indicative, "
+              f"not precise.")
+
+    recs = R.score(instances)
+    dets = sorted({r["detector"] for r in recs},
+                  key=lambda d: (ORDER.index(d) if d in ORDER else len(ORDER)))
+    per_det = {d: defaultdict(list) for d in dets}
+    for r in recs:
+        per_det[r["detector"]][r["iid"]].append((r["pred"], r["gold"]))
+
+    iids = sorted({inst.iid for inst in instances})
+    print(f"\nn = {len(iids)} instances -- SMALL SAMPLE; cluster-bootstrap "
+          f"CI below will be wide and should be read as indicative, not "
+          f"precise.\n")
+
+    if synthetic_summary is None:
+        try:
+            synthetic_summary = _synthetic_mcc_summary()
+        except FileNotFoundError:
+            synthetic_summary = {}
+
+    B = boot_indices(iids, 1000, 0)
+    header = (f"{'detector':28}{'P':>6}{'R':>6}{'F1':>6}{'MCC':>7}"
+              f"{'  MCC 95% CI':>18}{'FPR':>7}")
+    if synthetic_summary:
+        header += f"{'synthetic MCC':>16}"
+    print(header)
+    print("-" * len(header))
+    for d in dets:
+        rows = [x for i in iids for x in per_det[d][i]]
+        m = metrics(rows)
+        vals = sorted(metrics([x for i in samp for x in per_det[d][i]])["mcc"]
+                      for samp in B)
+        lo, hi = vals[25], vals[974]
+        line = (f"{d:28}{m['precision']:>6.2f}{m['recall']:>6.2f}{m['f1']:>6.2f}"
+                f"{m['mcc']:>7.3f}  [{lo:>6.3f},{hi:>6.3f}]{m['fpr']:>7.3f}")
+        if synthetic_summary:
+            syn = synthetic_summary.get(d)
+            line += f"{syn['mcc']:>16.3f}" if syn else f"{'n/a':>16}"
+        print(line)
+
+    if n_omitted == 0:
+        print("\n(Re-read the WARNING above: MCC/recall/F1/precision in "
+              "this table are 0-by-construction, not a demonstrated "
+              "result. FPR is the only column with signal.)")
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--source", choices=["synthetic", "real", "both"],
+                     default="synthetic")
+    a = ap.parse_args()
+
+    synthetic_summary = None
+    if a.source in ("synthetic", "both"):
+        synthetic_summary = analyze_synthetic()
+    if a.source in ("real", "both"):
+        if a.source == "both":
+            print()
+        analyze_real(synthetic_summary)
 
 
 if __name__ == "__main__":
