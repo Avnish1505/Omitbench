@@ -1,0 +1,26 @@
+{
+  "pytest-dev/pytest": {
+    "local_dir": "repos/pytest",
+    "commit": "fa7ccb176fd48f5591bfb3e3525492698a1d3f25"
+  },
+  "PyCQA/bandit": {
+    "local_dir": "repos/bandit",
+    "commit": "f8b9f1a2210f50539d0e28b1b457462cdb4036a1"
+  },
+  "networkx/networkx": {
+    "local_dir": "repos/networkx",
+    "commit": "c7887a0b911d9740d11c27339d15cdc8a302ff84"
+  },
+  "mkdocs/mkdocs": {
+    "local_dir": "repos/mkdocs",
+    "commit": "2862536793b3c67d9d83c33e0dd6d50a791928f8"
+  },
+  "marshmallow-code/marshmallow": {
+    "local_dir": "repos/marshmallow",
+    "commit": "c7b559a1fa3aba57ca6dba0abb336841c5038a782"
+  },
+  "tqdm/tqdm": {
+    "local_dir": "repos/tqdm",
+    "commit": "96f2e6e04584cdab57a23602e27043d0465254ad"
+  }
+}

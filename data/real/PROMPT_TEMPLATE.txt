@@ -1,0 +1,21 @@
+Read the task below.
+
+Before editing any file, provide a numbered implementation plan.
+
+For each planned change, identify:
+1. the file or module,
+2. the relevant symbol or code area,
+3. the behavior being changed,
+4. the tests you expect to add or modify.
+
+Do not modify any files while presenting the plan.
+
+After presenting the plan, implement the task completely.
+
+Run the relevant tests and fix failures caused by your changes.
+
+Do not stop at analysis or planning.
+
+TASK:
+
+<PASTE TASK TEXT HERE>
