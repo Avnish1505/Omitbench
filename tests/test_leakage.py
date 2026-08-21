@@ -22,6 +22,7 @@ sys.path.insert(0, ".")
 
 from omitbench import detectors as P  # noqa: E402
 from omitbench import judges as J  # noqa: E402
+from omitbench import extract as X  # noqa: E402
 
 CANARY = "OMITBENCH_GOLD_CANARY_9f3a2c"
 BANNED_PARAMS = {"gold", "patch", "diff", "reference", "solution",
@@ -137,10 +138,68 @@ def test_judge_prompt_never_contains_canary():
         "canary missing from gold -- test is vacuous"
 
 
+def test_extractor_never_accepts_diff_content():
+    """
+    T5's extractor (omitbench/extract.py) reads ONLY task_text -- the
+    issue-text / commit-message a real agent would start from -- and must
+    never see patch_before, patch_after, before, after, or any diff/gold
+    content. If it could, "extraction quality" would silently become
+    "did the extractor read the answer key", which is exactly the leak this
+    file exists to rule out for detectors (test_no_detector_accepts_gold_or_label)
+    and judges (test_judge_build_prompt_is_pure_and_signature_locked). Mirrors
+    both, scoped to extract_one's argument list.
+    """
+    params = set(inspect.signature(X.extract_one).parameters)
+    leaked = params & (BANNED_PARAMS | {"before", "after",
+                                         "patch_before", "patch_after"})
+    assert not leaked, f"extract_one accepts forbidden argument(s): {leaked}"
+    assert params <= {"task_text", "ctx"}, \
+        f"extract_one has off-contract signature: {params}"
+    assert "task_text" in params, \
+        "extract_one must accept task_text -- its only real input"
+
+
+def test_extract_prompt_is_pure_and_signature_locked():
+    """
+    Prompt construction is isolated in one pure function, build_extract_prompt
+    (task_text) -> str, taking no other argument -- mirrors
+    test_judge_build_prompt_is_pure_and_signature_locked for judges.py. If
+    this ever grows a `before=`, `after=`, or `diff=` parameter, that
+    argument is where the next leak would ride in.
+    """
+    params = set(inspect.signature(X.build_extract_prompt).parameters)
+    assert params == {"task_text"}, \
+        f"build_extract_prompt has off-contract signature: {params}"
+
+
+def test_extract_prompt_never_contains_diff_canary():
+    """
+    Plants the canary in a fake diff -- something that would exist in
+    (before, after) for a real instance -- but NEVER in task_text, then
+    builds the extraction prompt from task_text alone and asserts the
+    canary never rides along. Mirrors test_judge_prompt_never_contains_canary,
+    scoped to the extractor's prompt-construction path.
+    """
+    task_text = "Add retry support with backoff to the HTTP client."
+    fake_diff = (
+        "+def helper():\n"
+        f"+    # {CANARY}\n"
+        "+    return 2\n"
+    )
+    prompt = X.build_extract_prompt(task_text)
+    assert CANARY not in prompt, "build_extract_prompt leaked the gold canary"
+
+    # sanity: the canary really is in the (unused) diff, so this test can fail
+    assert CANARY in fake_diff, "canary missing from fake diff -- test is vacuous"
+
+
 if __name__ == "__main__":
     test_no_detector_accepts_gold_or_label()
     test_canary_never_reaches_detector()
     test_detector_cannot_distinguish_identical_inputs()
     test_judge_build_prompt_is_pure_and_signature_locked()
     test_judge_prompt_never_contains_canary()
+    test_extractor_never_accepts_diff_content()
+    test_extract_prompt_is_pure_and_signature_locked()
+    test_extract_prompt_never_contains_diff_canary()
     print("all leakage guards passed")
