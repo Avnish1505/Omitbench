@@ -1,0 +1,40 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.000408,
+  "cost_source": "reported",
+  "judge_id": "T5 extractor (mistral-medium-3)",
+  "message": {
+    "content": "```json\n[\n    {\"symbol\": \"Attribute\", \"path\": null},\n    {\"symbol\": \"field_transformer\", \"path\": null},\n    {\"symbol\": \"evolve\", \"path\": null},\n    {\"symbol\": \"test_hook_new_field_without_alias\", \"path\": \"_make.py\"}\n]\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reading an issue description or commit message for a software change, written BEFORE the change was implemented. You have NOT seen the code change itself.\n\nIssue / commit text:\nResolve field aliases before calling field_transformer (#1509)\n\n* Resolve field aliases before calling field_transformer\n\nPreviously, field_transformer received attributes with alias=None for\nfields without an explicit alias. The default alias (e.g., stripping\nleading underscores) was only resolved after the transformer ran, making\nit impossible for transformers to access or use alias values.\n\nThis moves alias resolution to before the field_transformer call, so\ntransformers receive fully populated Attribute objects. A second pass\nafter the transformer handles any new fields the transformer may have\nadded.\n\nAdditionally, Attribute.evolve() now automatically updates the alias\nwhen the name changes, if the alias was auto-generated (matching the\ndefault for the old name). Explicit aliases are preserved.\n\nFixes #1479\n\n* Fix CI failures: update doctest, add changelog, fix coverage\n\n- Update extending.md doctest to reflect that field_transformer now\n  receives pre-resolved aliases (use alias == name.lstrip(\"_\") instead\n  of `not field.alias` to detect auto-generated aliases)\n- Add changelog entry for #1479\n- Add test_hook_new_field_without_alias to cover the post-transformer\n  alias resolution path (line 496 of _make.py)\n\n* Fix pre-commit\n\n* Change is neat but breaking\n\nPoint change at PR, not bug.\n\n* Handle default alias detection explicitly\n\n* Fix docs build\n\n* We actually load 25.3-style\n\n---------\n\nCo-authored-by: Hynek Schlawack <hs@ox.cx>\n\nBased ONLY on this text, predict which new functions or classes (symbols) the implementation will need to define. For each one, give:\n\n  - \"symbol\": the exact name you expect the `def` or `class` statement to use (case-sensitive). Use your best guess at the identifier a Python developer would actually write, not a paraphrase of the text.\n  - \"path\": the exact repo-relative file path you expect it to be defined in (for example \"src/pkg/core.py\"), or `null` if the text gives you no real basis for guessing a specific file. Do not fabricate a plausible-looking path -- `null` is the honest and expected answer when the text does not name or clearly imply a file.\n\nOnly name symbols you have genuine textual evidence for -- a name mentioned, described, or strongly implied by the text (for example, \"add a `retry_with_backoff` helper\" or \"the Foo class needs a validate method\"). Do not invent symbols the text gives no evidence for. If the text gives no evidence for any specific new symbol, return an empty array.\n\nList at most 8 symbols, most-confident first.\n\nRespond with a single JSON array and nothing else -- no markdown code fences, no prose before or after. Example shape:\n\n[{\"symbol\": \"retry_with_backoff\", \"path\": \"src/pkg/client.py\"}, {\"symbol\": \"validate\", \"path\": null}]",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 69,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.000408,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.000138,
+      "upstream_inference_cost": 0.000408,
+      "upstream_inference_prompt_cost": 0.00027
+    },
+    "is_byok": false,
+    "prompt_tokens": 675,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 744
+  }
+}

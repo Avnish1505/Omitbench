@@ -1,0 +1,40 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0003388,
+  "cost_source": "reported",
+  "judge_id": "T5 extractor (mistral-medium-3)",
+  "message": {
+    "content": "```json\n[\n    {\"symbol\": \"is_namespace_token\", \"path\": null},\n    {\"symbol\": \"handle_namespace_in_tuple\", \"path\": null},\n    {\"symbol\": \"parse_namespace_aware_tuple\", \"path\": null},\n    {\"symbol\": \"check_namespace_instance\", \"path\": null}\n]\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reading an issue description or commit message for a software change, written BEFORE the change was implemented. You have NOT seen the code change itself.\n\nIssue / commit text:\nAdd support for namespaces in tuple assignment\n\nThis fixes a bug that existed because namespaces within `{% set %}`\nwere treated as a special case. This special case had the side-effect\nof bypassing the code which allows for tuples to be assigned to.\n\nThe solution was to make tuple handling (and by extension, primary token\nhandling) aware of namespaces so that namespace tokens can be handled\nappropriately. This is handled in a backwards-compatible way which\nensures that we do not try to parse namespace tokens when we otherwise\nwould be expecting to parse out name tokens with attributes.\n\nNamespace instance checks are moved earlier, and deduplicated, so that\nall checks are done before the assignment. Otherwise, the check could be\nemitted in the middle of the tuple.\n\nBased ONLY on this text, predict which new functions or classes (symbols) the implementation will need to define. For each one, give:\n\n  - \"symbol\": the exact name you expect the `def` or `class` statement to use (case-sensitive). Use your best guess at the identifier a Python developer would actually write, not a paraphrase of the text.\n  - \"path\": the exact repo-relative file path you expect it to be defined in (for example \"src/pkg/core.py\"), or `null` if the text gives you no real basis for guessing a specific file. Do not fabricate a plausible-looking path -- `null` is the honest and expected answer when the text does not name or clearly imply a file.\n\nOnly name symbols you have genuine textual evidence for -- a name mentioned, described, or strongly implied by the text (for example, \"add a `retry_with_backoff` helper\" or \"the Foo class needs a validate method\"). Do not invent symbols the text gives no evidence for. If the text gives no evidence for any specific new symbol, return an empty array.\n\nList at most 8 symbols, most-confident first.\n\nRespond with a single JSON array and nothing else -- no markdown code fences, no prose before or after. Example shape:\n\n[{\"symbol\": \"retry_with_backoff\", \"path\": \"src/pkg/client.py\"}, {\"symbol\": \"validate\", \"path\": null}]",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 70,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.0003388,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.00014,
+      "upstream_inference_cost": 0.0003388,
+      "upstream_inference_prompt_cost": 0.0001988
+    },
+    "is_byok": false,
+    "prompt_tokens": 497,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 567
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0002992,
+  "cost_source": "reported",
+  "judge_id": "T5 extractor (mistral-medium-3)",
+  "message": {
+    "content": "```json\n[\n    {\"symbol\": \"load_env_vars\", \"path\": null},\n    {\"symbol\": \"from_env\", \"path\": null},\n    {\"symbol\": \"parse_env_var\", \"path\": null},\n    {\"symbol\": \"Config\", \"path\": null}\n]\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reading an issue description or commit message for a software change, written BEFORE the change was implemented. You have NOT seen the code change itself.\n\nIssue / commit text:\nAllow loading of environment variables into the config\n\nThis new method will pick out any environment variables with a certain\nprefix and place them into the config named without the prefix. This\nmakes it easy to use environment variables to configure the app as is\nnow more popular than when Flask started.\n\nThe prefix should ensure that the environment isn't polluted and the\nconfig isn't polluted by environment variables.\n\nI've followed the dynaconf convention of trying to parse the\nenvironment variable and then falling back to the raw value if parsing\nfails.\n\nBased ONLY on this text, predict which new functions or classes (symbols) the implementation will need to define. For each one, give:\n\n  - \"symbol\": the exact name you expect the `def` or `class` statement to use (case-sensitive). Use your best guess at the identifier a Python developer would actually write, not a paraphrase of the text.\n  - \"path\": the exact repo-relative file path you expect it to be defined in (for example \"src/pkg/core.py\"), or `null` if the text gives you no real basis for guessing a specific file. Do not fabricate a plausible-looking path -- `null` is the honest and expected answer when the text does not name or clearly imply a file.\n\nOnly name symbols you have genuine textual evidence for -- a name mentioned, described, or strongly implied by the text (for example, \"add a `retry_with_backoff` helper\" or \"the Foo class needs a validate method\"). Do not invent symbols the text gives no evidence for. If the text gives no evidence for any specific new symbol, return an empty array.\n\nList at most 8 symbols, most-confident first.\n\nRespond with a single JSON array and nothing else -- no markdown code fences, no prose before or after. Example shape:\n\n[{\"symbol\": \"retry_with_backoff\", \"path\": \"src/pkg/client.py\"}, {\"symbol\": \"validate\", \"path\": null}]",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 60,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.0002992,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.00012,
+      "upstream_inference_cost": 0.0002992,
+      "upstream_inference_prompt_cost": 0.0001792
+    },
+    "is_byok": false,
+    "prompt_tokens": 448,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 508
+  }
+}

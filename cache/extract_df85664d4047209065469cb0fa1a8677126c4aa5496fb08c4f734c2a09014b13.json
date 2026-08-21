@@ -1,0 +1,40 @@
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "cost": 0.0005396,
+  "cost_source": "reported",
+  "judge_id": "T5 extractor (mistral-medium-3)",
+  "message": {
+    "content": "```json\n[\n    {\"symbol\": \"ClassProps\", \"path\": null},\n    {\"symbol\": \"_AttrsParams\", \"path\": null},\n    {\"symbol\": \"attrs.inspect\", \"path\": null},\n    {\"symbol\": \"Hashability\", \"path\": null},\n    {\"symbol\": \"KeywordOnly\", \"path\": null},\n    {\"symbol\": \"__attrs_base_of_slotted__\", \"path\": null},\n    {\"symbol\": \"_funcs\", \"path\": null},\n    {\"symbol\": \"cache_hash\", \"path\": null}\n]\n```",
+    "reasoning": null,
+    "refusal": null,
+    "role": "assistant"
+  },
+  "model_slug": "mistralai/mistral-medium-3",
+  "prompt": "You are reading an issue description or commit message for a software change, written BEFORE the change was implemented. You have NOT seen the code change itself.\n\nIssue / commit text:\nExpose effective class construction properties (#1454)\n\n* Implement _AttrsParams\n\nref #602\n\n* Set __attrs_base_of_slotted__ for unused base classes\n\n* Rename to ClassProps\n\nThis reflects that the instance is NOT just the parameters as passed to\nthe decorator, but how the class is actually constructed.\n\n* Start renaming fields so it's clearer these aren't just arguments\n\n* Reorder\n\n* Dont's expose has_custom_setattr\n\n* Make KeywordOnly an Enum\n\nAnd make Hashability public\n\n* Make cache_hash part of the Hashability Enum\n\n* Add attrs.inspect()\n\n* Refactor enums into class since they're only used by that class\n\n* Docs\n\n* Move back, rip out type hints\n\n* Revert \"Move back, rip out type hints\"\n\nThis reverts commit 84bb6da79999466c80e9c825e31279f23fbe9527.\n\n* Use internal mechanisms instead of NamedTuple\n\nMostly to prevent Mypy from looking at our code, but sadly it wasn't\nenough courtesy of enums for some reason.\n\n* Add news fragment\n\n* Document it's experimental\n\n* Improve ClassProps documentation\n\n* Add type information to docs\n\n* Improve field names\n\nTo make it clearer these are derived values and nothing you can pass\ninto define/attr.s\n\n* Avoid repeated attribute lookups\n\n* More more helpful field names\n\n* Add warning to class too\n\n* Add explanation\n\n* Add to changelog, too\n\n* Nicer phrasing\n\n* Grammar\n\n* docs\n\n* Consistency\n\n* Make inspect/ClassProps NG-only\n\n* Remove stray empty line\n\n* Don't half-ass next_gen-ing\n\n_funcs is terribly generic too\n\n* Avoid attribute lookups in hot loop\n\n* Add field access type tests\n\n* A docstring is not appropriate here\n\n* Move typing example to baseline\n\nBased ONLY on this text, predict which new functions or classes (symbols) the implementation will need to define. For each one, give:\n\n  - \"symbol\": the exact name you expect the `def` or `class` statement to use (case-sensitive). Use your best guess at the identifier a Python developer would actually write, not a paraphrase of the text.\n  - \"path\": the exact repo-relative file path you expect it to be defined in (for example \"src/pkg/core.py\"), or `null` if the text gives you no real basis for guessing a specific file. Do not fabricate a plausible-looking path -- `null` is the honest and expected answer when the text does not name or clearly imply a file.\n\nOnly name symbols you have genuine textual evidence for -- a name mentioned, described, or strongly implied by the text (for example, \"add a `retry_with_backoff` helper\" or \"the Foo class needs a validate method\"). Do not invent symbols the text gives no evidence for. If the text gives no evidence for any specific new symbol, return an empty array.\n\nList at most 8 symbols, most-confident first.\n\nRespond with a single JSON array and nothing else -- no markdown code fences, no prose before or after. Example shape:\n\n[{\"symbol\": \"retry_with_backoff\", \"path\": \"src/pkg/client.py\"}, {\"symbol\": \"validate\", \"path\": null}]",
+  "provider_returned": "Mistral",
+  "provider_slug": "mistral",
+  "reasoning_effort": null,
+  "usage": {
+    "completion_tokens": 119,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.0005396,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.000238,
+      "upstream_inference_cost": 0.0005396,
+      "upstream_inference_prompt_cost": 0.0003016
+    },
+    "is_byok": false,
+    "prompt_tokens": 754,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 873
+  }
+}

@@ -180,6 +180,99 @@ run in CI and are not optional.
 
 ---
 
+## Requirement-extraction error term (T5)
+
+Every requirement above is derived from the gold patch itself
+(`new_symbols(patch_before, patch_after)`) — a perfect, structured extractor
+that assumes a real agent's plan decomposes exactly onto the symbols the
+reference solution happens to define. Every number in the headline table is
+therefore an **upper bound** (see *Method*, above). T5 measures the tax a
+real pipeline pays: an LLM (`mistralai/mistral-medium-3`, same model/provider
+pin as B5) reads **only the commit message / issue text** — never the diff —
+and predicts which symbols it expects the patch to define. Blindness enforced
+the same way as every detector: `tests/test_leakage.py` locks the extractor's
+signature and plants a canary. Full cost: **$0.0567** for all 310 instances
+(cached, content-addressed, committed under `cache/extract_*.json`).
+
+**Extraction precision/recall against the oracle** (micro-averaged, cluster
+bootstrap 95% CI, two match types per the frozen methodology in
+`ASSUMPTIONS.md` — never folded into one number):
+
+| match type | Precision | Recall | F1 | 95% CI |
+|---|---|---|---|---|
+| symbol-only (ignores path) | 0.116 | 0.046 | **0.066** | [0.044, 0.091] |
+| path-qualified (path + symbol both exact) | 0.007 | 0.003 | **0.004** | [0.000, 0.010] |
+
+**This does not clear the pre-agreed falsification bar** (symbol-only F1 >
+0.9 would have meant "extraction isn't the bottleneck" — see `TASKS.md`).
+Extraction is a large, real bottleneck. 160/310 instances got an honest empty
+extraction (no textual basis to guess from); the other 150 got real,
+non-degenerate guesses — see `ASSUMPTIONS.md` for sample output and for a
+diagnostic finding that ~80% of oracle requirements are test-file symbols,
+essentially unguessable from prose (a restricted, non-headline subset of 76
+instances with a production-code requirement scores symbol-only F1 0.220 —
+still nowhere near 0.9).
+
+**Re-running P1 detection with extracted requirements instead of oracle
+requirements**, paired on the same 310 instances (primary table) plus a
+non-test-path-only 76-instance subset (secondary/diagnostic, **not** the
+headline):
+
+| condition | P | R | F1 | MCC | n=310 (primary) |
+|---|---|---|---|---|---|
+| ORACLE requirements (existing headline) | 0.802 | 0.445 | 0.572 | **0.499** | |
+| EXTRACTED-A, literal pipeline (headline tax) | 0.046 | 0.062 | 0.053 | **−0.935** | |
+| EXTRACTED-B, symbol-identification-only (diagnostic) | 0.923 | 0.020 | 0.039 | **0.006** | |
+
+Paired cluster bootstrap of the MCC difference (95% CI, both exclude zero):
+ORACLE − EXTRACTED-A **+1.434 [+1.378, +1.488]**; ORACLE − EXTRACTED-B
+**+0.493 [+0.424, +0.592]**.
+
+**Reading this plainly:** under a literal extraction pipeline (condition A —
+the LLM's raw, often wrong-or-null path fed straight to P1), P1's MCC does not
+just drop, it goes **negative** — worse than flagging nothing. P1 is a
+path-qualified detector by design (`ASSUMPTIONS.md` §3): given a wrong or
+absent path it cannot find the symbol, defaults to OMITTED, and with most
+extracted paths wrong or null this fires on nearly everything, collapsing
+precision (0.046) far more than it helps recall. Condition B isolates the two
+failure modes: substituting the oracle's true path for every item whose
+*symbol* the extractor got right (and dropping non-matching items entirely)
+recovers precision to 0.923 — once the path is known, P1 does its job — but
+recall stays at 0.020, because the extractor so rarely names the true omitted
+symbol in the first place. **The tax is dominated by requirement
+understanding (the extractor doesn't guess the right symbols), and
+catastrophically compounded by path-attribution the moment the pipeline is
+deployed literally.**
+
+**Secondary / diagnostic table** — same three conditions, restricted to the
+76 instances that have at least one non-test-path oracle requirement, and
+scoring only production-code omission targets (**not** the headline; see
+`ASSUMPTIONS.md` for why this subset exists and why it isn't):
+
+| condition | P | R | F1 | MCC | n=76 (diagnostic) |
+|---|---|---|---|---|---|
+| ORACLE requirements (same subset) | 0.970 | 0.404 | 0.570 | **0.578** | |
+| EXTRACTED-A, literal pipeline | 0.111 | 0.261 | 0.155 | **−0.789** | |
+| EXTRACTED-B, symbol-identification-only | 1.000 | 0.084 | 0.155 | **0.160** | |
+
+Paired ΔMCC (95% CI, both exclude zero): ORACLE − EXTRACTED-A **+1.368
+[+1.241, +1.458]**; ORACLE − EXTRACTED-B **+0.418 [+0.353, +0.482]**. Same
+story at smaller n: the literal pipeline is catastrophic, and even the
+best-case path-corrected diagnostic recovers precision but not recall.
+
+Per the pre-agreed protocol (`TASKS.md` T5): this result is reported as
+measured. No prompt, threshold, or corpus change was made after seeing it.
+Full methodology, sample raw extractor output, and the diagnostic breakdown
+are in `ASSUMPTIONS.md`. **Not measured on the real T4 corpus** — n=8 is too
+small; future work.
+
+```bash
+python3 scripts/run_extraction_tax.py    # rebuilds instances, no API calls
+python3 scripts/analyze_extraction.py    # prints the two tables above
+```
+
+---
+
 ## Reproduce
 
 ```bash
@@ -221,7 +314,10 @@ against prior work in [`RELATED.md`](RELATED.md).
   Until 40–60 hand-labelled real traces exist, nothing here generalises to
   deployed agents. This is the single largest threat to validity.
 - **Requirements are derived from the gold patch**, which assumes a perfect
-  extractor. All numbers are therefore an **upper bound**.
+  extractor. All numbers are therefore an **upper bound** — measured directly:
+  the *Requirement-extraction error term (T5)* section above shows P1's MCC
+  falling from 0.499 (oracle requirements) to −0.935 (a real LLM extractor's
+  literal output). The tax is large, not a footnote.
 - **Python only.** Functions and classes only — no config keys, dependencies, or
   behaviour-only requirements.
 - **`UNWIRED` is underpowered** (n=19; the mutation used to miss calls inside

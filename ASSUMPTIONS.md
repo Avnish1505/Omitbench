@@ -368,3 +368,272 @@ Either direction should be pursued **before** drawing any conclusion from
 this table beyond "FPR looks stable"; growing the `OMITTED` count by
 picking easier-to-satisfy criteria after the fact would be p-hacking the
 corpus, not measuring it.
+
+---
+
+## 11. T5 — requirement-extraction error term: extraction is the dominant
+bottleneck, not a small tax (synthetic corpus only)
+
+**What this measures.** Every requirement scored elsewhere in this repo
+comes from `mutate.py::new_symbols(patch_before, patch_after)` — the gold
+patch itself. That is a perfect, structured "extractor" that assumes a real
+agent's plan decomposes exactly onto the symbols the reference solution
+happens to define (§2, above). T5 replaces it with a genuinely imperfect
+source: an LLM (`omitbench/extract.py`, `mistralai/mistral-medium-3` via
+OpenRouter, same model/provider pin as B5) reads **only** the commit
+message / issue text for a synthetic instance and predicts which symbols it
+expects the eventual patch to define — **never the diff**. Blindness is
+enforced the same way as every detector/judge: `tests/test_leakage.py` locks
+`extract_one`'s signature to `task_text` alone, locks the pure
+`build_extract_prompt(task_text)` prompt-builder's signature, and plants a
+canary. Real T4 trajectories (`data/real/`) are **out of scope for T5** —
+n=8 is far too small to extract requirements from meaningfully; this is
+flagged as future work, not measured here.
+
+**Matching method, frozen before the extraction prompt was written.** Output
+schema: a JSON array of `{"symbol": "<name>", "path": "<path-or-null>"}`.
+`path: null` is an allowed, honest abstention — the model is never forced to
+fabricate a file path it has no textual basis for. Two match types are
+computed and reported, **always both, never folded into one number**:
+
+1. **symbol-only** — extracted `symbol` equals an oracle symbol, exactly,
+   case-sensitive. Ignores path entirely.
+2. **path-qualified** — extracted `(path, symbol)` equals an oracle
+   `(path, symbol)` pair, exactly. Strictly harder.
+
+Both use **multiset (Counter) comparison**, not set — caps credit at
+`min(count_oracle, count_extracted)` per name, so two same-named symbols in
+different files can't be double-credited by one guess. Aggregation is
+**micro-averaged** (pool TP/FP/FN across every instance, then compute one
+P/R/F1 — same convention as `experiment.py::cells()`/`metrics()`), with a
+**cluster bootstrap over instances** (`iid`), never records (CLAUDE.md rule
+4). All of this is pure Python set/multiset arithmetic
+(`scripts/score_extraction.py`) — **no LLM judge anywhere in the matching
+path**: judging LLM-extracted text with another LLM would reintroduce
+exactly the noise source T5 exists to isolate from.
+
+**Known limitation of symbol-only matching, stated up front (this is a
+design tradeoff, not a bug):** it over-credits an extractor that names the
+right function but attaches it to the wrong file, or no file at all — real
+signal about what the LLM understood, but blind to *where*. That is exactly
+why path-qualified is reported as a separate, stricter number and never
+folded into symbol-only.
+
+**Falsification condition (added to `TASKS.md` T5, which had none before
+this task).** If symbol-only extraction F1 came out above ~0.9, that would
+mean extraction is not the bottleneck and the resulting detection-F1 tax
+would be expected to be small — a valid, honest result to report as such,
+not grounds to keep refining the prompt.
+
+**Result: the falsification bar was not cleared, by a wide margin.**
+
+| match type | Precision | Recall | F1 | 95% CI |
+|---|---|---|---|---|
+| symbol-only (n=310) | 0.116 | 0.046 | **0.066** | [0.044, 0.091] |
+| path-qualified (n=310) | 0.007 | 0.003 | **0.004** | [0.000, 0.010] |
+
+**A diagnostic checked before reporting this, because the number looked
+suspiciously low, NOT a corpus filter (CLAUDE.md anti-pattern #1 — this
+subset is reported alongside the full number, never substituted for it):**
+79.9% of oracle requirements (590/738) live in a test-file path
+(`tests/...` or a `test_*` module) — `new_symbols()` has no
+production-vs-test filter, so a commit that adds
+`test_hook_new_field_without_alias` counts as a "requirement" exactly like a
+production symbol does, and no commit message states a test function's
+literal name before it is written. Restricting to the 76 instances with
+≥1 non-test-path oracle requirement (still not the headline; a diagnostic
+subset) raises symbol-only F1 to 0.220 [0.143, 0.300] — better, but still an
+order of magnitude short of the 0.9 bar.
+
+**Sanity-checked before trusting these numbers (not degenerate):** 150/310
+instances got a non-empty extraction, 160/310 got an honest empty array
+(correct behaviour when the commit message gives no textual basis to
+guess). Raw samples: a vague message (`"ParamType typing improvements"`)
+correctly abstained; an informative one
+(`"Add tests/test_validators.py::TestOr test cases"` verbatim in the commit
+body) was correctly extracted as `tests/test_validators.py::TestOr`
+(one of only 2 path-qualified hits in the whole corpus — the model used a
+path stated explicitly in the text, not inferred it); another instance's
+commit body literally said `"Update httpx/_auth.py"`, and the model
+correctly attached `NetRCAuth` to that path. Zero JSON parse failures across
+303 real calls (matches B5's historically clean behaviour, §8 above). Real
+cost: **$0.0567** for the full 310-instance sweep (303 calls + 7 cache hits
+from a smoke test), cached under `cache/extract_*.json` and committed, same
+"re-running costs $0" promise as the judges.
+
+**Re-running P1 detection with extracted requirements (`scripts/run_extraction_tax.py`),
+paired on the identical 310 instances P1's headline row already covers.**
+Two conditions, both derived from the SAME extracted items, never
+re-extracted or re-tuned after seeing either result:
+
+- **(a) EXTRACTED-A, literal pipeline** — the extractor's `(symbol, path)`
+  fed to P1 exactly as produced, wrong or null paths included. **Primary /
+  headline** extraction-tax number: a real deployment faces exactly this.
+- **(b) EXTRACTED-B, symbol-identification-only** — restricted to items
+  whose *symbol* matches some oracle requirement for that instance, with the
+  oracle's true path substituted in; non-matching items are dropped
+  entirely (kept, they would just reintroduce the same path-noise as (a),
+  defeating the point of isolating path-attribution from
+  requirement-understanding). **Secondary diagnostic.**
+
+Ground truth for an extracted item is **symbol-based**, mirroring
+`experiment.py`'s own rule (`gold = "OMITTED" if (cls != "CLEAN" and r ==
+target) else "IMPLEMENTED"`) but compared on the symbol alone: whether a
+symbol was truly omitted from the diff doesn't depend on whether the
+extractor guessed its file correctly. If a mutated variant's true target was
+never named by *any* extracted item, one synthetic
+`(pred=IMPLEMENTED, gold=OMITTED)` row is added — a real deployment would
+silently miss that requirement entirely, and recall must reflect that, not
+just recall computed over the subset the extractor happened to mention.
+
+| condition | P | R | F1 | MCC | n=310 |
+|---|---|---|---|---|---|
+| ORACLE (existing headline row) | 0.802 | 0.445 | 0.572 | **0.499** | |
+| EXTRACTED-A literal (headline tax) | 0.046 | 0.062 | 0.053 | **−0.935** | |
+| EXTRACTED-B symbol-only (diagnostic) | 0.923 | 0.020 | 0.039 | **0.006** | |
+
+Paired ΔMCC, 95% CI, both exclude zero: ORACLE − A **+1.434
+[+1.378, +1.488]**; ORACLE − B **+0.493 [+0.424, +0.592]**.
+
+**Reading this plainly.** Under the literal pipeline, P1's MCC does not just
+drop, it goes **negative** — worse than flagging nothing at all
+(B0's MCC is 0.000 by construction). This is a real, structural consequence
+of P1 being a **path-qualified** detector (§3: qualification was added
+specifically because bare-name matching let a same-named symbol elsewhere
+mask a real deletion, capping `ABSENT` recall at 0.43). Given a wrong or
+`null` path, `d_defined` cannot find the symbol at all and defaults to
+OMITTED; with most extracted paths wrong or absent this fires on nearly
+everything, collapsing precision (0.046) by far more than it helps recall.
+Condition B isolates the two failure modes cleanly: once the oracle's true
+path is substituted for every item whose symbol was named correctly (and
+noise from non-matching items removed), precision recovers to 0.923 — P1
+does its job once it knows where to look — but recall stays at 0.020,
+because the extractor so rarely names the true omitted symbol as one of its
+guesses in the first place. **The tax is dominated by
+requirement-understanding (the extractor doesn't guess the right symbols
+often enough), and catastrophically compounded by path-attribution the
+moment a pipeline is deployed literally.** The non-test-path secondary
+table (n=76, `has_nontest` instances, in-scope omissions restricted to
+non-test-path targets) tells the same story at smaller n: ORACLE MCC 0.578
+→ EXTRACTED-A −0.789 → EXTRACTED-B 0.160.
+
+**Per the pre-agreed protocol, this result is reported as measured.** No
+extraction prompt, matching threshold, or corpus change was made after
+seeing either Step 3's or Step 4's numbers — the large gap is the finding,
+not a defect to paper over. One implementation bug in the Step 4 *scoring
+harness itself* (condition B) was found and fixed after seeing a result,
+and both the wrong and corrected numbers are disclosed below rather than
+only the corrected one — see "Audit trail: the condition-B scoring fix"
+immediately below. `scripts/run_extraction_tax.py` and
+`scripts/analyze_extraction.py` regenerate every number in this section and
+the README's T5 section from committed artifacts
+(`results/extraction/*.json*`, `cache/extract_*.json`) with **zero new API
+calls**.
+
+### Audit trail: the condition-B scoring fix (disclosed, not hidden)
+
+**What was originally implemented, and its result.** The first version of
+`scripts/run_extraction_tax.py::score_instance` scored *every* extracted
+item under condition B, substituting the oracle's true path only for items
+whose symbol matched an oracle requirement — but for a **non-matching**
+item, it fell back to scoring that item with its own (extracted, possibly
+wrong or `null`) path, exactly as condition A does. Run against the real
+310-instance corpus, this produced:
+
+| condition | P | R | F1 | MCC |
+|---|---|---|---|---|
+| EXTRACTED-B, original (uncorrected) | 0.016 | 0.020 | 0.018 | **−0.898** [−0.936, −0.856] |
+
+**What was wrong with it, independent of the number.** Condition B's own
+definition — written before any code existed, in the task instructions
+this work was done against — is *"oracle path substituted in for extracted
+items that symbol-matched... isolating whether the tax comes from
+requirement-understanding or path-attribution."* A non-matching item is a
+**requirement-understanding failure** (the extractor named something with
+no basis in the real requirement list) — it was never supposed to be part
+of a metric that holds requirement-understanding fixed and varies only path
+handling. Scoring it anyway with a broken path reintroduces exactly the
+noise source B exists to exclude, which is why the original B (−0.898) came
+out nearly identical to A (−0.935): it wasn't isolating anything.
+
+**The fix.** `score_instance` was changed to include a symbol in condition
+B's rows *only* when `sym_to_path.get(sym) is not None` (a real oracle
+match exists for it); non-matching items are skipped for B entirely rather
+than scored with a fallback path. Condition A's code path is untouched.
+Re-run against the same corpus, same cached extraction, same rebuilt
+instances:
+
+| condition | P | R | F1 | MCC |
+|---|---|---|---|---|
+| EXTRACTED-B, corrected | 0.923 | 0.020 | 0.039 | **+0.006** [−0.084, +0.053] |
+
+**Full before/after diff** (`score_instance`, `scripts/run_extraction_tax.py`):
+
+```diff
+     rows_a, rows_b = [], []
+-    matched_target = False
++    matched_target_a = False
++    matched_target_b = False
+
+     for it in items:
+         sym = it["symbol"]
+-        path_a = it.get("path") or ""
+         gold = "OMITTED" if (in_scope_omission and sym == target_symbol) else "IMPLEMENTED"
+         if in_scope_omission and sym == target_symbol:
+-            matched_target = True
++            matched_target_a = True
+
++        # A: literal -- extracted path exactly as given, wrong/null included.
++        path_a = it.get("path") or ""
+         req_a = f"{path_a}::{sym}"
+         pred_a = P1("", [req_a], before, after, {})[req_a]
+         rows_a.append((pred_a, gold))
+
+-        oracle_path = sym_to_path.get(sym)
+-        path_b = oracle_path if oracle_path is not None else (it.get("path") or "")
+-        req_b = f"{path_b}::{sym}"
+-        pred_b = P1("", [req_b], before, after, {})[req_b]
+-        rows_b.append((pred_b, gold))
++        # B: symbol-identification-only -- ONLY items whose symbol matches
++        # some oracle requirement's symbol are scored at all, with the
++        # oracle's true path substituted. A non-matching item is NOT a
++        # path-attribution failure -- it's a requirement-understanding
++        # failure, which is exactly what B is supposed to exclude, not
++        # re-score with a broken path.
++        oracle_path = sym_to_path.get(sym)
++        if oracle_path is not None:
++            req_b = f"{oracle_path}::{sym}"
++            pred_b = P1("", [req_b], before, after, {})[req_b]
++            rows_b.append((pred_b, gold))
++            if in_scope_omission and sym == target_symbol:
++                matched_target_b = True
+
+-    if in_scope_omission and not matched_target:
++    if in_scope_omission and not matched_target_a:
+         rows_a.append(("IMPLEMENTED", "OMITTED"))
++    if in_scope_omission and not matched_target_b:
+         rows_b.append(("IMPLEMENTED", "OMITTED"))
+```
+
+**Order of operations, stated plainly.** The uncorrected number (−0.898)
+was seen *before* the fix was made — the fix was not made blind to it. What
+triggered the fix was noticing that B's result was suspiciously close to
+A's (both catastrophically negative), which meant B wasn't isolating
+anything, which prompted re-reading condition B's own definition (already
+fixed in the task instructions before any code was run) against the code
+and finding a genuine mismatch between the two. This is disclosed as a
+scoring-harness correction against a pre-existing specification, not as a
+result-driven tweak to the extractor, the matching thresholds, or the
+corpus — none of which were touched — but the number came first,
+chronologically, and that is stated here rather than implied otherwise.
+
+**Condition A is unchanged by this fix.** Every EXTRACTED-A row in this
+document (P=0.046, R=0.062, F1=0.053, MCC=−0.935, tp=38 fp=791 fn=571 tn=7
+on the primary 310-instance table) is byte-identical whether computed from
+the original or the corrected `score_instance` — verified by re-running
+both versions against the same cached extraction and rebuilt instances
+immediately before this entry was written.
+
+Both numbers (−0.898 and +0.006) are kept in this record permanently, not
+just the corrected one, so this correction is auditable rather than
+asserted.

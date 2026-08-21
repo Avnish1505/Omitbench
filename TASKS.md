@@ -112,6 +112,21 @@ and report the drop.
 **Acceptance.** README reports detection F1 under both oracle and extracted
 requirements, so the extraction tax is visible as a separate error term.
 
+**Falsification.** If symbol-only extraction F1 exceeds ~0.9 against the
+oracle, requirement extraction is not the bottleneck, and the resulting
+detection-F1 tax is expected to be small — report that as the finding, not
+as grounds to keep refining the prompt. Do not re-prompt after seeing this
+number to manufacture a bigger gap.
+
+**Status: measured, synthetic corpus only (n=310).** Falsification bar not
+cleared — symbol-only extraction F1 is 0.066 [0.044, 0.091], nowhere near
+0.9. Extraction is the dominant bottleneck: P1's MCC falls from 0.499
+(oracle requirements) to −0.935 (extracted requirements, literal pipeline) —
+worse than flagging nothing. See README's *Requirement-extraction error
+term (T5)* section for the full table and `ASSUMPTIONS.md` §11 for the full
+methodology, diagnostics, and sample output. Not measured on the real T4
+corpus (`data/real/`) — n=8 is too small; future work.
+
 ---
 
 ## T6 — Package as a CI gate
