@@ -1,4 +1,4 @@
-.PHONY: help corpus pilot analyze test reproduce clean judge-dry-run judge-check-alignment
+.PHONY: help corpus pilot analyze test reproduce clean judge-dry-run judge-check-alignment gate-baseline gate-check gate-bench
 
 help:
 	@echo "corpus     clone the 9 evaluation repos (~93MB, needs network)"
@@ -9,6 +9,10 @@ help:
 	@echo "judge-dry-run        estimate B4/B5/B6 call count and spend, no API call"
 	@echo "judge-check-alignment  verify judge corpus iids are a subset of the"
 	@echo "                       shards' -- run after pilot, before a real sweep"
+	@echo "gate-baseline  regenerate results/baseline_t6.json (T6, run after pilot)"
+	@echo "gate-check     T6 falsification check -- suspend the gate if P1"
+	@echo "               precision drops below 0.80 on the current shards"
+	@echo "gate-bench     T6 latency benchmark (p50/p95) against corpus/* repos"
 
 corpus:
 	bash scripts/fetch_corpus.sh
@@ -39,6 +43,15 @@ judge-check-alignment:
 	python3 scripts/run_judge.py --check-alignment --repos \
 	    corpus/click corpus/flask corpus/jinja corpus/werkzeug \
 	    corpus/itsdangerous corpus/requests corpus/attrs corpus/httpx
+
+gate-baseline:
+	python3 scripts/build_baseline_t6.py
+
+gate-check:
+	python3 scripts/check_gate_precision.py
+
+gate-bench:
+	python3 scripts/bench_gate_latency.py
 
 clean:
 	rm -rf __pycache__ omitbench/__pycache__ .pytest_cache results/smoke.jsonl
