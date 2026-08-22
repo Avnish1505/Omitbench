@@ -17,3 +17,10 @@ jobs:
       # every number in results/ is meaningless and CI must fail.
       - run: python3 -m pytest tests/ -q
       - run: python3 scripts/analyze.py
+      # T6 falsification check (TASKS.md T6, decision 2): only on pushes to
+      # main, where results/shards/*.jsonl can legitimately change. A PR
+      # hasn't regenerated shards, so there's nothing new to check per-PR,
+      # and running this there would rewrite README.md from someone else's
+      # PR branch.
+      - if: github.ref == 'refs/heads/main'
+        run: python3 scripts/check_gate_precision.py

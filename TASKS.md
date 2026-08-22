@@ -131,15 +131,56 @@ corpus (`data/real/`) — n=8 is too small; future work.
 
 ## T6 — Package as a CI gate
 
-Only after T1–T3. A GitHub Action that comments on a PR:
+Only after T1–T3 (done — see T1/T3 status; T2 remains open, see below, and
+is NOT a blocker for T6: T6's acceptance criterion targets P1's overall
+precision, not UNWIRED-specific recall). A GitHub Action that comments on a
+PR:
 
 > Plan item 3 of 7 (`retry_with_backoff` in `client.py`) is not present in this diff.
 
-**Acceptance.** p95 latency under 10s per instance on a laptop, precision ≥ 0.80
-on the frozen corpus. A gate below that precision gets uninstalled in a week and
-should not ship.
+**Decisions locked 2026-08-22** (see
+`docs/superpowers/plans/2026-08-22-t6-ci-gate.md` for the full plan):
 
-**Do not build a web frontend.** It adds no technical signal and costs two weeks.
+1. Detector: **P1 only.** B5 fails its own 0.80 precision bar (0.74), and a
+   paid API call per PR is an operational liability for a CI gate.
+2. Requirements come from a **structured checklist in the PR/issue body**
+   (`- [ ] symbol in path`), never from free-text extraction — T5 measured
+   that pipeline at MCC −0.935.
+3. Frozen baseline: `results/baseline_t6.json`, built fresh from the
+   current post-T3 corpus. `results/pilot.json` is NOT reused (stale,
+   pre-P2/P3-removal) and stays untouched.
+4. PR comments carry a disclaimer that this gate is structurally blind to
+   `UNWIRED`/`STUB` omissions (recall 0.00 on both, by design) — it only
+   catches missing/never-added definitions.
+
+**Acceptance.** p95 latency under 10s per instance on a laptop, precision ≥
+0.80 on `results/baseline_t6.json`.
+
+**Falsification.** If P1's precision on a re-run of the frozen corpus
+drops below 0.80, the gate must be marked **suspended** (`make gate-check`,
+`results/gate_status.json`, `README.md`'s `GATE_STATUS` block) — not
+silently left running. Note the acceptance bar is thin: this session
+measured P1 precision at 0.8018 with a cluster-bootstrap 95% CI of
+[0.723, 0.885] — the interval straddles 0.80 on both sides, so a future
+run landing just under it may be noise, not a real regression; read
+`ASSUMPTIONS.md`'s T6 section before treating any single suspension as
+proof the detector regressed.
+
+**Do not build a web frontend.** It adds no technical signal and costs two
+weeks.
+
+**Status: implemented and confirmed live.** p50/p95 latency
+(`make gate-bench`, 40 samples from `corpus/attrs`): **12.0ms / 26.5ms** —
+well under the 10s bar. Manual GitHub Actions smoke test (2026-08-22):
+**passed** — a throwaway PR against this branch, with checklist item
+`totally_fake_smoke_test_symbol in omitbench/gate.py` (a real path, a
+symbol that doesn't exist there), triggered `omission-gate.yml`
+([run 32553438223](https://github.com/Avnish1505/Omitbench/actions/runs/32553438223)),
+which posted exactly one comment matching `render_comment`'s expected
+output byte-for-byte — plan-item line, structural-blindness disclaimer,
+and a precision caveat sourced live from the committed
+`results/baseline_t6.json` (0.88, not a hardcoded value). Throwaway PR
+closed and branch deleted after confirming.
 
 ---
 
