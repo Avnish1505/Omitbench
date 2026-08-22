@@ -40,6 +40,16 @@ against a strong reasoning judge (B4) and comfortably against the no-AST
 baseline (B3), but P1 loses to B5, and that is the honest headline, not a
 footnote.
 
+**Two more results complete the picture, summarized here so they aren't
+missed on a first read — both detailed in their own sections below.** T5
+(*requirement-extraction error term*): every number on this page assumes a
+perfect requirement extractor (the gold patch itself); a real LLM extractor
+reading only commit text pushes P1's MCC to **−0.935** — worse than
+flagging nothing. T6 (*CI gate*): the deterministic detector ships as a
+live GitHub Action; its precision (0.8018) clears the 0.80 acceptance bar
+but sits inside a 95% CI of **[0.723, 0.885]** that straddles it — a thin
+margin, not a comfortable pass.
+
 | detector | P | R | F1 | **MCC** | MCC 95% CI | FPR |
 |---|---|---|---|---|---|---|
 | B0 flag-nothing | 0.00 | 0.00 | 0.00 | **0.000** | [0.000, 0.000] | 0.000 |
@@ -295,6 +305,9 @@ never called (`UNWIRED`) or defined with a stub body (`STUB`) — recall 0.00
 on both, by design (see *Where the method works, and where it dies*,
 above). Every comment this gate posts says so.
 
+**Try it:** [PR #3](https://github.com/Avnish1505/Omitbench/pull/3) shows
+the Action's actual posted comment on a live PR — no cloning required.
+
 <!-- GATE_STATUS_START -->
 **Gate status: active.** Last checked 2026-08-22, P1 precision 0.8018 on the frozen corpus (threshold 0.8).
 <!-- GATE_STATUS_END -->
@@ -304,7 +317,7 @@ above). Every comment this gate posts says so.
 ## Reproduce
 
 ```bash
-make test        # 91 tests (86 unit + 5 leakage guards), <0.1s
+make test        # 132 tests (124 unit + 8 leakage guards), <0.1s
 make reproduce   # regenerates every number above from committed shards
 ```
 
@@ -355,6 +368,13 @@ against prior work in [`RELATED.md`](RELATED.md).
   **TASKS.md T2 (re-run to reach n≥100) remains open** — a documented known
   limitation, not a blocker for T6: T6's CI-gate acceptance criterion targets
   P1's overall precision (currently 0.80), not `UNWIRED`-specific recall.
+- **T6's CI-gate precision sits inside a wide confidence interval.** Point
+  estimate 0.8018 on `results/baseline_t6.json`, but the cluster-bootstrap
+  95% CI is [0.723, 0.885] — it straddles the 0.80 acceptance bar on both
+  sides. `scripts/check_gate_precision.py` suspends the gate on any
+  point-estimate drop below 0.80, but a single future measurement near the
+  threshold should be read against this CI, not treated alone as proof of
+  a regression (see `ASSUMPTIONS.md` §12).
 - **`black` is excluded**: its shards fail to build, and a code formatter's
   commits are atypical. Stated rather than silently dropped.
 
