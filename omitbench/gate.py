@@ -71,3 +71,41 @@ def unrecognized_items(pr_body: str) -> list[str]:
     wording than either supported shape."""
     return [text for text in _CHECKLIST_LINE.findall(pr_body)
             if _match_item(text) is None]
+
+
+def fetch_after_snapshot(repo_dir: str, head_sha: str,
+                          paths: list[str]) -> dict[str, list[str]]:
+    """`git show head_sha:path` for exactly the paths named in the parsed
+    requirements -- not the whole repo (corpus.py's snapshot_repo pulls
+    everything because P2/P3's reachability check needed the full tree;
+    P1 only ever looks at one path per requirement, see
+    detectors.py:_defined_in). A path missing at head_sha (deleted, or
+    never existed -- e.g. a typo in the checklist) maps to [] so
+    d_defined's lookup returns None and the requirement reads OMITTED,
+    same as every other 'not defined' case."""
+    out: dict[str, list[str]] = {}
+    for path in paths:
+        proc = subprocess.run(
+            ["git", "-C", repo_dir, "show", f"{head_sha}:{path}"],
+            capture_output=True, text=True,
+        )
+        out[path] = proc.stdout.split("\n") if proc.returncode == 0 else []
+    return out
+
+
+def score_pr(pr_body: str, repo_dir: str, head_sha: str) -> dict:
+    """End-to-end: parse the checklist, fetch only the referenced files at
+    head_sha, run P1. `before` is deliberately {} -- d_defined never reads
+    it (omitbench/detectors.py:89-95), and there is no base-branch snapshot
+    to build for a 'symbol present in this diff?' check. If a second
+    detector is ever added to this gate, it will need real `before` data;
+    this stays {} only because P1 is the sole detector per decision 1."""
+    reqs = parse_requirements(pr_body)
+    paths = sorted({r.split("::", 1)[0] for r in reqs})
+    after = fetch_after_snapshot(repo_dir, head_sha, paths)
+    verdicts = D.d_defined(pr_body, reqs, {}, after, {})
+    return {
+        "omitted": [r for r in reqs if verdicts[r] == "OMITTED"],
+        "implemented": [r for r in reqs if verdicts[r] == "IMPLEMENTED"],
+        "unrecognized": unrecognized_items(pr_body),
+    }
