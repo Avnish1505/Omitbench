@@ -273,6 +273,14 @@ python3 scripts/analyze_extraction.py    # prints the two tables above
 
 ---
 
+## CI gate (T6)
+
+<!-- GATE_STATUS_START -->
+**Gate status: active.** Last checked 2026-08-22, P1 precision 0.8018 on the frozen corpus (threshold 0.8).
+<!-- GATE_STATUS_END -->
+
+---
+
 ## Reproduce
 
 ```bash
@@ -324,6 +332,9 @@ against prior work in [`RELATED.md`](RELATED.md).
   `return` statements, fixed in `mutate.py`, which raised n from 16 to 19 — still
   far short of the ~100 needed for that column to be more than noise. Read the
   `UNWIRED` recall numbers above as directional, not conclusive.
+  **TASKS.md T2 (re-run to reach n≥100) remains open** — a documented known
+  limitation, not a blocker for T6: T6's CI-gate acceptance criterion targets
+  P1's overall precision (currently 0.80), not `UNWIRED`-specific recall.
 - **`black` is excluded**: its shards fail to build, and a code formatter's
   commits are atypical. Stated rather than silently dropped.
 
