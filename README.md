@@ -275,6 +275,26 @@ python3 scripts/analyze_extraction.py    # prints the two tables above
 
 ## CI gate (T6)
 
+A GitHub Action (`.github/workflows/omission-gate.yml`) comments on a PR
+when a symbol named in the PR's own requirements checklist is missing from
+the diff — using P1 only, no LLM, no network call to source requirements.
+See `TASKS.md` T6 for the locked decisions and `omitbench/gate.py` for the
+implementation.
+
+**Requirements come from the PR/issue body**, as an explicit markdown
+checklist — never guessed from prose. `` - [ ] retry_with_backoff in
+src/client.py `` or `` - [ ] src/client.py::retry_with_backoff ``, checkbox
+state ignored. This is deliberate: T5 (above) measured what happens when an
+LLM instead reads free text and guesses symbols — P1's MCC collapses to
+−0.935. A gate this blunt about its input is more useful than one that's
+silently wrong most of the time.
+
+**What it's blind to:** only a symbol missing entirely from the diff
+(`ABSENT`-shaped omissions). It does not see a symbol that's defined but
+never called (`UNWIRED`) or defined with a stub body (`STUB`) — recall 0.00
+on both, by design (see *Where the method works, and where it dies*,
+above). Every comment this gate posts says so.
+
 <!-- GATE_STATUS_START -->
 **Gate status: active.** Last checked 2026-08-22, P1 precision 0.8018 on the frozen corpus (threshold 0.8).
 <!-- GATE_STATUS_END -->

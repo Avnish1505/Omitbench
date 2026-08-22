@@ -102,8 +102,14 @@ rather than hidden inside an average.
   with the base rate. At the earlier pilot's 75% positive rate, `flag-everything`
   scored F1 0.82 and beat every real detector. MCC uses all four cells and is
   0.000 for any non-discriminating rule. That is why MCC is the headline.
-- **`UNWIRED` has n=16.** That is far too few for any claim. Recall numbers in
-  that column are reported for completeness and should be read as noise.
+- **`UNWIRED` has n=19** (raised from n=16 after the `mutate.py` fix for calls
+  inside `return` statements — see §6). That is far too few for any claim.
+  Recall numbers in that column are reported for completeness and should be
+  read as noise. **TASKS.md T2 (re-run targeting n≥100) remains open** due to
+  this low mutation-eligible sample size; this is a documented known
+  limitation, not a blocker for T6, since T6's CI-gate acceptance criterion
+  targets P1's overall precision (currently 0.80), not `UNWIRED`-specific
+  recall.
 
 ---
 
@@ -637,3 +643,47 @@ immediately before this entry was written.
 Both numbers (−0.898 and +0.006) are kept in this record permanently, not
 just the corrected one, so this correction is auditable rather than
 asserted.
+
+---
+
+## 12. T6 — CI gate: precision margin, detector choice, requirement source
+
+**Precision is not comfortably above the 0.80 acceptance bar.** Point
+estimate 0.8018 (`results/baseline_t6.json`), cluster-bootstrap 95% CI
+[0.723, 0.885] (same method as every other CI in this document — resampled
+over instances, not records, per §5). The interval straddles 0.80 on both
+sides. `scripts/check_gate_precision.py` implements the falsification
+condition exactly as decided (point estimate vs. 0.80) because that is
+what TASKS.md T6 specifies, but a single future measurement crossing 0.80
+in either direction should be read against this CI, not treated alone as
+proof of a real change.
+
+**Why P1 only, not a judge.** B5 (the strongest judge, T1) has higher MCC
+(0.701 vs 0.499) but lower precision (0.74) than P1 — it fails T6's own
+0.80 precision bar outright. It also requires a paid API call per PR,
+which is an operational liability (cost, latency variance, an external
+dependency a CI gate now depends on) that P1's determinism avoids
+entirely.
+
+**Why requirements are a structured checklist, not extracted from prose.**
+T5 (§11) measured what an LLM extractor produces from commit-message-style
+text alone: MCC −0.935 when fed straight into P1 — worse than flagging
+nothing, dominated by wrong-or-null path attribution. A live PR's
+description is exactly this kind of free text; reusing T5's extractor (or
+building a similar one) for T6 would reproduce that same collapse. The
+gate instead requires the PR/issue body to name requirements explicitly,
+as a markdown checklist (`omitbench/gate.py::parse_requirements`) — no
+LLM, no network, and no guessing.
+
+**Why the PR-comment disclaimer leads with "structural," not "n=19."**
+P1's blindness to `UNWIRED`/`STUB` is 0.00 recall by construction — it is
+an "is this symbol defined" check and neither of those omission shapes
+touches the not-defined question at all (`omitbench/detectors.py`
+docstrings). The offline benchmark's `UNWIRED` sample being small (n=19,
+§5, TASKS.md T2) is a real but separate limitation: it means the *0.00
+recall number itself* is not independently re-verified at scale, not that
+recall would be higher with more data.
+`omitbench/gate.py`'s `STRUCTURAL_BLINDNESS_DISCLAIMER` states the
+structural fact first and cites n=19 as supporting context, so
+the comment doesn't imply "we're not sure how good we are" when the
+correct statement is "we are not designed to catch this at all."
