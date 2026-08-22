@@ -200,3 +200,93 @@ def test_render_comment_with_only_unrecognized_items_still_renders():
     assert text is not None
     assert "1 checklist item(s) were not in a recognized format" in text
     assert "Plan item" not in text
+
+
+# --------------------------------------------------------------------------
+# Task 6: live-PR entrypoint
+# --------------------------------------------------------------------------
+
+import json
+
+_BASELINE_FILE = {"precision": 0.8018, "precision_ci95": [0.723, 0.885],
+                   "acceptance_threshold": 0.80}
+
+
+def test_run_gate_refuses_to_post_when_suspended(monkeypatch, tmp_path):
+    import scripts.run_gate as RG
+
+    (tmp_path / "results").mkdir()
+    (tmp_path / "results" / "gate_status.json").write_text(
+        json.dumps({"status": "suspended"})
+    )
+    (tmp_path / "results" / "baseline_t6.json").write_text(json.dumps(_BASELINE_FILE))
+    monkeypatch.chdir(tmp_path)
+
+    posted = []
+    monkeypatch.setattr(RG, "_post_comment", lambda pr_number, body: posted.append(body))
+    monkeypatch.setattr(RG, "_fetch_pr_body", lambda pr_number: "- [ ] f in a.py\n")
+    monkeypatch.setenv("PR_NUMBER", "1")
+    monkeypatch.setenv("PR_HEAD_SHA", "deadbeef")
+
+    rc = RG.main()
+
+    assert rc == 0
+    assert posted == []
+
+
+def test_run_gate_posts_when_active_and_omissions_exist(monkeypatch, tmp_path):
+    import scripts.run_gate as RG
+
+    (tmp_path / "results").mkdir()
+    (tmp_path / "results" / "gate_status.json").write_text(
+        json.dumps({"status": "active"})
+    )
+    (tmp_path / "results" / "baseline_t6.json").write_text(json.dumps(_BASELINE_FILE))
+    monkeypatch.chdir(tmp_path)
+
+    posted = []
+    monkeypatch.setattr(RG, "_post_comment", lambda pr_number, body: posted.append((pr_number, body)))
+    monkeypatch.setattr(RG, "_fetch_pr_body", lambda pr_number: "- [ ] f in a.py\n")
+    monkeypatch.setattr(
+        RG.G, "score_pr",
+        lambda body, repo_dir, head_sha: {"omitted": ["a.py::f"], "implemented": [], "unrecognized": []},
+    )
+    monkeypatch.setenv("PR_NUMBER", "7")
+    monkeypatch.setenv("PR_HEAD_SHA", "deadbeef")
+
+    rc = RG.main()
+
+    assert rc == 0
+    assert len(posted) == 1
+    assert posted[0][0] == "7"
+    assert "f" in posted[0][1]
+    # the precision CI must actually reach the posted comment, not just
+    # get computed and discarded -- this is the check for the user's
+    # pre-Task-3 requirement, exercised end-to-end through this entrypoint.
+    assert "0.72" in posted[0][1] and "0.89" in posted[0][1]
+
+
+def test_run_gate_does_not_post_on_a_clean_pr(monkeypatch, tmp_path):
+    import scripts.run_gate as RG
+
+    (tmp_path / "results").mkdir()
+    (tmp_path / "results" / "gate_status.json").write_text(
+        json.dumps({"status": "active"})
+    )
+    (tmp_path / "results" / "baseline_t6.json").write_text(json.dumps(_BASELINE_FILE))
+    monkeypatch.chdir(tmp_path)
+
+    posted = []
+    monkeypatch.setattr(RG, "_post_comment", lambda pr_number, body: posted.append(body))
+    monkeypatch.setattr(RG, "_fetch_pr_body", lambda pr_number: "- [ ] f in a.py\n")
+    monkeypatch.setattr(
+        RG.G, "score_pr",
+        lambda body, repo_dir, head_sha: {"omitted": [], "implemented": ["a.py::f"], "unrecognized": []},
+    )
+    monkeypatch.setenv("PR_NUMBER", "7")
+    monkeypatch.setenv("PR_HEAD_SHA", "deadbeef")
+
+    rc = RG.main()
+
+    assert rc == 0
+    assert posted == []
