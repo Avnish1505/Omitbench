@@ -169,13 +169,18 @@ proof the detector regressed.
 **Do not build a web frontend.** It adds no technical signal and costs two
 weeks.
 
-**Status: implemented, not yet run against a live PR.** p50/p95 latency
+**Status: implemented and confirmed live.** p50/p95 latency
 (`make gate-bench`, 40 samples from `corpus/attrs`): **12.0ms / 26.5ms** —
-well under the 10s bar. Manual GitHub Actions smoke test (push a branch,
-open a real PR, confirm the Action posts a comment): **not yet run** —
-deferred pending explicit go-ahead, since pushing a branch and opening a
-PR against the public repo is an outward-facing action this plan does not
-take unprompted (see plan Task 8, Step 4).
+well under the 10s bar. Manual GitHub Actions smoke test (2026-08-22):
+**passed** — a throwaway PR against this branch, with checklist item
+`totally_fake_smoke_test_symbol in omitbench/gate.py` (a real path, a
+symbol that doesn't exist there), triggered `omission-gate.yml`
+([run 32553438223](https://github.com/Avnish1505/Omitbench/actions/runs/32553438223)),
+which posted exactly one comment matching `render_comment`'s expected
+output byte-for-byte — plan-item line, structural-blindness disclaimer,
+and a precision caveat sourced live from the committed
+`results/baseline_t6.json` (0.88, not a hardcoded value). Throwaway PR
+closed and branch deleted after confirming.
 
 ---
 
