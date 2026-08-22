@@ -137,3 +137,66 @@ def test_score_pr_never_calls_detector_with_extra_arguments(monkeypatch):
     assert before == {}
     assert reqs == ["src/client.py::f"]
     assert isinstance(after, dict) and isinstance(ctx, dict)
+
+
+# --------------------------------------------------------------------------
+# Task 3: comment renderer + disclaimer
+# --------------------------------------------------------------------------
+
+_BASELINE = {"precision": 0.8018, "precision_ci95": [0.723, 0.885],
+             "acceptance_threshold": 0.80}
+
+
+def test_render_comment_returns_none_for_a_clean_pr():
+    result = {"omitted": [], "implemented": ["a.py::f"], "unrecognized": []}
+    assert G.render_comment(result, _BASELINE) is None
+
+
+def test_render_comment_lists_each_omission_with_plan_item_numbering():
+    result = {
+        "omitted": ["src/client.py::retry_with_backoff", "src/schema.py::validate"],
+        "implemented": [],
+        "unrecognized": [],
+    }
+    text = G.render_comment(result, _BASELINE)
+    assert ("Plan item 1 of 2 (`retry_with_backoff` in `src/client.py`) "
+            "is not present in this diff.") in text
+    assert ("Plan item 2 of 2 (`validate` in `src/schema.py`) "
+            "is not present in this diff.") in text
+
+
+def test_render_comment_includes_structural_blindness_disclaimer():
+    result = {"omitted": ["a.py::f"], "implemented": [], "unrecognized": []}
+    text = G.render_comment(result, _BASELINE)
+    assert G.STRUCTURAL_BLINDNESS_DISCLAIMER in text
+
+
+def test_render_comment_includes_precision_ci_caveat_with_live_numbers():
+    """This is the check for the user's pre-Task-3 requirement: the CI
+    must appear IN THE COMMENT, sourced from `baseline`, not a static
+    string -- change the fixture and the rendered text must change with
+    it, proving it isn't hardcoded."""
+    result = {"omitted": ["a.py::f"], "implemented": [], "unrecognized": []}
+    text = G.render_comment(result, _BASELINE)
+    assert "0.80" in text and "0.72" in text and "0.89" in text
+
+    other_baseline = {"precision": 0.91, "precision_ci95": [0.88, 0.94],
+                       "acceptance_threshold": 0.80}
+    text2 = G.render_comment(result, other_baseline)
+    assert "0.91" in text2 and "0.88" in text2 and "0.94" in text2
+    assert text2 != text
+
+
+def test_render_comment_notes_unrecognized_items_count():
+    result = {"omitted": ["a.py::f"], "implemented": [],
+              "unrecognized": ["update the docs", "add changelog entry"]}
+    text = G.render_comment(result, _BASELINE)
+    assert "2 checklist item(s) were not in a recognized format" in text
+
+
+def test_render_comment_with_only_unrecognized_items_still_renders():
+    result = {"omitted": [], "implemented": [], "unrecognized": ["update the docs"]}
+    text = G.render_comment(result, _BASELINE)
+    assert text is not None
+    assert "1 checklist item(s) were not in a recognized format" in text
+    assert "Plan item" not in text
