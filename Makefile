@@ -1,4 +1,4 @@
-.PHONY: help corpus pilot analyze test reproduce clean judge-dry-run judge-check-alignment gate-baseline gate-check gate-bench
+.PHONY: help corpus pilot analyze test reproduce clean judge-dry-run judge-check-alignment gate-baseline gate-check gate-bench jev-dry-run jev-smoke jev calibration
 
 help:
 	@echo "corpus     clone the 9 evaluation repos (~93MB, needs network)"
@@ -13,6 +13,10 @@ help:
 	@echo "gate-check     T6 falsification check -- suspend the gate if P1"
 	@echo "               precision drops below 0.80 on the current shards"
 	@echo "gate-bench     T6 latency benchmark (p50/p95) against corpus/* repos"
+	@echo "jev-dry-run    B7 (TypeSafe Jev): exact call count and cost, no API call"
+	@echo "jev-smoke      B7 on 5 instances (needs TYPESAFE_API_KEY) -- run first"
+	@echo "jev            B7 full sweep, both pre-registered variants"
+	@echo "calibration    B7 Brier / ECE / reliability -> results/calibration_b7.json"
 
 corpus:
 	bash scripts/fetch_corpus.sh
@@ -52,6 +56,22 @@ gate-check:
 
 gate-bench:
 	python3 scripts/bench_gate_latency.py
+
+# B7 -- see ASSUMPTIONS.md section 13. Same repo list as judge-check-alignment.
+JEV_REPOS = corpus/click corpus/flask corpus/jinja corpus/werkzeug \
+	    corpus/itsdangerous corpus/requests corpus/attrs corpus/httpx
+
+jev-dry-run:
+	python3 scripts/run_jev.py --dry-run --repos $(JEV_REPOS)
+
+jev-smoke:
+	python3 scripts/run_jev.py --limit-instances 5 --out-dir results/jev_smoke --repos $(JEV_REPOS)
+
+jev:
+	python3 scripts/run_jev.py --repos $(JEV_REPOS)
+
+calibration:
+	python3 scripts/analyze_calibration.py
 
 clean:
 	rm -rf __pycache__ omitbench/__pycache__ .pytest_cache results/smoke.jsonl

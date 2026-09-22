@@ -687,3 +687,75 @@ recall would be higher with more data.
 structural fact first and cites n=19 as supporting context, so
 the comment doesn't imply "we're not sure how good we are" when the
 correct statement is "we are not designed to catch this at all."
+
+---
+
+## 13. B7 — TypeSafe Jev as a probabilistic omission judge (PRE-REGISTERED)
+
+**Written 2026-09-23, before any real Jev call.** Everything in this section
+was fixed before the first response came back, and is not edited after it.
+If a harness bug turns up in the smoke run (`--limit-instances 5`), the
+harness gets fixed (parsing, pinning, plumbing) and the fix is recorded
+below. The question text in `omitbench/jev.py` is **frozen** at the commit
+that adds this section. Any change to the question text makes a new
+detector id that is reported next to B7, never in place of it.
+
+**Why.** B5 beats P1 (§ T1 results) but gives a bare label, so there is
+nothing to threshold. Jev returns P(yes) per typed question at roughly
+100 ms and $0.042/1M input tokens. TypeSafe describes the model as
+"calibrated". Its public docs (`docs.typesafe.ai/confidence.md`, checked
+2026-09-23) give no calibration numbers. This corpus has a ground-truth
+label for every requirement, so the claim can be tested on a hard,
+out-of-domain task. As far as we found, nobody has tested it independently.
+
+**Inputs held equal to B5.** Same `judges.unified_diff`, same
+`DIFF_TOKEN_CEILING` truncation, and the same three-part test (defined,
+wired, not a stub) in the question text. Model pinned to `jev-1.13.0`, not
+the `jev-latest` alias. A response reporting any other model raises.
+
+**Two variants, fixed now, no others:**
+- `B7 Jev (single)`: one Noul per requirement. P(implemented) = Noul value.
+- `B7 Jev (split)`: three Nouls (defined / wired / real body).
+  P(implemented) = **min** of the three. Min is the Fréchet upper bound on
+  "all three hold". It was chosen over the product, which assumes
+  independence these questions do not have, because it errs toward
+  IMPLEMENTED. That is the same direction as judges.py's "never default to
+  OMITTED" rule.
+- Verdict for both: OMITTED iff P(implemented) < **0.5**. Not tuned.
+- A missing or malformed answer defaults to IMPLEMENTED and is counted as a
+  parse failure (same rule as B4/B5/B6).
+
+**Known handicaps, stated up front.** The single variant asks a compound
+question, which TypeSafe's Noul docs advise against. Jev's own "jaggedness"
+page lists multi-hop reasoning and large irrelevant state as weak spots,
+and a 6000-token diff is large state. If B7 loses, these are the first
+explanations to check, and they are listed here so they cannot be
+discovered after the fact and used as excuses.
+
+**Decision rules (read the output against these, nothing else):**
+1. *Discrimination.* Paired cluster bootstrap of MCC, B7 − B5
+   (`scripts/analyze.py`). If the interval contains 0, B7 "matches" B5. If
+   the interval lies entirely below 0, B7 "loses". If it lies entirely above
+   0, B7 "wins". No directional prediction is made.
+2. *Calibration claim.* "Calibrated on this task" is supported only if all
+   three hold for the variant: overall ECE ≤ 0.05 (10 equal-width bins),
+   every reliability bin with n ≥ 30 has |predicted − observed| ≤ 0.10,
+   and Brier skill vs. the base-rate forecaster > 0. Otherwise the report
+   says "not supported on this task", which is a finding, not a failure.
+3. *Do probabilities add value?* B7's Brier score vs. the Brier score of
+   B7's own thresholded verdicts scored as a 0/1 forecaster. If the
+   probabilistic Brier is not lower, the probabilities add nothing over the
+   label on this task.
+4. *Abstain band.* 0.3 ≤ P(omitted) ≤ 0.7 is routed to "ask a human". This
+   is TypeSafe's suggested review band, not one fitted here. Report
+   coverage and MCC on the confident remainder. This is the number a Stop
+   hook would actually run on.
+
+**Budget.** `scripts/run_jev.py --max-cost 1.00` (default) hard-stops.
+Expected total for both variants is well under $0.25 at list price. The
+exact figure comes from `--dry-run` over the real corpus and is recorded
+here after the dry run, before the sweep.
+
+**Not claimed.** B7 results say nothing about real agent trajectories
+(§1, §10). They also say nothing about Jev on tasks it was built for.
+They are one model on one hard, out-of-domain classification task.

@@ -34,7 +34,7 @@ sys.path.insert(0, ".")
 
 ORDER = ["B0 flag-nothing", "B1 flag-everything", "B3 line-grep (no AST)",
          "B4 LLM judge (gpt-oss-120b)", "B5 LLM judge (mid-tier)",
-         "B6 LLM judge (NVIDIA NIM)",
+         "B6 LLM judge (NVIDIA NIM)", "B7 Jev (single)", "B7 Jev (split)",
          "P1 defined", "P2 defined+reachable", "P3 defined+reachable+body"]
 
 # B4/B5/B6 are the three LLM-judge baselines (omitbench/judges.py). A single
@@ -42,7 +42,10 @@ ORDER = ["B0 flag-nothing", "B1 flag-everything", "B3 line-grep (no AST)",
 # that module's docstring -- so every comparison against P1 below is run for
 # all three, not just one.
 JUDGE_NAMES = ["B4 LLM judge (gpt-oss-120b)", "B5 LLM judge (mid-tier)",
-               "B6 LLM judge (NVIDIA NIM)"]
+               "B6 LLM judge (NVIDIA NIM)", "B7 Jev (single)", "B7 Jev (split)"]
+# B7 (omitbench/jev.py) is a probabilistic judge; its calibration is scored
+# separately by scripts/analyze_calibration.py. Here it is thresholded at the
+# pre-registered 0.5 and treated exactly like B4/B5/B6.
 
 
 def load():
@@ -177,6 +180,27 @@ def analyze_synthetic():
                   f"[{lo:>+6.3f},{hi:>+6.3f}]{sig}")
         print("  (this is the central claim RELATED.md exists to test -- "
               "read it plainly, do not re-run to change it)")
+
+    # ---- B7 (Jev) vs B5: pre-registered in ASSUMPTIONS.md section 13 ------
+    # Does a ~100 ms probabilistic decision model match the best LLM judge
+    # on the SAME diffs? Same paired resamples B as every row above.
+    b5_d = "B5 LLM judge (mid-tier)"
+    b7_ds = [d for d in ("B7 Jev (single)", "B7 Jev (split)") if d in dets]
+    if b7_ds and b5_d in dets:
+        print()
+        for d in b7_ds:
+            diffs = []
+            for samp in B:
+                a = metrics([x for i in samp for x in per_det[d][i]])["mcc"]
+                b = metrics([x for i in samp for x in per_det[b5_d][i]])["mcc"]
+                diffs.append(a - b)
+            diffs.sort()
+            lo, hi = diffs[25], diffs[974]
+            obs = summary[d]["mcc"] - summary[b5_d]["mcc"]
+            sig = "" if lo <= 0 <= hi else "  *"
+            print(f"  {d:28} vs {b5_d:28} {obs:>+7.3f}  "
+                  f"[{lo:>+6.3f},{hi:>+6.3f}]{sig}")
+        print("  (B7 calibration: python3 scripts/analyze_calibration.py)")
 
     # ---- per-repo stability of the best detector ------------------------
     best = max((d for d in dets if d.startswith("P")),
