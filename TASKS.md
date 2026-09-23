@@ -184,6 +184,33 @@ closed and branch deleted after confirming.
 
 ---
 
+## T7 — B7: TypeSafe Jev as a probabilistic judge, and its calibration
+
+**Status:** harness built, tests pass, pre-registered (ASSUMPTIONS.md §13).
+Real sweep not yet run.
+
+**Why this is not the "fifth detector" the list below rules out.** That line
+is about adding *proposed* detectors until one beats the baselines. B7 is a
+*baseline* (a judge, like B4/B5/B6). It never replaces P1's numbers, and
+its main output is a new kind of measurement: whether a model sold as
+producing calibrated probabilities is calibrated on a labelled task outside
+its training domain. Both variants and every decision rule were fixed
+before the first call.
+
+**Acceptance:**
+- `make jev-dry-run` prints call count and cost, and the figure is recorded
+  in ASSUMPTIONS.md §13 before the sweep.
+- `make jev-smoke` (5 instances) finishes with 0 parse failures and 0
+  model-pin errors, or the harness is fixed and the fix is recorded.
+- `make jev` writes `results/shards/llm_judge_b7_jev_{single,split}.jsonl`
+  covering every shard iid.
+- `make analyze` prints B7 − B5 paired intervals. `make calibration` prints
+  Brier/ECE/AUROC, the reliability table and the rule-2 verdict.
+- README gets a B7 section written from those outputs only: no hand-typed
+  numbers, and no re-run to change a result.
+
+---
+
 ## Explicitly NOT on this list
 
 - A fourth mutation class

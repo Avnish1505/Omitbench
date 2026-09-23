@@ -301,6 +301,31 @@ above). Every comment this gate posts says so.
 
 ---
 
+## B7: a probabilistic judge, and whether its probabilities mean anything
+
+B5 beats P1, but it hands back a bare label, so a gate built on it has
+nothing to threshold. B7 swaps in TypeSafe's Jev, a "System One" model that
+answers typed yes/no questions with a probability in about 100 ms. It sees
+exactly the diff B5 sees. Every requirement here has a ground-truth label,
+so B7 is scored twice: as a judge (paired MCC against B5 and P1) and as a
+forecaster (Brier score, ECE, reliability table). TypeSafe calls Jev's
+probabilities calibrated but publishes no calibration numbers. This tests
+that claim on a hard task Jev was not built for.
+
+Both variants (one compound question vs. three split questions), the 0.5
+threshold, the 0.3 to 0.7 abstain band and the pass/fail rule for
+"calibrated" were fixed in `ASSUMPTIONS.md` §13 before the first call.
+
+```
+export TYPESAFE_API_KEY=...   # never commit it
+make jev-dry-run              # exact call count and cost, no API call
+make jev-smoke                # 5 instances, check the plumbing
+make jev && make analyze && make calibration
+```
+
+**Results: not yet run.** This section gets its numbers from
+`make analyze` and `make calibration` output only.
+
 ## Reproduce
 
 ```bash
