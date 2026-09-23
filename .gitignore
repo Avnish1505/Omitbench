@@ -9,3 +9,5 @@ results/smoke.jsonl
 .pytest_cache/
 .DS_Store
 repos/
+# Salesforce CLI (sf) local org metadata cache -- tool state, not project data
+.sf/

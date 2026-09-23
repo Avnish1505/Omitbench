@@ -409,12 +409,14 @@ They are not tested here, and B7's result stands as measured.
 ## Reproduce
 
 ```bash
-make test        # 91 tests (86 unit + 5 leakage guards), <0.1s
+make test        # 155 tests (147 unit + 8 leakage guards), ~2s under Python 3.12
 make reproduce   # regenerates every number above from committed shards
 ```
 
 `make reproduce` needs **no network, no corpus, no GPU and no API key** — the
-scored shards are committed. To rebuild the corpus from scratch:
+scored shards are committed. To rebuild the corpus from scratch (it must be
+built under **Python <=3.13**: PEP 758 in 3.14 lets Python 2 `except X, e:`
+parse, which changes which commits qualify; see `ASSUMPTIONS.md` §13):
 
 ```bash
 make corpus      # clones 9 repos, ~93MB

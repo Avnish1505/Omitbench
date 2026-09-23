@@ -807,3 +807,19 @@ They are one model on one hard, out-of-domain classification task.
   In the first full sweep 4 single and 13 split records sat exactly at
   0.5. This affects only the calibration table's MCC column; rules 1-4 do
   not read it.
+
+**Known input limits (documented, not excluded).** Found by checking why the
+sweep had more cache hits than the smoke run explained. They were not
+excluded: dropping cases after seeing results is CLAUDE.md anti-pattern #1.
+- *5 truncation-hidden variants.* `dd603b9fd25b` ABSENT+STUB,
+  `0e6e7f60a657` ABSENT+STUB, `a716128f48fd` STUB. The mutation falls past
+  the 6000-token diff cut (`judges.DIFF_TOKEN_CEILING`), so the mutated diff
+  is byte-identical to CLEAN while gold differs. One error per pair is
+  guaranteed for B7 **and** B5, because both get the same truncated input.
+- *Duplicate commit.* flask `54e05a28` and `54ff9b29` (iids
+  `e7e90c295d27`, `16f3aa8989d2`; both "use ruff linter and formatter",
+  2023-11-09) give identical diffs as detectors see them, for all four
+  variants. The cluster bootstrap therefore counts one change twice. This
+  affects every detector equally and slightly narrows all CIs.
+  *Future work:* dedupe by diff hash at corpus-build time, then re-run
+  everything.
