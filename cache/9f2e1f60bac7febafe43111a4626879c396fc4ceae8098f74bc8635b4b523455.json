@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `httpx/_compat.py::iscoroutine`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `httpx/_compat.py::iscoroutine`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `httpx/_compat.py::iscoroutine`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/httpx/_compat.py\n+++ b/httpx/_compat.py\n@@ -2,8 +2,13 @@\n The _compat module is used for code which requires branching between different\n Python environments. It is excluded from the code coverage checks.\n \"\"\"\n+import asyncio\n import ssl\n import sys\n+import typing\n+\n+if typing.TYPE_CHECKING:  # pragma: no cover\n+    import typing_extensions\n \n # Brotli support is optional\n # The C bindings in `brotli` are recommended for CPython.\n@@ -39,3 +44,8 @@\n         context.options |= ssl.OP_NO_TLSv1\n         context.options |= ssl.OP_NO_TLSv1_1\n \n+\n+def iscoroutine(coro: object) -> \"typing_extensions.TypeGuard[typing.Coroutine]\":\n+    # Drop when this is resolved: https://github.com/python/typeshed/pull/8104\n+    return asyncio.iscoroutine(coro)\n+\n\n--- a/httpx/_transports/mock.py\n+++ b/httpx/_transports/mock.py\n@@ -1,6 +1,6 @@\n-import asyncio\n import typing\n \n+from .._compat import iscoroutine\n from .._models import Request, Response\n from .base import AsyncBaseTransport, BaseTransport\n \n@@ -28,7 +28,7 @@\n         # return the result.\n \n         # https://simonwillison.net/2020/Sep/2/await-me-maybe/\n-        if asyncio.iscoroutine(response):\n+        if iscoroutine(response):\n             response = await response\n \n         return response"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.99,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.91,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.98,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 999,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

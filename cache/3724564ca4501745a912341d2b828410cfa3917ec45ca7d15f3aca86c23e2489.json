@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_arguments.py::test_envvar_flag_value` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/click/core.py\n+++ b/src/click/core.py\n@@ -2430,15 +2430,19 @@\n     :param hidden: hide this option from help outputs.\n     :param attrs: Other command arguments described in :class:`Parameter`.\n \n-    .. versionchanged:: 8.1.0\n+    .. versionchanged:: 8.2\n+        ``envvar`` used with ``flag_value`` will always use the ``flag_value``,\n+        previously it would use the value of the environment variable.\n+\n+    .. versionchanged:: 8.1\n         Help text indentation is cleaned here instead of only in the\n         ``@option`` decorator.\n \n-    .. versionchanged:: 8.1.0\n+    .. versionchanged:: 8.1\n         The ``show_default`` parameter overrides\n         ``Context.show_default``.\n \n-    .. versionchanged:: 8.1.0\n+    .. versionchanged:: 8.1\n         The default of a single option boolean flag is not shown if the\n         default value is ``False``.\n \n@@ -2864,6 +2868,8 @@\n         rv = super().resolve_envvar_value(ctx)\n \n         if rv is not None:\n+            if self.is_flag and self.flag_value:\n+                return str(self.flag_value)\n             return rv\n \n         if (\n\n--- a/tests/test_arguments.py\n+++ b/tests/test_arguments.py\n@@ -198,6 +198,19 @@\n         assert result.return_value == expect\n \n \n+def test_envvar_flag_value(runner):\n+    @click.command()\n+    # is_flag is implicitly true\n+    @click.option(\"--upper\", flag_value=\"upper\", envvar=\"UPPER\")\n+    def cmd(upper):\n+        click.echo(upper)\n+        return upper\n+\n+    # For whatever value of the `env` variable, if it exists, the flag should be `upper`\n+    result = runner.invoke(cmd, env={\"UPPER\": \"whatever\"})\n+    assert result.output.strip() == \"upper\"\n+\n+\n def test_nargs_envvar_only_if_values_empty(runner):\n     @click.command()\n     @click.argument(\"arg\", envvar=\"X\", nargs=-1)"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.21,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1013,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_basic.py::from_list` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/flask/app.py\n+++ b/src/flask/app.py\n@@ -1830,6 +1830,9 @@\n             ``dict``\n                 A dictionary that will be jsonify'd before being returned.\n \n+            ``list``\n+                A list that will be jsonify'd before being returned.\n+\n             ``generator`` or ``iterator``\n                 A generator that returns ``str`` or ``bytes`` to be\n                 streamed as the response.\n@@ -1855,6 +1858,7 @@\n \n         .. versionchanged:: 2.2\n             A generator will be converted to a streaming response.\n+            A list will be converted to a JSON response.\n \n         .. versionchanged:: 1.1\n             A dict will be converted to a JSON response.\n@@ -1907,7 +1911,7 @@\n                     headers=headers,  # type: ignore[arg-type]\n                 )\n                 status = headers = None\n-            elif isinstance(rv, dict):\n+            elif isinstance(rv, (dict, list)):\n                 rv = jsonify(rv)\n             elif isinstance(rv, BaseResponse) or callable(rv):\n                 # evaluate a WSGI callable, or coerce a different response\n@@ -1920,14 +1924,14 @@\n                     raise TypeError(\n                         f\"{e}\\nThe view function did not return a valid\"\n                         \" response. The return type must be a string,\"\n-                        \" dict, tuple, Response instance, or WSGI\"\n+                        \" dict, list, tuple, Response instance, or WSGI\"\n                         f\" callable, but it was a {type(rv).__name__}.\"\n                     ).with_traceback(sys.exc_info()[2]) from None\n             else:\n                 raise TypeError(\n                     \"The view function did not return a valid\"\n                     \" response. The return type must be a string,\"\n-                    \" dict, tuple, Response instance, or WSGI\"\n+                    \" dict, list, tuple, Response instance, or WSGI\"\n                     f\" callable, but it was a {type(rv).__name__}.\"\n                 )\n \n\n--- a/src/flask/typing.py\n+++ b/src/flask/typing.py\n@@ -7,7 +7,7 @@\n \n # The possible types that are directly convertible or are a Response object.\n ResponseValue = t.Union[\n-    \"Response\", str, bytes, t.Dict[str, t.Any], t.Iterator[str], t.Iterator[bytes]\n+    \"Response\", str, bytes, list, t.Dict[str, t.Any], t.Iterator[str], t.Iterator[bytes]\n ]\n \n # the possible types for an individual HTTP header\n\n--- a/tests/test_basic.py\n+++ b/tests/test_basic.py\n@@ -1166,6 +1166,10 @@\n     def from_dict():\n         return {\"foo\": \"bar\"}, 201\n \n+    @app.route(\"/list\")\n+    def from_list():\n+        raise NotImplementedError\n+\n     assert client.get(\"/text\").data == \"H\u00e4llo W\u00f6rld\".encode()\n     assert client.get(\"/bytes\").data == \"H\u00e4llo W\u00f6rld\".encode()\n \n@@ -1203,6 +1207,10 @@\n \n     rv = client.get(\"/dict\")\n     assert rv.json == {\"foo\": \"bar\"}\n+    assert rv.status_code == 201\n+\n+    rv = client.get(\"/list\")\n+    assert rv.json == [\"foo\", \"bar\"]\n     assert rv.status_code == 201\n \n "
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.03,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1284,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

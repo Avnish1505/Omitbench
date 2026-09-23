@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/models/test_queryparams.py::test_invalid_query_params` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/httpx/_utils.py\n+++ b/httpx/_utils.py\n@@ -67,7 +67,11 @@\n         return \"false\"\n     elif value is None:\n         return \"\"\n-    return str(value)\n+    elif isinstance(value, (str, float, int)):\n+        return str(value)\n+    raise TypeError(\n+        f\"Expected str, int, float, bool, or None. Got {type(value).__name__!r}.\"\n+    )\n \n \n def is_known_encoding(encoding: str) -> bool:\n\n--- a/tests/models/test_queryparams.py\n+++ b/tests/models/test_queryparams.py\n@@ -87,6 +87,8 @@\n     assert str(q) == \"a=\"\n \n \n+\n+\n def test_queryparam_update_is_hard_deprecated():\n     q = httpx.QueryParams(\"a=123\")\n     with pytest.raises(RuntimeError):"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.03,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 709,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

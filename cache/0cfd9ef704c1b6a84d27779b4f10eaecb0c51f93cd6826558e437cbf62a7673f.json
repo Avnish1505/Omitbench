@@ -1,0 +1,307 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `src/flask/app.py::make_aborter`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `src/flask/app.py::make_aborter`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `src/flask/app.py::make_aborter`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `src/flask/helpers.py::abort`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `src/flask/helpers.py::abort`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `src/flask/helpers.py::abort`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_helpers.py::My900Error`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_helpers.py::My900Error`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_helpers.py::My900Error`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_helpers.py::MyAborter`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_helpers.py::MyAborter`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_helpers.py::MyAborter`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_helpers.py::MyFlask`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_helpers.py::MyFlask`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_helpers.py::MyFlask`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r5_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_helpers.py::test_abort_no_app`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r5_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_helpers.py::test_abort_no_app`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r5_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_helpers.py::test_abort_no_app`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r6_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_helpers.py::test_abort_with_app`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r6_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_helpers.py::test_abort_with_app`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r6_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_helpers.py::test_abort_with_app`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r7_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_helpers.py::test_app_aborter_class`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r7_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_helpers.py::test_app_aborter_class`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r7_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_helpers.py::test_app_aborter_class`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/flask/__init__.py\n+++ b/src/flask/__init__.py\n@@ -1,6 +1,5 @@\n from markupsafe import escape\n from markupsafe import Markup\n-from werkzeug.exceptions import abort as abort\n \n from . import json as json\n from .app import Flask as Flask\n@@ -18,6 +17,7 @@\n from .globals import g as g\n from .globals import request as request\n from .globals import session as session\n+from .helpers import abort as abort\n from .helpers import flash as flash\n from .helpers import get_flashed_messages as get_flashed_messages\n from .helpers import get_template_attribute as get_template_attribute\n\n--- a/src/flask/app.py\n+++ b/src/flask/app.py\n@@ -12,6 +12,7 @@\n \n from werkzeug.datastructures import Headers\n from werkzeug.datastructures import ImmutableDict\n+from werkzeug.exceptions import Aborter\n from werkzeug.exceptions import BadRequest\n from werkzeug.exceptions import BadRequestKeyError\n from werkzeug.exceptions import HTTPException\n@@ -201,6 +202,16 @@\n     #: :class:`~flask.Response` for more information.\n     response_class = Response\n \n+    #: The class of the object assigned to :attr:`aborter`, created by\n+    #: :meth:`create_aborter`. That object is called by\n+    #: :func:`flask.abort` to raise HTTP errors, and can be\n+    #: called directly as well.\n+    #:\n+    #: Defaults to :class:`werkzeug.exceptions.Aborter`.\n+    #:\n+    #: .. versionadded:: 2.2\n+    aborter_class = Aborter\n+\n     #: The class that is used for the Jinja environment.\n     #:\n     #: .. versionadded:: 0.11\n@@ -421,6 +432,13 @@\n         #: to load a config from files.\n         self.config = self.make_config(instance_relative_config)\n \n+        #: An instance of :attr:`aborter_class` created by\n+        #: :meth:`make_aborter`. This is called by :func:`flask.abort`\n+        #: to raise HTTP errors, and can be called directly as well.\n+        #:\n+        #: .. versionadded:: 2.2\n+        self.aborter = self.make_aborter()\n+\n         #: A list of functions that are called when :meth:`url_for` raises a\n         #: :exc:`~werkzeug.routing.BuildError`.  Each function registered here\n         #: is called with `error`, `endpoint` and `values`.  If a function\n@@ -627,6 +645,18 @@\n         defaults[\"ENV\"] = get_env()\n         defaults[\"DEBUG\"] = get_debug_flag()\n         return self.config_class(root_path, defaults)\n+\n+    def make_aborter(self) -> Aborter:\n+        \"\"\"Create the object to assign to :attr:`aborter`. That object\n+        is called by :func:`flask.abort` to raise HTTP errors, and can\n+        be called directly as well.\n+\n+        By default, this creates an instance of :attr:`aborter_class`,\n+        which defaults to :class:`werkzeug.exceptions.Aborter`.\n+\n+        .. versionadded:: 2.2\n+        \"\"\"\n+        return self.aborter_class()\n \n     def auto_find_instance_path(self) -> str:\n         \"\"\"Tries to locate the instance path if it was not provided to the\n\n--- a/src/flask/helpers.py\n+++ b/src/flask/helpers.py\n@@ -10,6 +10,7 @@\n from threading import RLock\n \n import werkzeug.utils\n+from werkzeug.exceptions import abort as _wz_abort\n from werkzeug.routing import BuildError\n from werkzeug.urls import url_quote\n from werkzeug.utils import redirect as _wz_redirect\n@@ -24,6 +25,7 @@\n if t.TYPE_CHECKING:  # pragma: no cover\n     from werkzeug.wrappers import Response as BaseResponse\n     from .wrappers import Response\n+    import typing_extensions as te\n \n \n def get_env() -> str:\n@@ -362,6 +364,31 @@\n         return current_app.redirect(location, code=code)\n \n     return _wz_redirect(location, code=code, Response=Response)\n+\n+\n+def abort(  # type: ignore[misc]\n+    code: t.Union[int, \"BaseResponse\"], *args: t.Any, **kwargs: t.Any\n+) -> \"te.NoReturn\":\n+    \"\"\"Raise an :exc:`~werkzeug.exceptions.HTTPException` for the given\n+    status code.\n+\n+    If :data:`~flask.current_app` is available, it will call its\n+    :attr:`~flask.Flask.aborter` object, otherwise it will use\n+    :func:`werkzeug.exceptions.abort`.\n+\n+    :param code: The status code for the exception, which must be\n+        registered in ``app.aborter``.\n+    :param args: Passed to the exception.\n+    :param kwargs: Passed to the exception.\n+\n+    .. versionadded:: 2.2\n+        Calls ``current_app.aborter`` if available instead of always\n+        using Werkzeug's default ``abort``.\n+    \"\"\"\n+    if current_app:\n+        current_app.aborter(code, *args, **kwargs)\n+\n+    _wz_abort(code, *args, **kwargs)\n \n \n def get_template_attribute(template_name: str, attribute: str) -> t.Any:\n\n--- a/tests/test_helpers.py\n+++ b/tests/test_helpers.py\n@@ -2,6 +2,7 @@\n import os\n \n import pytest\n+import werkzeug.exceptions\n \n import flask\n from flask.helpers import get_debug_flag\n@@ -172,6 +173,29 @@\n \n     with app.app_context(), pytest.raises(ValueError):\n         flask.redirect(\"other\")\n+\n+\n+def test_abort_no_app():\n+    with pytest.raises(werkzeug.exceptions.Unauthorized):\n+        flask.abort(401)\n+\n+    with pytest.raises(LookupError):\n+        flask.abort(900)\n+\n+\n+def test_app_aborter_class():\n+    class MyAborter(werkzeug.exceptions.Aborter):\n+        pass\n+\n+    class MyFlask(flask.Flask):\n+        aborter_class = MyAborter\n+\n+    app = MyFlask(__name__)\n+    assert isinstance(app.aborter, MyAborter)\n+\n+\n+def test_abort_with_app(app):\n+    raise NotImplementedError\n \n \n class TestNoImports:"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.99,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.88,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.94,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.99,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.49,
+        "type": "noul"
+      },
+      "r2_defined": {
+        "noul": 0.05,
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "noul": 0.06,
+        "type": "noul"
+      },
+      "r2_wired": {
+        "noul": 0.1,
+        "type": "noul"
+      },
+      "r3_defined": {
+        "noul": 0.84,
+        "type": "noul"
+      },
+      "r3_real_body": {
+        "noul": 0.08,
+        "type": "noul"
+      },
+      "r3_wired": {
+        "noul": 0.75,
+        "type": "noul"
+      },
+      "r4_defined": {
+        "noul": 0.82,
+        "type": "noul"
+      },
+      "r4_real_body": {
+        "noul": 0.6,
+        "type": "noul"
+      },
+      "r4_wired": {
+        "noul": 0.72,
+        "type": "noul"
+      },
+      "r5_defined": {
+        "noul": 0.99,
+        "type": "noul"
+      },
+      "r5_real_body": {
+        "noul": 0.87,
+        "type": "noul"
+      },
+      "r5_wired": {
+        "noul": 0.6,
+        "type": "noul"
+      },
+      "r6_defined": {
+        "noul": 0.82,
+        "type": "noul"
+      },
+      "r6_real_body": {
+        "noul": 0.04,
+        "type": "noul"
+      },
+      "r6_wired": {
+        "noul": 0.57,
+        "type": "noul"
+      },
+      "r7_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r7_real_body": {
+        "noul": 0.85,
+        "type": "noul"
+      },
+      "r7_wired": {
+        "noul": 0.89,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 4712,
+      "output_tokens": 452
+    }
+  },
+  "variant": "split"
+}

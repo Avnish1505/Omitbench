@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_compat.py::test_should_strip_ansi` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/tests/test_compat.py\n+++ b/tests/test_compat.py\n@@ -1,4 +1,10 @@\n-from click._compat import should_strip_ansi\n+from __future__ import annotations\n+\n+import sys\n+\n+import pytest\n+\n+import click\n \n \n def test_is_jupyter_kernel_output():\n@@ -7,5 +13,37 @@\n \n     # implementation detail, aka cheapskate test\n     JupyterKernelFakeStream.__module__ = \"ipykernel.faked\"\n-    assert not should_strip_ansi(stream=JupyterKernelFakeStream())\n+    assert click._compat._is_jupyter_kernel_output(stream=JupyterKernelFakeStream())\n \n+\n+@pytest.mark.parametrize(\n+    \"stream\",\n+    [None, sys.stdin, sys.stderr, sys.stdout],\n+)\n+@pytest.mark.parametrize(\n+    (\"color\", \"expected_override\"),\n+    [\n+        (True, False),\n+        (False, True),\n+        (None, None),\n+    ],\n+)\n+@pytest.mark.parametrize(\n+    (\"isatty\", \"is_jupyter\", \"expected\"),\n+    [\n+        (True, False, False),\n+        (False, True, False),\n+        (False, False, True),\n+    ],\n+)\n+def test_should_strip_ansi(\n+    monkeypatch,\n+    stream,\n+    color: bool | None,\n+    expected_override: bool | None,\n+    isatty: bool,\n+    is_jupyter: bool,\n+    expected: bool,\n+) -> None:\n+    raise NotImplementedError\n+"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.01,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 870,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

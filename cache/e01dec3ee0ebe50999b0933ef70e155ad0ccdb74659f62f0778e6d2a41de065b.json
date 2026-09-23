@@ -1,0 +1,43 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_chain.py::test_group_arg_behavior` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_chain.py::test_group_chaining` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/examples/complex/complex/cli.py\n+++ b/examples/complex/complex/cli.py\n@@ -28,7 +28,7 @@\n cmd_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), \"commands\"))\n \n \n-class ComplexCLI(click.MultiCommand):\n+class ComplexCLI(click.Group):\n     def list_commands(self, ctx):\n         rv = []\n         for filename in os.listdir(cmd_folder):\n\n--- a/src/click/core.py\n+++ b/src/click/core.py\n@@ -69,23 +69,19 @@\n ) -> None:\n     if not base_command.chain or not isinstance(cmd, Group):\n         return\n+\n     if register:\n-        hint = (\n-            \"It is not possible to add multi commands as children to\"\n-            \" another multi command that is in chain mode.\"\n+        message = (\n+            f\"It is not possible to add the group {cmd_name!r} to another\"\n+            f\" group {base_command.name!r} that is in chain mode.\"\n         )\n     else:\n-        hint = (\n-            \"Found a multi command as subcommand to a multi command\"\n-            \" that is in chain mode. This is not supported.\"\n+        message = (\n+            f\"Found the group {cmd_name!r} as subcommand to another group \"\n+            f\" {base_command.name!r} that is in chain mode. This is not supported.\"\n         )\n-    raise RuntimeError(\n-        f\"{hint}. Command {base_command.name!r} is set to chain and\"\n-        f\" {cmd_name!r} was added as a subcommand but it in itself is a\"\n-        f\" multi command. ({cmd_name!r} is a {type(cmd).__name__}\"\n-        f\" within a chained {type(base_command).__name__} named\"\n-        f\" {base_command.name!r}).\"\n-    )\n+\n+    raise RuntimeError(message)\n \n \n def batch(iterable: t.Iterable[V], batch_size: int) -> t.List[t.Tuple[V, ...]]:\n@@ -1506,8 +1502,7 @@\n             for param in self.params:\n                 if isinstance(param, Argument) and not param.required:\n                     raise RuntimeError(\n-                        \"Multi commands in chain mode cannot have\"\n-                        \" optional arguments.\"\n+                        \"A group in chain mode cannot have optional arguments.\"\n                     )\n \n     def to_info_dict(self, ctx: Context) -> t.Dict[str, t.Any]:\n\n--- a/tests/test_chain.py\n+++ b/tests/test_chain.py\n@@ -189,7 +189,7 @@\n     assert result.output.splitlines() == [\"cli=\", \"a=\", \"b=\", \"c=\"]\n \n \n-def test_multicommand_arg_behavior(runner):\n+def test_group_arg_behavior(runner):\n     with pytest.raises(RuntimeError):\n \n         @click.group(chain=True)\n@@ -219,28 +219,6 @@\n \n \n @pytest.mark.xfail\n-def test_multicommand_chaining(runner):\n-    @click.group(chain=True)\n-    def cli():\n-        debug()\n-\n-    @cli.group()\n-    def l1a():\n-        debug()\n-\n-    @l1a.command()\n-    def l2a():\n-        debug()\n-\n-    @l1a.command()\n-    def l2b():\n-        debug()\n-\n-    @cli.command()\n-    def l1b():\n-        debug()\n-\n-    result = runner.invoke(cli, [\"l1a\", \"l2a\", \"l1b\"])\n-    assert not result.exception\n-    assert result.output.splitlines() == [\"cli=\", \"l1a=\", \"l2a=\", \"l1b=\"]\n-\n+def test_group_chaining(runner):\n+    raise NotImplementedError\n+"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.23,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.02,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1604,
+      "output_tokens": 38
+    }
+  },
+  "variant": "single"
+}

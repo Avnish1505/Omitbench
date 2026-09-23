@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_hooks.py::test_hook_conflicting_defaults_after_reorder` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_hooks.py::test_hook_reorder_fields` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_hooks.py::test_hook_reorder_fields_before_order_check` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/attr/_make.py\n+++ b/src/attr/_make.py\n@@ -449,6 +449,10 @@\n \n     attrs = base_attrs + own_attrs\n \n+    if field_transformer is not None:\n+        attrs = field_transformer(cls, attrs)\n+\n+    # Check attr order after executing the field_transformer.\n     # Mandatory vs non-mandatory attr order only matters when they are part of\n     # the __init__ signature and when they aren't kw_only (which are moved to\n     # the end and can be mandatory or non-mandatory in any order, as they will\n@@ -461,9 +465,6 @@\n \n         if had_default is False and a.default is not NOTHING:\n             had_default = True\n-\n-    if field_transformer is not None:\n-        attrs = field_transformer(cls, attrs)\n \n     # Resolve default field alias after executing field_transformer.\n     # This allows field_transformer to differentiate between explicit vs\n\n--- a/tests/test_hooks.py\n+++ b/tests/test_hooks.py\n@@ -3,6 +3,8 @@\n from __future__ import annotations\n \n from datetime import datetime\n+\n+import pytest\n \n import attr\n \n@@ -30,7 +32,7 @@\n             y = attr.ib(type=int)\n             z: float = attr.ib()\n \n-        assert results == [(\"x\", None), (\"y\", int), (\"z\", float)]\n+        assert [(\"x\", None), (\"y\", int), (\"z\", float)] == results\n \n     def test_hook_applied_auto_attrib(self):\n         \"\"\"\n@@ -49,7 +51,7 @@\n             x: int\n             y: str = attr.ib()\n \n-        assert results == [(\"x\", int), (\"y\", str)]\n+        assert [(\"x\", int), (\"y\", str)] == results\n \n     def test_hook_applied_modify_attrib(self):\n         \"\"\"\n@@ -66,7 +68,8 @@\n             y: float\n \n         c = C(x=\"3\", y=\"3.14\")\n-        assert c == C(x=3, y=3.14)\n+\n+        assert C(x=3, y=3.14) == c\n \n     def test_hook_remove_field(self):\n         \"\"\"\n@@ -82,7 +85,7 @@\n             x: int\n             y: float\n \n-        assert attr.asdict(C(2.7)) == {\"y\": 2.7}\n+        assert {\"y\": 2.7} == attr.asdict(C(2.7))\n \n     def test_hook_add_field(self):\n         \"\"\"\n@@ -98,7 +101,7 @@\n         class C:\n             x: int\n \n-        assert attr.asdict(C(1, 2)) == {\"x\": 1, \"new\": 2}\n+        assert {\"x\": 1, \"new\": 2} == attr.asdict(C(1, 2))\n \n     def test_hook_override_alias(self):\n         \"\"\"\n@@ -118,13 +121,59 @@\n             1, 2, 3\n         )\n \n+\n+    def test_hook_reorder_fields_before_order_check(self):\n+        \"\"\"\n+        It is possible to reorder fields via the hook before order-based errors are raised.\n+\n+        Regression test for #1147.\n+        \"\"\"\n+\n+        def hook(cls, attribs):\n+            return sorted(attribs, key=lambda x: x.metadata[\"field_order\"])\n+\n+        @attr.s(field_transformer=hook)\n+        class C:\n+            x: int = attr.ib(metadata={\"field_order\": 1}, default=0)\n+            y: int = attr.ib(metadata={\"field_order\": 0})\n+\n+        assert {\"x\": 0, \"y\": 1} == attr.asdict(C(1))\n+\n+    def test_hook_conflicting_defaults_after_reorder(self):\n+        \"\"\"\n+        Raises `ValueError` if attributes with defaults are followed by\n+        mandatory attributes after the hook reorders fields.\n+\n+        Regression test for #1147.\n+        \"\"\"\n+\n+        def hook(cls, attribs):\n+            return sorted(attribs, key=lambda x: x.metadata[\"field_order\"])\n+\n+        with pytest.raises(ValueError) as e:\n+\n+            @attr.s(field_transformer=hook)\n+            class C:\n+                x: int = attr.ib(metadata={\"field_order\": 1})\n+                y: int = attr.ib(metadata={\"field_order\": 0}, default=0)\n+\n+        assert (\n+            \"No mandatory attributes allowed after an attribute with a \"\n+            \"default value or factory.  Attribute in question: Attribute\"\n+            \"(name='x', default=NOTHING, validator=None, repr=True, \"\n+            \"eq=True, eq_key=None, order=True, order_key=None, \"\n+            \"hash=None, init=True, \"\n+            \"metadata=mappingproxy({'field_order': 1}), type='int', converter=None, \"\n+            \"kw_only=False, inherited=False, on_setattr=None, alias=None)\",\n+        ) == e.value.args\n+\n     def test_hook_with_inheritance(self):\n         \"\"\"\n         The hook receives all fields from base classes.\n         \"\"\"\n \n         def hook(cls, attribs):\n-            assert [a.name for a in attribs] == [\"x\", \"y\"]\n+            assert [\"x\", \"y\"] == [a.name for a in attribs]\n             # Remove Base' \"x\"\n             return attribs[1:]\n \n@@ -136,7 +185,7 @@\n         class Sub(Base):\n             y: int\n \n-        assert attr.asdict(Sub(2)) == {\"y\": 2}\n+        assert {\"y\": 2} == attr.asdict(Sub(2))\n \n     def test_attrs_attrclass(self):\n         \"\"\"\n@@ -151,7 +200,7 @@\n             x: int\n \n         fields_type = type(attr.fields(C))\n-        assert fields_type.__name__ == \"CAttributes\"\n+        assert \"CAttributes\" == fields_type.__name__\n         assert issubclass(fields_type, tuple)\n \n \n@@ -187,12 +236,12 @@\n         )\n \n         result = attr.asdict(inst, value_serializer=hook)\n-        assert result == {\n+        assert {\n             \"a\": {\"x\": 1, \"y\": [\"2020-07-01T00:00:00\"]},\n             \"b\": [{\"x\": 2, \"y\": [\"2020-07-02T00:00:00\"]}],\n             \"c\": {\"spam\": {\"x\": 3, \"y\": [\"2020-07-03T00:00:00\"]}},\n             \"d\": {\"eggs\": \"2020-07-04T00:00:00\"},\n-        }\n+        } == result\n \n     def test_asdict_calls(self):\n         \"\"\"\n@@ -217,7 +266,7 @@\n         inst = Parent(a=Child(1), b=[Child(2)], c={\"spam\": Child(3)})\n \n         attr.asdict(inst, value_serializer=hook)\n-        assert calls == [\n+        assert [\n             (inst, \"a\", inst.a),\n             (inst.a, \"x\", inst.a.x),\n             (inst, \"b\", inst.b),\n@@ -225,5 +274,5 @@\n             (inst, \"c\", inst.c),\n             (None, None, \"spam\"),\n             (inst.c[\"spam\"], \"x\", inst.c[\"spam\"].x),\n-        ]\n-\n+        ] == calls\n+"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.29,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.12,
+        "type": "noul"
+      },
+      "r2": {
+        "noul": 0.23,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 2734,
+      "output_tokens": 55
+    }
+  },
+  "variant": "single"
+}

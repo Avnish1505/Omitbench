@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_multipart.py::test_multipart_encode_unicode_file_contents`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_multipart.py::test_multipart_encode_unicode_file_contents`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_multipart.py::test_multipart_encode_unicode_file_contents`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/httpx/_multipart.py\n+++ b/httpx/_multipart.py\n@@ -40,11 +40,7 @@\n \n     def render_data(self) -> bytes:\n         if not hasattr(self, \"_data\"):\n-            self._data = (\n-                self.value\n-                if isinstance(self.value, bytes)\n-                else self.value.encode(\"utf-8\")\n-            )\n+            self._data = to_bytes(self.value)\n \n         return self._data\n \n@@ -88,7 +84,7 @@\n         headers = self.render_headers()\n \n         if isinstance(self.file, (str, bytes)):\n-            return len(headers) + len(self.file)\n+            return len(headers) + len(to_bytes(self.file))\n \n         # Let's do our best not to read `file` into memory.\n         try:\n\n--- a/tests/test_multipart.py\n+++ b/tests/test_multipart.py\n@@ -125,6 +125,29 @@\n             \"Content-Type: text/plain\\r\\n\\r\\n<file content>\\r\\n\"\n             \"--{0}--\\r\\n\"\n             \"\".format(boundary).encode(\"ascii\")\n+        )\n+        assert headers == {\n+            \"Content-Type\": f\"multipart/form-data; boundary={boundary}\",\n+            \"Content-Length\": str(len(content)),\n+        }\n+        assert content == b\"\".join(stream)\n+\n+\n+def test_multipart_encode_unicode_file_contents() -> None:\n+    files = {\"file\": (\"name.txt\", \"<\u00fanicode string>\")}\n+\n+    with mock.patch(\"os.urandom\", return_value=os.urandom(16)):\n+        boundary = os.urandom(16).hex()\n+\n+        headers, stream = encode_request(files=files)\n+        assert isinstance(stream, typing.Iterable)\n+\n+        content = (\n+            '--{0}\\r\\nContent-Disposition: form-data; name=\"file\";'\n+            ' filename=\"name.txt\"\\r\\n'\n+            \"Content-Type: text/plain\\r\\n\\r\\n<\u00fanicode string>\\r\\n\"\n+            \"--{0}--\\r\\n\"\n+            \"\".format(boundary).encode(\"utf-8\")\n         )\n         assert headers == {\n             \"Content-Type\": f\"multipart/form-data; boundary={boundary}\","
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.7,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1147,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

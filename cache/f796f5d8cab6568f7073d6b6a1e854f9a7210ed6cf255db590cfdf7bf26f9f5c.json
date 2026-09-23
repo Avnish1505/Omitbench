@@ -1,0 +1,43 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `requests/exceptions.py::InvalidJSONError` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_post_json_nan` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/requests/exceptions.py\n+++ b/requests/exceptions.py\n@@ -23,6 +23,10 @@\n                 hasattr(response, 'request')):\n             self.request = self.response.request\n         super(RequestException, self).__init__(*args, **kwargs)\n+\n+\n+class InvalidJSONError(RequestException):\n+    \"\"\"A JSON error occurred.\"\"\"\n \n \n class HTTPError(RequestException):\n\n--- a/requests/models.py\n+++ b/requests/models.py\n@@ -29,7 +29,7 @@\n from .cookies import cookiejar_from_dict, get_cookie_header, _copy_cookie_jar\n from .exceptions import (\n     HTTPError, MissingSchema, InvalidURL, ChunkedEncodingError,\n-    ContentDecodingError, ConnectionError, StreamConsumedError)\n+    ContentDecodingError, ConnectionError, StreamConsumedError, InvalidJSONError)\n from ._internal_utils import to_native_string, unicode_is_ascii\n from .utils import (\n     guess_filename, get_auth_from_url, requote_uri,\n@@ -466,7 +466,12 @@\n             # urllib3 requires a bytes-like body. Python 2's json.dumps\n             # provides this natively, but Python 3 gives a Unicode string.\n             content_type = 'application/json'\n-            body = complexjson.dumps(json)\n+\n+            try:\n+              body = complexjson.dumps(json, allow_nan=False)\n+            except ValueError as ve:\n+              raise InvalidJSONError(ve, request=self)\n+\n             if not isinstance(body, bytes):\n                 body = body.encode('utf-8')\n \n\n--- a/tests/test_requests.py\n+++ b/tests/test_requests.py\n@@ -24,7 +24,7 @@\n from requests.exceptions import (\n     ConnectionError, ConnectTimeout, InvalidSchema, InvalidURL,\n     MissingSchema, ReadTimeout, Timeout, RetryError, TooManyRedirects,\n-    ProxyError, InvalidHeader, UnrewindableBodyError, SSLError, InvalidProxyURL)\n+    ProxyError, InvalidHeader, UnrewindableBodyError, SSLError, InvalidProxyURL, InvalidJSONError)\n from requests.models import PreparedRequest\n from requests.structures import CaseInsensitiveDict\n from requests.sessions import SessionRedirectMixin\n@@ -2567,3 +2567,8 @@\n         p = r.prepare()\n         assert p.url == expected\n \n+    def test_post_json_nan(self, httpbin):\n+        data = {\"foo\": float(\"nan\")}\n+        with pytest.raises(requests.exceptions.InvalidJSONError):\n+          r = requests.post(httpbin('post'), json=data)\n+"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.33,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.41,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1418,
+      "output_tokens": 38
+    }
+  },
+  "variant": "single"
+}

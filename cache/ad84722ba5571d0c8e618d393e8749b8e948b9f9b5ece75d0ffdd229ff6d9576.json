@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_datastructures.py::test_str`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_datastructures.py::test_str`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_datastructures.py::test_str`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/werkzeug/datastructures/headers.py\n+++ b/src/werkzeug/datastructures/headers.py\n@@ -568,13 +568,13 @@\n     def __str__(self) -> str:\n         \"\"\"Returns formatted headers suitable for HTTP transmission.\"\"\"\n         strs = []\n-        for key, value in self._list:\n+        for key, value in self.to_wsgi_list():\n             strs.append(f\"{key}: {value}\")\n         strs.append(\"\\r\\n\")\n         return \"\\r\\n\".join(strs)\n \n     def __repr__(self) -> str:\n-        return f\"{type(self).__name__}({self._list!r})\"\n+        return f\"{type(self).__name__}({list(self)!r})\"\n \n \n def _options_header_vkw(value: str, kw: dict[str, t.Any]) -> str:\n\n--- a/tests/test_datastructures.py\n+++ b/tests/test_datastructures.py\n@@ -884,6 +884,10 @@\n \n         with pytest.raises(TypeError):\n             headers |= {\"y\": \"2\"}\n+\n+    def test_str(self) -> None:\n+        headers = ds.EnvironHeaders({\"CONTENT_LENGTH\": \"50\", \"HTTP_HOST\": \"test\"})\n+        assert str(headers) == \"Content-Length: 50\\r\\nHost: test\\r\\n\\r\\n\"\n \n \n class TestHeaderSet:"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.95,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.69,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 939,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

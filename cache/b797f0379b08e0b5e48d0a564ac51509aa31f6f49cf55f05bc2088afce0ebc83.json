@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_slots.py::test_slots_unpickle_is_backward_compatible`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_slots.py::test_slots_unpickle_is_backward_compatible`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_slots.py::test_slots_unpickle_is_backward_compatible`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/attr/_make.py\n+++ b/src/attr/_make.py\n@@ -934,9 +934,15 @@\n             Automatically created by attrs.\n             \"\"\"\n             __bound_setattr = _obj_setattr.__get__(self)\n-            for name in state_attr_names:\n-                if name in state:\n-                    __bound_setattr(name, state[name])\n+            if isinstance(state, tuple):\n+                # Backward compatibility with attrs instances pickled with\n+                # attrs versions before v22.2.0 which stored tuples.\n+                for name, value in zip(state_attr_names, state):\n+                    __bound_setattr(name, value)\n+            else:\n+                for name in state_attr_names:\n+                    if name in state:\n+                        __bound_setattr(name, state[name])\n \n             # The hash code cache is not included when the object is\n             # serialized, but it still needs to be initialized to None to\n\n--- a/tests/test_slots.py\n+++ b/tests/test_slots.py\n@@ -754,13 +754,12 @@\n     c = attr.ib()\n \n \n-@pytest.mark.parametrize(\"cls\", [A])\n-def test_slots_unpickle_after_attr_removed(cls):\n+def test_slots_unpickle_after_attr_removed():\n     \"\"\"\n     We don't assign attributes we don't have anymore if the class has\n     removed it.\n     \"\"\"\n-    a = cls(1, 2, 3)\n+    a = A(1, 2, 3)\n     a_pickled = pickle.dumps(a)\n     a_unpickled = pickle.loads(a_pickled)\n     assert a_unpickled == a\n@@ -778,12 +777,11 @@\n         assert not hasattr(new_a, \"b\")\n \n \n-@pytest.mark.parametrize(\"cls\", [A])\n-def test_slots_unpickle_after_attr_added(cls, frozen):\n+def test_slots_unpickle_after_attr_added(frozen):\n     \"\"\"\n     We don't assign attribute we haven't had before if the class has one added.\n     \"\"\"\n-    a = cls(1, 2, 3)\n+    a = A(1, 2, 3)\n     a_pickled = pickle.dumps(a)\n     a_unpickled = pickle.loads(a_pickled)\n \n@@ -804,3 +802,20 @@\n         assert new_a.c == 3\n         assert not hasattr(new_a, \"d\")\n \n+\n+def test_slots_unpickle_is_backward_compatible(frozen):\n+    \"\"\"\n+    Ensure object pickled before v22.2.0 can still be unpickled.\n+    \"\"\"\n+    a = A(1, 2, 3)\n+\n+    a_pickled = (\n+        b\"\\x80\\x04\\x95&\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x8c\\x10\"\n+        + a.__module__.encode()\n+        + b\"\\x94\\x8c\\x01A\\x94\\x93\\x94)\\x81\\x94K\\x01K\\x02K\\x03\\x87\\x94b.\"\n+    )\n+\n+    a_unpickled = pickle.loads(a_pickled)\n+\n+    assert a_unpickled == a\n+"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.2,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1374,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

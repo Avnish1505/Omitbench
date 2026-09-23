@@ -1,0 +1,307 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `src/jinja2/compiler.py::loop_body`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `src/jinja2/compiler.py::loop_body`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `src/jinja2/compiler.py::loop_body`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_async.py::run_async_fn`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_async.py::run_async_fn`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_async.py::run_async_fn`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_async.py::test_async_extend`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_async.py::test_async_extend`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_async.py::test_async_extend`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_async.py::test_basic_generate_async`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_async.py::test_basic_generate_async`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_async.py::test_basic_generate_async`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_async.py::test_blocks_generate_async`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_async.py::test_blocks_generate_async`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_async.py::test_blocks_generate_async`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r5_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_async.py::test_include_generate_async`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r5_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_async.py::test_include_generate_async`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r5_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_async.py::test_include_generate_async`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r6_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_async_filters.py::closing_factory`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r6_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_async_filters.py::closing_factory`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r6_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_async_filters.py::closing_factory`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r7_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_async_filters.py::run_async_fn`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r7_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_async_filters.py::run_async_fn`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r7_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_async_filters.py::run_async_fn`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/jinja2/async_utils.py\n+++ b/src/jinja2/async_utils.py\n@@ -5,6 +5,9 @@\n \n from .utils import _PassArg\n from .utils import pass_eval_context\n+\n+if t.TYPE_CHECKING:\n+    import typing_extensions as te\n \n V = t.TypeVar(\"V\")\n \n@@ -67,15 +70,27 @@\n     return t.cast(\"V\", value)\n \n \n-async def auto_aiter(\n+class _IteratorToAsyncIterator(t.Generic[V]):\n+    def __init__(self, iterator: \"t.Iterator[V]\"):\n+        self._iterator = iterator\n+\n+    def __aiter__(self) -> \"te.Self\":\n+        return self\n+\n+    async def __anext__(self) -> V:\n+        try:\n+            return next(self._iterator)\n+        except StopIteration as e:\n+            raise StopAsyncIteration(e.value) from e\n+\n+\n+def auto_aiter(\n     iterable: \"t.Union[t.AsyncIterable[V], t.Iterable[V]]\",\n ) -> \"t.AsyncIterator[V]\":\n     if hasattr(iterable, \"__aiter__\"):\n-        async for item in t.cast(\"t.AsyncIterable[V]\", iterable):\n-            yield item\n+        return iterable.__aiter__()\n     else:\n-        for item in iterable:\n-            yield item\n+        return _IteratorToAsyncIterator(iter(iterable))\n \n \n async def auto_to_list(\n\n--- a/src/jinja2/compiler.py\n+++ b/src/jinja2/compiler.py\n@@ -902,12 +902,15 @@\n             if not self.environment.is_async:\n                 self.writeline(\"yield from parent_template.root_render_func(context)\")\n             else:\n-                self.writeline(\n-                    \"async for event in parent_template.root_render_func(context):\"\n-                )\n+                self.writeline(\"agen = parent_template.root_render_func(context)\")\n+                self.writeline(\"try:\")\n+                self.indent()\n+                self.writeline(\"async for event in agen:\")\n                 self.indent()\n                 self.writeline(\"yield event\")\n                 self.outdent()\n+                self.outdent()\n+                self.writeline(\"finally: await agen.aclose()\")\n             self.outdent(1 + (not self.has_known_extends))\n \n         # at this point we now have the blocks collected and can visit them too.\n@@ -977,14 +980,20 @@\n                 f\"yield from context.blocks[{node.name!r}][0]({context})\", node\n             )\n         else:\n+            self.writeline(f\"gen = context.blocks[{node.name!r}][0]({context})\")\n+            self.writeline(\"try:\")\n+            self.indent()\n             self.writeline(\n-                f\"{self.choose_async()}for event in\"\n-                f\" context.blocks[{node.name!r}][0]({context}):\",\n+                f\"{self.choose_async()}for event in gen:\",\n                 node,\n             )\n             self.indent()\n             self.simple_write(\"event\", frame)\n             self.outdent()\n+            self.outdent()\n+            self.writeline(\n+                f\"finally: {self.choose_async('await gen.aclose()', 'gen.close()')}\"\n+            )\n \n         self.outdent(level)\n \n@@ -1057,26 +1066,33 @@\n             self.writeline(\"else:\")\n             self.indent()\n \n-        skip_event_yield = False\n+        def loop_body() -> None:\n+            self.indent()\n+            self.simple_write(\"event\", frame)\n+            self.outdent()\n+\n         if node.with_context:\n             self.writeline(\n-                f\"{self.choose_async()}for event in template.root_render_func(\"\n+                f\"gen = template.root_render_func(\"\n                 \"template.new_context(context.get_all(), True,\"\n-                f\" {self.dump_local_context(frame)})):\"\n+                f\" {self.dump_local_context(frame)}))\"\n+            )\n+            self.writeline(\"try:\")\n+            self.indent()\n+            self.writeline(f\"{self.choose_async()}for event in gen:\")\n+            loop_body()\n+            self.outdent()\n+            self.writeline(\n+                f\"finally: {self.choose_async('await gen.aclose()', 'gen.close()')}\"\n             )\n         elif self.environment.is_async:\n             self.writeline(\n                 \"for event in (await template._get_default_module_async())\"\n                 \"._body_stream:\"\n             )\n+            loop_body()\n         else:\n             self.writeline(\"yield from template._get_default_module()._body_stream\")\n-            skip_event_yield = True\n-\n-        if not skip_event_yield:\n-            self.indent()\n-            self.simple_write(\"event\", frame)\n-            self.outdent()\n \n         if node.ignore_missing:\n             self.outdent()\n\n--- a/src/jinja2/environment.py\n+++ b/src/jinja2/environment.py\n@@ -1346,7 +1346,7 @@\n \n     async def generate_async(\n         self, *args: t.Any, **kwargs: t.Any\n-    ) -> t.AsyncIterator[str]:\n+    ) -> t.AsyncGenerator[str, object]:\n         \"\"\"An async version of :meth:`generate`.  Works very similarly but\n         returns an async iterator instead.\n         \"\"\"\n@@ -1358,8 +1358,14 @@\n         ctx = self.new_context(dict(*args, **kwargs))\n \n         try:\n-            async for event in self.root_render_func(ctx):  # type: ignore\n-                yield event\n+            agen = self.root_render_func(ctx)\n+            try:\n+                async for event in agen:  # type: ignore\n+                    yield event\n+            finally:\n+                # we can't use async with aclosing(...) because that's only\n+                # in 3.10+\n+                await agen.aclose()  # type: ignore\n         except Exception:\n             yield self.environment.handle_exception()\n \n\n--- a/tests/test_async.py\n+++ b/tests/test_async.py\n@@ -1,6 +1,7 @@\n import asyncio\n \n import pytest\n+import trio\n \n from jinja2 import ChainableUndefined\n from jinja2 import DictLoader\n@@ -13,7 +14,16 @@\n from jinja2.nativetypes import NativeEnvironment\n \n \n-def test_basic_async():\n+def _asyncio_run(async_fn, *args):\n+    return asyncio.run(async_fn(*args))\n+\n+\n+@pytest.fixture(params=[_asyncio_run, trio.run], ids=[\"asyncio\", \"trio\"])\n+def run_async_fn(request):\n+    return request.param\n+\n+\n+def test_basic_async(run_async_fn):\n     t = Template(\n         \"{% for item in [1, 2, 3] %}[{{ item }}]{% endfor %}\", enable_async=True\n     )\n@@ -21,11 +31,11 @@\n     async def func():\n         return await t.render_async()\n \n-    rv = asyncio.run(func())\n+    rv = run_async_fn(func)\n     assert rv == \"[1][2][3]\"\n \n \n-def test_await_on_calls():\n+def test_await_on_calls(run_async_fn):\n     t = Template(\"{{ async_func() + normal_func() }}\", enable_async=True)\n \n     async def async_func():\n@@ -37,7 +47,7 @@\n     async def func():\n         return await t.render_async(async_func=async_func, normal_func=normal_func)\n \n-    rv = asyncio.run(func())\n+    rv = run_async_fn(func)\n     assert rv == \"65\"\n \n \n@@ -54,7 +64,7 @@\n     assert rv == \"65\"\n \n \n-def test_await_and_macros():\n+def test_await_and_macros(run_async_fn):\n     t = Template(\n         \"{% macro foo(x) %}[{{ x }}][{{ async_func() }}]{% endmacro %}{{ foo(42) }}\",\n         enable_async=True,\n@@ -66,11 +76,11 @@\n     async def func():\n         return await t.render_async(async_func=async_func)\n \n-    rv = asyncio.run(func())\n+    rv = run_async_fn(func)\n     assert rv == \"[42][42]\"\n \n \n-def test_async_blocks():\n+def test_async_blocks(run_async_fn):\n     t = Template(\n         \"{% block foo %}<Test>{% endblock %}{{ self.foo() }}\",\n         enable_async=True,\n@@ -80,7 +90,7 @@\n     async def func():\n         return await t.render_async()\n \n-    rv = asyncio.run(func())\n+    rv = run_async_fn(func)\n     assert rv == \"<Test><Test>\"\n \n \n@@ -156,8 +166,8 @@\n         test_env_async.from_string('{% from \"foo\" import bar, with, context %}')\n         test_env_async.from_string('{% from \"foo\" import bar, with with context %}')\n \n-    def test_exports(self, test_env_async):\n-        coro = test_env_async.from_string(\n+    def test_exports(self, test_env_async, run_async_fn):\n+        coro_fn = test_env_async.from_string(\n             \"\"\"\n             {% macro toplevel() %}...{% endmacro %}\n             {% macro __private() %}...{% endmacro %}\n@@ -166,9 +176,9 @@\n                 {% macro notthere() %}{% endmacro %}\n             {% endfor %}\n             \"\"\"\n-        )._get_default_module_async()\n-        m = asyncio.run(coro)\n-        assert asyncio.run(m.toplevel()) == \"...\"\n+        )._get_default_module_async\n+        m = run_async_fn(coro_fn)\n+        assert run_async_fn(m.toplevel) == \"...\"\n         assert not hasattr(m, \"__missing\")\n         assert m.variable == 42\n         assert not hasattr(m, \"notthere\")\n@@ -457,17 +467,19 @@\n         )\n         assert tmpl.render(items=reversed([3, 2, 1])) == \"1,2,3\"\n \n-    def test_loop_errors(self, test_env_async):\n+    def test_loop_errors(self, test_env_async, run_async_fn):\n         tmpl = test_env_async.from_string(\n             \"\"\"{% for item in [1] if loop.index\n                                       == 0 %}...{% endfor %}\"\"\"\n         )\n-        pytest.raises(UndefinedError, tmpl.render)\n+        with pytest.raises(UndefinedError):\n+            run_async_fn(tmpl.render_async)\n+\n         tmpl = test_env_async.from_string(\n             \"\"\"{% for item in [] %}...{% else\n             %}{{ loop }}{% endfor %}\"\"\"\n         )\n-        assert tmpl.render() == \"\"\n+        assert run_async_fn(tmpl.render_async) == \"\"\n \n     def test_loop_filter(self, test_env_async):\n         tmpl = test_env_async.from_string(\n@@ -597,7 +609,7 @@\n         assert t.render(a=dict(b=[1, 2, 3])) == \"1\"\n \n \n-def test_namespace_awaitable(test_env_async):\n+def test_namespace_awaitable(test_env_async, run_async_fn):\n     async def _test():\n         t = test_env_async.from_string(\n             '{% set ns = namespace(foo=\"Bar\") %}{{ ns.foo }}'\n@@ -605,10 +617,10 @@\n         actual = await t.render_async()\n         assert actual == \"Bar\"\n \n-    asyncio.run(_test())\n-\n-\n-def test_chainable_undefined_aiter():\n+    run_async_fn(_test)\n+\n+\n+def test_chainable_undefined_aiter(run_async_fn):\n     async def _test():\n         t = Template(\n             \"{% for x in a['b']['c'] %}{{ x }}{% endfor %}\",\n@@ -618,7 +630,7 @@\n         rv = await t.render_async(a={})\n         assert rv == \"\"\n \n-    asyncio.run(_test())\n+    run_async_fn(_test)\n \n \n @pytest.fixture\n@@ -626,22 +638,22 @@\n     return NativeEnvironment(enable_async=True)\n \n \n-def test_native_async(async_native_env):\n+def test_native_async(async_native_env, run_async_fn):\n     async def _test():\n         t = async_native_env.from_string(\"{{ x }}\")\n         rv = await t.render_async(x=23)\n         assert rv == 23\n \n-    asyncio.run(_test())\n-\n-\n-def test_native_list_async(async_native_env):\n+    run_async_fn(_test)\n+\n+\n+def test_native_list_async(async_native_env, run_async_fn):\n     async def _test():\n         t = async_native_env.from_string(\"{{ x }}\")\n         rv = await t.render_async(x=list(range(3)))\n         assert rv == [0, 1, 2]\n \n-    asyncio.run(_test())\n+    run_async_fn(_test)\n \n \n def test_getitem_after_filter():\n@@ -659,3 +671,65 @@\n     out = t.render(a=range(3))\n     assert out == \"[3, 4]\"\n \n+\n+def test_basic_generate_async(run_async_fn):\n+    t = Template(\n+        \"{% for item in [1, 2, 3] %}[{{ item }}]{% endfor %}\", enable_async=True\n+    )\n+\n+    async def func():\n+        agen = t.generate_async()\n+        try:\n+            return await agen.__anext__()\n+        finally:\n+            await agen.aclose()\n+\n+    rv = run_async_fn(func)\n+    assert rv == \"[\"\n+\n+\n+def test_include_generate_async(run_async_fn, test_env_async):\n+    t = test_env_async.from_string('{% include \"header\" %}')\n+\n+    async def func():\n+        agen = t.generate_async()\n+        try:\n+            return await agen.__anext__()\n+        finally:\n+            await agen.aclose()\n+\n+    rv = run_async_fn(func)\n+    assert rv == \"[\"\n+\n+\n+def test_blocks_generate_async(run_async_fn):\n+    t = Template(\n+        \"{% block foo %}<Test>{% endblock %}{{ self.foo() }}\",\n+        enable_async=True,\n+        autoescape=True,\n+    )\n+\n+    async def func():\n+        agen = t.generate_async()\n+        try:\n+            return await agen.__anext__()\n+        finally:\n+            await agen.aclose()\n+\n+    rv = run_async_fn(func)\n+    assert rv == \"<Test>\"\n+\n+\n+def test_async_extend(run_async_fn, test_env_async):\n+    t = test_env_async.from_string('{% extends \"header\" %}')\n+\n+    async def func():\n+        agen = t.generate_async()\n+        try:\n+            return await agen.__anext__()\n+        finally:\n+            await agen.aclose()\n+\n+    rv = run_async_fn(func)\n+    assert rv == \"[\"\n+\n\n--- a/tests/test_async_filters.py\n+++ b/tests/test_async_filters.py\n@@ -1,6 +1,9 @@\n+import asyncio\n+import contextlib\n from collections import namedtuple\n \n import pytest\n+import trio\n from markupsafe import Markup\n \n from jinja2 import Environment\n@@ -26,10 +29,39 @@\n     return Environment(enable_async=True)\n \n \n+def _asyncio_run(async_fn, *args):\n+    return asyncio.run(async_fn(*args))\n+\n+\n+@pytest.fixture(params=[_asyncio_run, trio.run], ids=[\"asyncio\", \"trio\"])\n+def run_async_fn(request):\n+    return request.param\n+\n+\n+@contextlib.asynccontextmanager\n+async def closing_factory():\n+    async with contextlib.AsyncExitStack() as stack:\n+\n+        def closing(maybe_agen):\n+            try:\n+                aclose = maybe_agen.aclose\n+            except AttributeError:\n+                pass\n+            else:\n+                stack.push_async_callback(aclose)\n+            return maybe_agen\n+\n+        yield closing\n+\n+\n @mark_dualiter(\"foo\", lambda: range(10))\n-def test_first(env_async, foo):\n-    tmpl = env_async.from_string(\"{{ foo()|first }}\")\n-    out = tmpl.render(foo=foo)\n+def test_first(env_async, foo, run_async_fn):\n+    async def test():\n+        async with closing_factory() as closing:\n+            tmpl = env_async.from_string(\"{{ closing(foo())|first }}\")\n+            return await tmpl.render_async(foo=foo, closing=closing)\n+\n+    out = run_async_fn(test)\n     assert out == \"0\"\n \n \n@@ -245,18 +277,23 @@\n     )\n \n \n-def test_custom_async_filter(env_async):\n+def test_custom_async_filter(env_async, run_async_fn):\n     async def customfilter(val):\n         return str(val)\n \n-    env_async.filters[\"customfilter\"] = customfilter\n-    tmpl = env_async.from_string(\"{{ 'static'|customfilter }} {{ arg|customfilter }}\")\n-    out = tmpl.render(arg=\"dynamic\")\n+    async def test():\n+        env_async.filters[\"customfilter\"] = customfilter\n+        tmpl = env_async.from_string(\n+            \"{{ 'static'|customfilter }} {{ arg|customfilter }}\"\n+        )\n+        return await tmpl.render_async(arg=\"dynamic\")\n+\n+    out = run_async_fn(test)\n     assert out == \"static dynamic\"\n \n \n @mark_dualiter(\"items\", lambda: range(10))\n-def test_custom_async_iteratable_filter(env_async, items):\n+def test_custom_async_iteratable_filter(env_async, items, run_async_fn):\n     async def customfilter(iterable):\n         items = []\n         async for item in auto_aiter(iterable):\n@@ -265,10 +302,14 @@\n                 break\n         return \",\".join(items)\n \n-    env_async.filters[\"customfilter\"] = customfilter\n-    tmpl = env_async.from_string(\n-        \"{{ items()|customfilter }} .. {{ [3, 4, 5, 6]|customfilter }}\"\n-    )\n-    out = tmpl.render(items=items)\n+    async def test():\n+        async with closing_factory() as closing:\n+            env_async.filters[\"customfilter\"] = customfilter\n+            tmpl = env_async.from_string(\n+                \"{{ closing(items())|customfilter }} .. {{ [3, 4, 5, 6]|customfilter }}\"\n+            )\n+            return await tmpl.render_async(items=items, closing=closing)\n+\n+    out = run_async_fn(test)\n     assert out == \"0,1,2 .. 3,4,5\"\n "
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.91,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.86,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.73,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.95,
+        "type": "noul"
+      },
+      "r2_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r2_wired": {
+        "noul": 0.27,
+        "type": "noul"
+      },
+      "r3_defined": {
+        "noul": 0.99,
+        "type": "noul"
+      },
+      "r3_real_body": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r3_wired": {
+        "noul": 0.65,
+        "type": "noul"
+      },
+      "r4_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r4_real_body": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r4_wired": {
+        "noul": 0.28,
+        "type": "noul"
+      },
+      "r5_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r5_real_body": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r5_wired": {
+        "noul": 0.42,
+        "type": "noul"
+      },
+      "r6_defined": {
+        "noul": 0.95,
+        "type": "noul"
+      },
+      "r6_real_body": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r6_wired": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r7_defined": {
+        "noul": 0.88,
+        "type": "noul"
+      },
+      "r7_real_body": {
+        "noul": 0.77,
+        "type": "noul"
+      },
+      "r7_wired": {
+        "noul": 0.96,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 7421,
+      "output_tokens": 452
+    }
+  },
+  "variant": "split"
+}

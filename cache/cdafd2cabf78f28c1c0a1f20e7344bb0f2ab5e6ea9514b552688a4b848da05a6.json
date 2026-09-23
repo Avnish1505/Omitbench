@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_annotations.py::test_missing_classvar_import`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_annotations.py::test_missing_classvar_import`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_annotations.py::test_missing_classvar_import`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/attr/_make.py\n+++ b/src/attr/_make.py\n@@ -297,6 +297,7 @@\n     annotations which would put attrs-based classes at a performance\n     disadvantage compared to plain old classes.\n     \"\"\"\n+    annot = getattr(annot, \"__forward_arg__\", annot)\n     annot = str(annot)\n \n     # Annotation can be quoted.\n\n--- a/tests/test_annotations.py\n+++ b/tests/test_annotations.py\n@@ -434,6 +434,23 @@\n \n         assert_init_annotations(C)\n \n+    @pytest.mark.skipif(\n+        sys.version_info[:2] < (3, 14),\n+        reason=\"Python 3.14 changed annotation evaluation behavior.\",\n+    )\n+    def test_missing_classvar_import(self, slots):\n+        \"\"\"\n+        Unimported ClassVars are recognized as ForwardRefs.\n+        \"\"\"\n+\n+        @attr.s(auto_attribs=True, slots=slots)\n+        class C:\n+            cls_var: ClassVar[str]  # noqa: F821\n+            value: int = 1\n+\n+        assert \"cls_var\" not in attr.fields_dict(C)\n+        assert 1 == C().value\n+\n     def test_keyword_only_auto_attribs(self):\n         \"\"\"\n         `kw_only` propagates to attributes defined via `auto_attribs`.\n@@ -691,6 +708,7 @@\n         \"typing.ClassVar\",\n         \"'typing.ClassVar[dict]'\",\n         \"t.ClassVar[int]\",\n+        typing.ForwardRef(\"ClassVar[str]\"),\n     ],\n )\n def test_is_class_var(annot):"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.93,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.94,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.46,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1006,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

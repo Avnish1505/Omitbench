@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_timeouts.py::test_async_client_new_request_send_timeout`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_timeouts.py::test_async_client_new_request_send_timeout`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_timeouts.py::test_async_client_new_request_send_timeout`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/httpx/_client.py\n+++ b/httpx/_client.py\n@@ -562,6 +562,15 @@\n \n         return request.stream\n \n+    def _set_timeout(self, request: Request) -> None:\n+        if \"timeout\" not in request.extensions:\n+            timeout = (\n+                self.timeout\n+                if isinstance(self.timeout, UseClientDefault)\n+                else Timeout(self.timeout)\n+            )\n+            request.extensions = dict(**request.extensions, timeout=timeout.as_dict())\n+\n \n class Client(BaseClient):\n     \"\"\"\n@@ -911,6 +920,8 @@\n             else follow_redirects\n         )\n \n+        self._set_timeout(request)\n+\n         auth = self._build_request_auth(request, auth)\n \n         response = self._send_handling_auth(\n@@ -1658,6 +1669,8 @@\n             else follow_redirects\n         )\n \n+        self._set_timeout(request)\n+\n         auth = self._build_request_auth(request, auth)\n \n         response = await self._send_handling_auth(\n\n--- a/tests/test_timeouts.py\n+++ b/tests/test_timeouts.py\n@@ -43,3 +43,14 @@\n             async with client.stream(\"GET\", server.url):\n                 await client.get(server.url)\n \n+\n+@pytest.mark.anyio\n+async def test_async_client_new_request_send_timeout(server):\n+    timeout = httpx.Timeout(1e-6)\n+\n+    async with httpx.AsyncClient(timeout=timeout) as client:\n+        with pytest.raises(httpx.TimeoutException):\n+            await client.send(\n+                httpx.Request(\"GET\", server.url.copy_with(path=\"/slow_response\"))\n+            )\n+"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.95,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.53,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1026,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

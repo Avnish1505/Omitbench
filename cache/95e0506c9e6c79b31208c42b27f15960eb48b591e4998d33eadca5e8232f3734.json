@@ -1,0 +1,115 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_lexnparse.py::test_lstrip_blocks_consume_after_without_new_line` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_lexnparse.py::test_lstrip_blocks_inside_with_new_line` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_lexnparse.py::test_lstrip_blocks_outside_with_new_line` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_lexnparse.py::test_lstrip_blocks_without_new_line` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_lexnparse.py::test_lstrip_trim_blocks_consume_before_without_new_line` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r5": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_lexnparse.py::test_lstrip_trim_blocks_inside_with_new_line` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r6": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_lexnparse.py::test_lstrip_trim_blocks_outside_with_new_line` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r7": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_lexnparse.py::test_lstrip_trim_blocks_without_new_line` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/tests/test_lexnparse.py\n+++ b/tests/test_lexnparse.py\n@@ -729,6 +729,98 @@\n         )\n         assert tmpl.render(seq=range(5)) == \"\".join(\"%s\\n\" % x for x in range(5))\n \n+    def test_lstrip_blocks_outside_with_new_line(self):\n+        env = Environment(lstrip_blocks=True, trim_blocks=False)\n+        tmpl = env.from_string(\n+            \"  {% if kvs %}(\\n\"\n+            \"   {% for k, v in kvs %}{{ k }}={{ v }} {% endfor %}\\n\"\n+            \"  ){% endif %}\"\n+        )\n+        out = tmpl.render(kvs=[(\"a\", 1), (\"b\", 2)])\n+        assert out == \"(\\na=1 b=2 \\n  )\"\n+\n+    def test_lstrip_trim_blocks_outside_with_new_line(self):\n+        env = Environment(lstrip_blocks=True, trim_blocks=True)\n+        tmpl = env.from_string(\n+            \"  {% if kvs %}(\\n\"\n+            \"   {% for k, v in kvs %}{{ k }}={{ v }} {% endfor %}\\n\"\n+            \"  ){% endif %}\"\n+        )\n+        out = tmpl.render(kvs=[(\"a\", 1), (\"b\", 2)])\n+        assert out == \"(\\na=1 b=2   )\"\n+\n+    def test_lstrip_blocks_inside_with_new_line(self):\n+        env = Environment(lstrip_blocks=True, trim_blocks=False)\n+        tmpl = env.from_string(\n+            \"  ({% if kvs %}\\n\"\n+            \"   {% for k, v in kvs %}{{ k }}={{ v }} {% endfor %}\\n\"\n+            \"  {% endif %})\"\n+        )\n+        out = tmpl.render(kvs=[(\"a\", 1), (\"b\", 2)])\n+        assert out == \"  (\\na=1 b=2 \\n)\"\n+\n+    def test_lstrip_trim_blocks_inside_with_new_line(self):\n+        env = Environment(lstrip_blocks=True, trim_blocks=True)\n+        tmpl = env.from_string(\n+            \"  ({% if kvs %}\\n\"\n+            \"   {% for k, v in kvs %}{{ k }}={{ v }} {% endfor %}\\n\"\n+            \"  {% endif %})\"\n+        )\n+        out = tmpl.render(kvs=[(\"a\", 1), (\"b\", 2)])\n+        assert out == \"  (a=1 b=2 )\"\n+\n+    def test_lstrip_blocks_without_new_line(self):\n+        env = Environment(lstrip_blocks=True, trim_blocks=False)\n+        tmpl = env.from_string(\n+            \"  {% if kvs %}\"\n+            \"   {% for k, v in kvs %}{{ k }}={{ v }} {% endfor %}\"\n+            \"  {% endif %}\"\n+        )\n+        out = tmpl.render(kvs=[(\"a\", 1), (\"b\", 2)])\n+        assert out == \"   a=1 b=2   \"\n+\n+    def test_lstrip_trim_blocks_without_new_line(self):\n+        env = Environment(lstrip_blocks=True, trim_blocks=True)\n+        tmpl = env.from_string(\n+            \"  {% if kvs %}\"\n+            \"   {% for k, v in kvs %}{{ k }}={{ v }} {% endfor %}\"\n+            \"  {% endif %}\"\n+        )\n+        out = tmpl.render(kvs=[(\"a\", 1), (\"b\", 2)])\n+        assert out == \"   a=1 b=2   \"\n+\n+    def test_lstrip_blocks_consume_after_without_new_line(self):\n+        env = Environment(lstrip_blocks=True, trim_blocks=False)\n+        tmpl = env.from_string(\n+            \"  {% if kvs -%}\"\n+            \"   {% for k, v in kvs %}{{ k }}={{ v }} {% endfor -%}\"\n+            \"  {% endif -%}\"\n+        )\n+        out = tmpl.render(kvs=[(\"a\", 1), (\"b\", 2)])\n+        assert out == \"a=1 b=2 \"\n+\n+    def test_lstrip_trim_blocks_consume_before_without_new_line(self):\n+        env = Environment(lstrip_blocks=False, trim_blocks=False)\n+        tmpl = env.from_string(\n+            \"  {%- if kvs %}\"\n+            \"   {%- for k, v in kvs %}{{ k }}={{ v }} {% endfor -%}\"\n+            \"  {%- endif %}\"\n+        )\n+        out = tmpl.render(kvs=[(\"a\", 1), (\"b\", 2)])\n+        assert out == \"a=1 b=2 \"\n+\n+    def test_lstrip_trim_blocks_comment(self):\n+        env = Environment(lstrip_blocks=True, trim_blocks=True)\n+        tmpl = env.from_string(\" {# 1 space #}\\n  {# 2 spaces #}    {# 4 spaces #}\")\n+        out = tmpl.render()\n+        assert out == \" \" * 4\n+\n+    def test_lstrip_trim_blocks_raw(self):\n+        env = Environment(lstrip_blocks=True, trim_blocks=True)\n+        tmpl = env.from_string(\"{{x}}\\n{%- raw %} {% endraw -%}\\n{{ y }}\")\n+        out = tmpl.render(x=1, y=2)\n+        assert out == \"1 2\"\n+\n     def test_php_syntax_with_manual(self, env):\n         env = Environment(\n             \"<?\", \"?>\", \"<?=\", \"?>\", \"<!--\", \"-->\", lstrip_blocks=True, trim_blocks=True"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.21,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.15,
+        "type": "noul"
+      },
+      "r2": {
+        "noul": 0.16,
+        "type": "noul"
+      },
+      "r3": {
+        "noul": 0.13,
+        "type": "noul"
+      },
+      "r4": {
+        "noul": 0.18,
+        "type": "noul"
+      },
+      "r5": {
+        "noul": 0.16,
+        "type": "noul"
+      },
+      "r6": {
+        "noul": 0.15,
+        "type": "noul"
+      },
+      "r7": {
+        "noul": 0.17,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 3495,
+      "output_tokens": 140
+    }
+  },
+  "variant": "single"
+}

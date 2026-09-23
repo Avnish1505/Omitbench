@@ -1,0 +1,91 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_make.py::echo_func`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_make.py::echo_func`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_make.py::echo_func`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_additional_class_body`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_additional_class_body`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_additional_class_body`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/attr/_make.py\n+++ b/src/attr/_make.py\n@@ -2867,7 +2867,9 @@\n Factory = _add_hash(_add_eq(_add_repr(Factory, attrs=_f), attrs=_f), attrs=_f)\n \n \n-def make_class(name, attrs, bases=(object,), **attributes_arguments):\n+def make_class(\n+    name, attrs, bases=(object,), class_body=None, **attributes_arguments\n+):\n     r\"\"\"\n     A quick way to create a new class called *name* with *attrs*.\n \n@@ -2883,6 +2885,8 @@\n \n     :param tuple bases: Classes that the new class will subclass.\n \n+    :param dict class_body: An optional dictionary of class attributes for the new class.\n+\n     :param attributes_arguments: Passed unmodified to `attr.s`.\n \n     :return: A new class with *attrs*.\n@@ -2890,6 +2894,7 @@\n \n     .. versionadded:: 17.1.0 *bases*\n     .. versionchanged:: 18.1.0 If *attrs* is ordered, the order is retained.\n+    .. versionchanged:: 23.2.0 *class_body*\n     \"\"\"\n     if isinstance(attrs, dict):\n         cls_dict = attrs\n@@ -2904,6 +2909,8 @@\n     user_init = cls_dict.pop(\"__init__\", None)\n \n     body = {}\n+    if class_body is not None:\n+        body.update(class_body)\n     if pre_init is not None:\n         body[\"__attrs_pre_init__\"] = pre_init\n     if post_init is not None:\n\n--- a/tests/test_make.py\n+++ b/tests/test_make.py\n@@ -1106,6 +1106,16 @@\n         assert D in cls.__mro__\n         assert isinstance(cls(), D)\n \n+    def test_additional_class_body(self):\n+        \"\"\"\n+        Additional class_body is added to newly created class.\n+        \"\"\"\n+\n+\n+        cls = make_class(\"C\", {}, class_body={\"echo\": classmethod(echo_func)})\n+\n+        assert (\"a\", \"b\") == cls.echo(\"a\", \"b\")\n+\n     def test_clean_class(self, slots):\n         \"\"\"\n         Attribute definitions do not appear on the class body."
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.15,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.28,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.94,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.95,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.49,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1512,
+      "output_tokens": 116
+    }
+  },
+  "variant": "split"
+}

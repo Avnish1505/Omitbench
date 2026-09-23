@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_json_decode_errors_are_serializable_deserializable` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/requests/exceptions.py\n+++ b/src/requests/exceptions.py\n@@ -40,6 +40,16 @@\n         \"\"\"\n         CompatJSONDecodeError.__init__(self, *args)\n         InvalidJSONError.__init__(self, *self.args, **kwargs)\n+\n+    def __reduce__(self):\n+        \"\"\"\n+        The __reduce__ method called when pickling the object must\n+        be the one from the JSONDecodeError (be it json/simplejson)\n+        as it expects all the arguments for instantiation, not just\n+        one like the IOError, and the MRO would by default call the\n+        __reduce__ method from the IOError due to the inheritance order.\n+        \"\"\"\n+        return CompatJSONDecodeError.__reduce__(self)\n \n \n class HTTPError(RequestException):\n\n--- a/tests/test_requests.py\n+++ b/tests/test_requests.py\n@@ -2811,3 +2811,7 @@\n         assert r5 == 425\n         assert r6 == 425\n \n+\n+def test_json_decode_errors_are_serializable_deserializable():\n+    raise NotImplementedError\n+"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.01,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 790,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

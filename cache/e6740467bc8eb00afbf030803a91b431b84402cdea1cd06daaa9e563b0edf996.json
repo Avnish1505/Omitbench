@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_iter_content_wraps_exceptions`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_iter_content_wraps_exceptions`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_iter_content_wraps_exceptions`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/requests/models.py\n+++ b/requests/models.py\n@@ -19,7 +19,12 @@\n from urllib3.filepost import encode_multipart_formdata\n from urllib3.util import parse_url\n from urllib3.exceptions import (\n-    DecodeError, ReadTimeoutError, ProtocolError, LocationParseError)\n+    DecodeError,\n+    LocationParseError,\n+    ProtocolError,\n+    ReadTimeoutError,\n+    SSLError,\n+)\n \n from io import UnsupportedOperation\n from .hooks import default_hooks\n@@ -32,6 +37,7 @@\n     ContentDecodingError, ConnectionError, StreamConsumedError,\n     InvalidJSONError)\n from .exceptions import JSONDecodeError as RequestsJSONDecodeError\n+from .exceptions import SSLError as RequestsSSLError\n from ._internal_utils import to_native_string, unicode_is_ascii\n from .utils import (\n     guess_filename, get_auth_from_url, requote_uri,\n@@ -765,6 +771,8 @@\n                     raise ContentDecodingError(e)\n                 except ReadTimeoutError as e:\n                     raise ConnectionError(e)\n+                except SSLError as e:\n+                    raise RequestsSSLError(e)\n             else:\n                 # Standard file-like object.\n                 while True:\n\n--- a/tests/test_requests.py\n+++ b/tests/test_requests.py\n@@ -14,6 +14,7 @@\n import io\n import requests\n import pytest\n+import urllib3\n from requests.adapters import HTTPAdapter\n from requests.auth import HTTPDigestAuth, _basic_auth_str\n from requests.compat import (\n@@ -22,9 +23,25 @@\n from requests.cookies import (\n     cookiejar_from_dict, morsel_to_cookie)\n from requests.exceptions import (\n-    ConnectionError, ConnectTimeout, InvalidSchema, InvalidURL,\n-    MissingSchema, ReadTimeout, Timeout, RetryError, RequestException, TooManyRedirects,\n-    ProxyError, InvalidHeader, UnrewindableBodyError, SSLError, InvalidProxyURL, InvalidJSONError)\n+    ChunkedEncodingError,\n+    ConnectionError,\n+    ConnectTimeout,\n+    ContentDecodingError,\n+    InvalidHeader,\n+    InvalidJSONError,\n+    InvalidProxyURL,\n+    InvalidSchema,\n+    InvalidURL,\n+    MissingSchema,\n+    ProxyError,\n+    ReadTimeout,\n+    RequestException,\n+    RetryError,\n+    Timeout,\n+    TooManyRedirects,\n+    UnrewindableBodyError,\n+)\n+from requests.exceptions import SSLError as RequestsSSLError\n from requests.models import PreparedRequest\n from requests.structures import CaseInsensitiveDict\n from requests.sessions import SessionRedirectMixin\n@@ -910,7 +927,7 @@\n         \"\"\"\n         When underlying SSL problems occur, an SSLError is raised.\n         \"\"\"\n-        with pytest.raises(SSLError):\n+        with pytest.raises(RequestsSSLError):\n             # Our local httpbin does not have a trusted CA, so this call will\n             # fail if we use our default trust bundle.\n             requests.get(httpbin_secure('status', '200'))\n@@ -1319,6 +1336,19 @@\n         r.raw = io.BytesIO(b'the content')\n         with pytest.raises(TypeError):\n             chunks = r.iter_content(\"1024\")\n+\n+    @pytest.mark.parametrize(\n+        'exception, args, expected', (\n+            (urllib3.exceptions.ProtocolError, tuple(), ChunkedEncodingError),\n+            (urllib3.exceptions.DecodeError, tuple(), ContentDecodingError),\n+            (urllib3.exceptions.ReadTimeoutError, (None, '', ''), ConnectionError),\n+            (urllib3.exceptions.SSLError, tuple(), RequestsSSLError),\n+        )\n+    )\n+    def test_iter_content_wraps_exceptions(\n+        self, httpbin, mocker, exception, args, expected\n+    ):\n+        raise NotImplementedError\n \n     def test_request_and_response_are_pickleable(self, httpbin):\n         r = requests.get(httpbin('get'))"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.77,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.03,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.58,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1703,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

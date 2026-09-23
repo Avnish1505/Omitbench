@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_formatting.py::test_formatting_usage_error_help_hint` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/click/exceptions.py\n+++ b/src/click/exceptions.py\n@@ -78,8 +78,12 @@\n             self.ctx is not None\n             and self.ctx.command.get_help_option(self.ctx) is not None\n         ):\n+            help_names = self.ctx.command.get_help_option_names(self.ctx)\n+            # Pick the longest name (like ``--help`` over ``-h``) for\n+            # readability in error messages.\n             hint = _(\"Try '{command} {option}' for help.\").format(\n-                command=self.ctx.command_path, option=self.ctx.help_option_names[0]\n+                command=self.ctx.command_path,\n+                option=max(help_names, key=len),\n             )\n             hint = f\"{hint}\\n\"\n         if self.ctx is not None:\n\n--- a/tests/test_formatting.py\n+++ b/tests/test_formatting.py\n@@ -1,3 +1,5 @@\n+import pytest\n+\n import click\n \n \n@@ -246,6 +248,45 @@\n     ]\n \n \n+@pytest.mark.parametrize(\n+    (\"help_names\", \"extra_options\", \"expected_hint\"),\n+    [\n+        # No shadowing, longest name is picked.\n+        ([\"-h\", \"--help\"], [], \"Try 'cli foo --help' for help.\"),\n+        # -h shadowed by a subcommand option, --help still available.\n+        (\n+            [\"-h\", \"--help\"],\n+            [click.option(\"--host\", \"-h\")],\n+            \"Try 'cli foo --help' for help.\",\n+        ),\n+        # --help shadowed, -h still available.\n+        (\n+            [\"-h\", \"--help\"],\n+            [click.option(\"--help-file\", \"--help\")],\n+            \"Try 'cli foo -h' for help.\",\n+        ),\n+        # Both names shadowed: no hint line at all.\n+        (\n+            [\"-h\", \"--help\"],\n+            [click.option(\"--host\", \"-h\"), click.option(\"--help-file\", \"--help\")],\n+            None,\n+        ),\n+        # Single custom help name, not shadowed.\n+        ([\"--man\"], [], \"Try 'cli foo --man' for help.\"),\n+        # Three help names, one shadowed, longest survivor picked.\n+        (\n+            [\"-h\", \"--help\", \"--info\"],\n+            [click.option(\"--info-file\", \"--info\")],\n+            \"Try 'cli foo --help' for help.\",\n+        ),\n+    ],\n+)\n+def test_formatting_usage_error_help_hint(\n+    runner, help_names, extra_options, expected_hint\n+):\n+    raise NotImplementedError\n+\n+\n def test_formatting_custom_type_metavar(runner):\n     class MyType(click.ParamType):\n         def get_metavar(self, param: click.Parameter, ctx: click.Context):"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.01,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1146,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

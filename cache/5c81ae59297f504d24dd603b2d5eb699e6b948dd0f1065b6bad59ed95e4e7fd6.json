@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `itsdangerous.py::get_issue_date`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `itsdangerous.py::get_issue_date`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `itsdangerous.py::get_issue_date`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/itsdangerous.py\n+++ b/itsdangerous.py\n@@ -17,7 +17,6 @@\n import base64\n import hashlib\n import operator\n-import calendar\n from datetime import datetime\n \n \n@@ -714,47 +713,59 @@\n class TimedJSONWebSignatureSerializer(JSONWebSignatureSerializer):\n     \"\"\"Works like the regular :class:`JSONWebSignatureSerializer` but also\n     records the time of the signing and can be used to expire signatures.\n-    The expiry date is encoded into the serialized object as specified\n-    in http://self-issued.info/docs/draft-ietf-oauth-json-web-token.html#expDef.\n-    The unsign method can raise a :exc:`SignatureExpired` method if the unsigning\n-    failed because the signature is expired.  This exception is a subclass\n-    of :exc:`BadSignature`.\n+\n+    JWS currently does not specify this behavior but the JWT spec does.  The\n+    expiry date is encoded into the header as specified in\n+    `draft-ietf-oauth-json-web-token\n+    <http://self-issued.info/docs/draft-ietf-oauth-json-web-token.html#expDef`_.\n+\n+    The unsign method can raise a :exc:`SignatureExpired` method if the\n+    unsigning failed because the signature is expired.  This exception is a\n+    subclass of :exc:`BadSignature`.\n     \"\"\"\n \n     DEFAULT_EXPIRES_IN = 3600\n \n-    def __init__(self, secret_key, salt=None, serializer=None, signer=None, signer_kwargs=None, algorithm_name=None, expires_in=None):\n-        super(TimedJSONWebSignatureSerializer, self).__init__(secret_key, salt, serializer, signer, signer_kwargs,\n-            algorithm_name)\n-        if not expires_in:\n+    def __init__(self, secret_key, expires_in=None, **kwargs):\n+        JSONWebSignatureSerializer.__init__(self, secret_key, **kwargs)\n+        if expires_in is None:\n             expires_in = self.DEFAULT_EXPIRES_IN\n         self.expires_in = expires_in\n \n     def loads(self, s, salt=None, return_header=False):\n-        payload = super(TimedJSONWebSignatureSerializer, self).loads(s, salt, return_header)\n-\n-        if 'exp' not in payload:\n-            raise BadSignature(\"Missing ['exp'] expiry date\", payload=payload)\n-\n-        if not (isinstance(payload['exp'], int) and payload['exp'] > 0):\n-            raise BadSignature(\"['exp'] expiry date is not an IntDate\", payload=payload)\n-\n-        if payload['exp'] < self.now():\n-            raise SignatureExpired(\n-                'Signature expired',\n-                payload=payload)\n-\n-        return super(TimedJSONWebSignatureSerializer, self).loads(s, salt, return_header)\n+        payload, header = JSONWebSignatureSerializer.loads(\n+            self, s, salt, return_header=True)\n+\n+        if 'exp' not in header:\n+            raise BadSignature('Missing expiry date', payload=payload)\n+\n+        if not (isinstance(header['exp'], (int, long, float))\n+                and header['exp'] > 0):\n+            raise BadSignature('expiry date is not an IntDate',\n+                               payload=payload)\n+\n+        if header['exp'] < self.now():\n+            raise SignatureExpired('Signature expired', payload=payload,\n+                                   date_signed=self.get_issue_date(header))\n+\n+        if return_header:\n+            return payload, header\n+        return payload\n \n     def dumps(self, obj, salt=None, header_fields=None):\n         iat = self.now()\n         exp = iat + self.expires_in\n-        obj['iat'] = iat\n-        obj['exp'] = exp\n-        return super(TimedJSONWebSignatureSerializer, self).dumps(obj, salt=salt, header_fields=header_fields)\n+        if header_fields is None:\n+            header_fields = {}\n+        header_fields['iat'] = iat\n+        header_fields['exp'] = exp\n+        return JSONWebSignatureSerializer.dumps(self, obj, salt, header_fields)\n+\n+    def get_issue_date(self, header):\n+        raise NotImplementedError\n \n     def now(self):\n-        return calendar.timegm(datetime.utcnow().utctimetuple())\n+        return int(time.time())\n \n \n class URLSafeSerializerMixin(object):\n\n--- a/tests.py\n+++ b/tests.py\n@@ -2,7 +2,6 @@\n import pickle\n import hashlib\n import unittest\n-import calendar\n from datetime import datetime\n \n import itsdangerous as idmod\n@@ -228,43 +227,36 @@\n class TimedJSONWebSignatureSerializerTest(unittest.TestCase):\n     serializer_class = idmod.TimedJSONWebSignatureSerializer\n \n-    def setUp(self):\n-        # Use the original implementation to create 'invalid' tokens\n-        self.invalid_token_empty = idmod.JSONWebSignatureSerializer(\"secret\").dumps({})\n-        self.invalid_token_wrong_type = idmod.JSONWebSignatureSerializer(\"secret\").dumps({'exp':'geloet'})\n-\n     def test_token_contains_issue_date_and_expiry_time(self):\n-        s = self.serializer_class(\"secret\")\n+        s = self.serializer_class('secret')\n         result = s.dumps({'es': 'geht'})\n-        self.assert_('exp' in s.loads(result))\n-        self.assert_('iat' in s.loads(result))\n+        self.assert_('exp' in s.loads(result, return_header=True)[1])\n+        self.assert_('iat' in s.loads(result, return_header=True)[1])\n \n     def test_token_expires_at_given_expiry_time(self):\n-        s = self.serializer_class(\"secret\")\n-        an_hour_ago = calendar.timegm(datetime.utcnow().utctimetuple()) - 3601\n+        s = self.serializer_class('secret')\n+        an_hour_ago = int(time.time()) - 3601\n         s.now = lambda: an_hour_ago\n-        result = s.dumps({'foo':'bar'})\n-        s = self.serializer_class(\"secret\")\n+        result = s.dumps({'foo': 'bar'})\n+        s = self.serializer_class('secret')\n         self.assertRaises(idmod.SignatureExpired, s.loads, result)\n \n     def test_token_is_invalid_if_expiry_time_is_missing(self):\n-        s = self.serializer_class(\"secret\")\n-        self.assertRaises(idmod.BadSignature, s.loads, self.invalid_token_empty)\n-\n-    def test_token_is_invalid_if_expiry_time_is_of_wrong_type(self):\n-        s = self.serializer_class(\"secret\")\n-        self.assertRaises(idmod.BadSignature, s.loads, self.invalid_token_wrong_type)\n+        bad_s = idmod.JSONWebSignatureSerializer('secret')\n+        invalid_token_empty = bad_s.dumps({})\n+        s = self.serializer_class('secret')\n+        self.assertRaises(idmod.BadSignature, s.loads, invalid_token_empty)\n \n     def test_token_is_invalid_if_expiry_time_is_negative(self):\n-        s = self.serializer_class(\"secret\", expires_in=-123)\n-        result = s.dumps({'foo':'bar'})\n+        s = self.serializer_class('secret', expires_in=-123)\n+        result = s.dumps({'foo': 'bar'})\n         self.assertRaises(idmod.BadSignature, s.loads, result)\n \n     def test_creating_a_token_adds_the_expiry_date(self):\n         expires_in_two_hours = 7200\n-        s = self.serializer_class(\"secret\", expires_in=expires_in_two_hours)\n-        result = s.loads(s.dumps({'foo': 'bar'}))\n-        self.assertEqual(result['exp'] - result['iat'], expires_in_two_hours)\n+        s = self.serializer_class('secret', expires_in=expires_in_two_hours)\n+        result, header = s.loads(s.dumps({'foo': 'bar'}), return_header=True)\n+        self.assertEqual(header['exp'] - header['iat'], expires_in_two_hours)\n \n \n class URLSafeSerializerMixin(object):"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.04,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.94,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 2503,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

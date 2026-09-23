@@ -1,0 +1,91 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_options.py::test_default_dual_option_callback`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_options.py::test_default_dual_option_callback`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_options.py::test_default_dual_option_callback`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_options.py::test_dual_options_custom_type_sentinel_flag_value`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_options.py::test_dual_options_custom_type_sentinel_flag_value`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_options.py::test_dual_options_custom_type_sentinel_flag_value`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/tests/test_basic.py\n+++ b/tests/test_basic.py\n@@ -277,24 +277,53 @@\n \n \n @pytest.mark.parametrize(\n-    (\"default\", \"args\", \"expect\"),\n+    (\"default\", \"args\", \"expected\"),\n+    # These test cases are similar to the ones in\n+    # tests/test_options.py::test_default_dual_option_callback, so keep them in sync.\n     (\n-        # See: https://github.com/pallets/click/issues/3024#issuecomment-3146199461\n+        # Each option is returning its own flag_value, whatever the default is.\n         (True, [\"--upper\"], \"upper\"),\n         (True, [\"--lower\"], \"lower\"),\n+        (False, [\"--upper\"], \"upper\"),\n+        (False, [\"--lower\"], \"lower\"),\n+        (None, [\"--upper\"], \"upper\"),\n+        (None, [\"--lower\"], \"lower\"),\n+        (UNSET, [\"--upper\"], \"upper\"),\n+        (UNSET, [\"--lower\"], \"lower\"),\n+        # Check that the last option wins when both are specified.\n+        (True, [\"--upper\", \"--lower\"], \"lower\"),\n+        (True, [\"--lower\", \"--upper\"], \"upper\"),\n+        # Check that the default is returned as-is when no option is specified.\n+        (\"upper\", [], \"upper\"),\n+        (\"lower\", [], \"lower\"),\n+        (\"uPPer\", [], \"uPPer\"),\n+        (\"lOwEr\", [], \"lOwEr\"),\n+        (\" \u1555( \u141b )\u1557 \", [], \" \u1555( \u141b )\u1557 \"),\n+        (None, [], None),\n+        # Default is normalized to None if it is UNSET.\n+        (UNSET, [], None),\n+        # Non-string defaults are process as strings by the default Parameter's type.\n         (True, [], \"True\"),\n-        (\"upper\", [], \"upper\"),\n+        (False, [], \"False\"),\n+        (42, [], \"42\"),\n+        (12.3, [], \"12.3\"),\n     ),\n )\n-def test_flag_value_dual_options(runner, default, args, expect):\n-    @click.command()\n-    @click.option(\"--upper\", \"transformation\", flag_value=\"upper\", default=default)\n-    @click.option(\"--lower\", \"transformation\", flag_value=\"lower\")\n-    def cli(transformation):\n-        click.echo(repr(transformation), nl=False)\n+def test_flag_value_dual_options(runner, default, args, expected):\n+    \"\"\"Check how default is processed when options compete for the same variable name.\n+\n+    Covers the regression reported in\n+    https://github.com/pallets/click/issues/3024#issuecomment-3146199461\n+    \"\"\"\n+\n+    @click.command()\n+    @click.option(\"--upper\", \"case\", flag_value=\"upper\", default=default)\n+    @click.option(\"--lower\", \"case\", flag_value=\"lower\")\n+    def cli(case):\n+        click.echo(repr(case), nl=False)\n \n     result = runner.invoke(cli, args)\n-    assert result.output == repr(expect)\n+    assert result.output == repr(expected)\n \n \n def test_file_option(runner):\n\n--- a/tests/test_options.py\n+++ b/tests/test_options.py\n@@ -2,6 +2,7 @@\n import os\n import re\n import sys\n+import tempfile\n \n if sys.version_info < (3, 11):\n     enum.StrEnum = enum.Enum  # type: ignore[assignment]\n@@ -1364,35 +1365,56 @@\n \n @pytest.mark.parametrize(\n     (\"default\", \"args\", \"expected\"),\n-    [\n-        (None, [], \"A real None\"),\n-        (UNSET, [], \"A real UNSET\"),\n-        (\"random\", [], \"random\"),\n+    # These test cases are similar to the ones in\n+    # tests/test_basic.py::test_flag_value_dual_options, so keep them in sync.\n+    (\n+        # Each option is returning its own flag_value, whatever the default is.\n+        (True, [\"--js\"], \"js\"),\n+        (True, [\"--xml\"], \"xml\"),\n+        (False, [\"--js\"], \"js\"),\n+        (False, [\"--xml\"], \"xml\"),\n         (None, [\"--js\"], \"js\"),\n         (None, [\"--xml\"], \"xml\"),\n-    ],\n-)\n-def test_flag_value_dual_callback(runner, default, args, expected):\n-    \"\"\"\n+        (UNSET, [\"--js\"], \"js\"),\n+        (UNSET, [\"--xml\"], \"xml\"),\n+        # Check that the last option wins when both are specified.\n+        (True, [\"--js\", \"--xml\"], \"xml\"),\n+        (True, [\"--xml\", \"--js\"], \"js\"),\n+        # Check that the default is returned as-is when no option is specified.\n+        (\"js\", [], \"js\"),\n+        (\"xml\", [], \"xml\"),\n+        (\"jS\", [], \"jS\"),\n+        (\"xMl\", [], \"xMl\"),\n+        (\" \u1555( \u141b )\u1557 \", [], \" \u1555( \u141b )\u1557 \"),\n+        (None, [], None),\n+        (UNSET, [], UNSET),\n+        # Non-string defaults are process as strings by the default Parameter's type.\n+        (True, [], \"True\"),\n+        (False, [], \"False\"),\n+        (42, [], \"42\"),\n+        (12.3, [], \"12.3\"),\n+    ),\n+)\n+def test_default_dual_option_callback(runner, default, args, expected):\n+    \"\"\"Check how default is processed by the callback when options compete for the same\n+    variable name.\n+\n     Reproduction of the issue reported in\n     https://github.com/pallets/click/pull/3030#discussion_r2271571819\n     \"\"\"\n \n     def _my_func(ctx, param, value):\n-        if value is None:\n-            return \"A real None\"\n-        if value is UNSET:\n-            return \"A real UNSET\"\n-        return value\n+        # Print the value received by the callback as-is, so we can check for it.\n+        return f\"Callback value: {value!r}\"\n \n     @click.command()\n     @click.option(\"--js\", \"fmt\", flag_value=\"js\", callback=_my_func, default=default)\n     @click.option(\"--xml\", \"fmt\", flag_value=\"xml\", callback=_my_func)\n     def main(fmt):\n-        click.secho(repr(fmt), nl=False)\n+        click.secho(fmt, nl=False)\n \n     result = runner.invoke(main, args)\n-    assert result.output == repr(expected)\n+    assert result.output == f\"Callback value: {expected!r}\"\n     assert result.exit_code == 0\n \n \n@@ -1688,19 +1710,89 @@\n         runner.invoke(cli, [])\n \n \n-def test_custom_type_click_class_flag_value(runner):\n-    \"\"\"A reproduction of\n+NO_CONFIG = object()\n+\"\"\"A sentinel value to indicate no configuration file is provided.\"\"\"\n+\n+\n+@pytest.mark.parametrize(\n+    (\"args\", \"expected\"),\n+    (\n+        # Option default to None.\n+        ([], None),\n+        # Config has no default value, and no flag value, so it requires an argument.\n+        (\n+            [\"--config\"],\n+            re.compile(re.escape(\"Error: Option '--config' requires an argument.\\n\")),\n+        ),\n+        (\n+            [\"--no-config\", \"--config\"],\n+            re.compile(re.escape(\"Error: Option '--config' requires an argument.\\n\")),\n+        ),\n+        # Passing --no-config defaults to the sentinel value because of the flag_value,\n+        # and then the custom type receives that sentinel and returns a message.\n+        ([\"--no-config\"], \"No configuration file provided.\"),\n+        # Passing --config with an argument returns the file path.\n+        ([\"--config\", \"foo.conf\"], \"foo.conf\"),\n+        # An argument is not allowed for --no-config, so it raises an error.\n+        (\n+            [\"--no-config\", \"foo.conf\"],\n+            re.compile(\n+                r\"Usage: main \\[OPTIONS\\]\\n\"\n+                r\"Try 'main --help' for help.\\n\"\n+                r\"\\n\"\n+                r\"Error: Got unexpected extra argument (.+)\\n\"\n+            ),\n+        ),\n+        # Passing --config with an argument that does not exist raises an error.\n+        (\n+            [\"--config\", \"random-file.conf\"],\n+            re.compile(\n+                r\"Usage: main \\[OPTIONS\\]\\n\"\n+                r\"Try 'main --help' for help.\\n\"\n+                r\"\\n\"\n+                r\"Error: Invalid value for '-c' / '--config': \"\n+                r\"File 'random-file.conf' does not exist.\\n\"\n+            ),\n+        ),\n+        (\n+            [\"--config\", \"--no-config\"],\n+            re.compile(\n+                r\"Usage: main \\[OPTIONS\\]\\n\"\n+                r\"Try 'main --help' for help.\\n\"\n+                r\"\\n\"\n+                r\"Error: Invalid value for '-c' / '--config': \"\n+                r\"File '--no-config' does not exist.\\n\"\n+            ),\n+        ),\n+        (\n+            [\"--config\", \"--no-config\", \"foo.conf\"],\n+            re.compile(\n+                r\"Usage: main \\[OPTIONS\\]\\n\"\n+                r\"Try 'main --help' for help.\\n\"\n+                r\"\\n\"\n+                r\"Error: Invalid value for '-c' / '--config': \"\n+                r\"File '--no-config' does not exist.\\n\"\n+            ),\n+        ),\n+        # --config is passed last and overrides the --no-config option.\n+        ([\"--no-config\", \"--config\", \"foo.conf\"], \"foo.conf\"),\n+    ),\n+)\n+def test_dual_options_custom_type_sentinel_flag_value(runner, args, expected):\n+    \"\"\"Check that an object-based sentinel, used as a flag value, is returned as-is\n+    to a custom type that is shared by two options, competing for the same variable\n+    name.\n+\n+    A reproduction of\n     https://github.com/pallets/click/issues/3024#issuecomment-3146511356\n     \"\"\"\n \n-    NO_CONFIG = object()\n-\n     class ConfigParamType(click.ParamType):\n-        name = \"config\"\n+        \"\"\"A custom type that accepts a file path or a sentinel value.\"\"\"\n \n         def convert(self, value, param, ctx):\n             if value is NO_CONFIG:\n-                return value\n+                return \"No configuration file provided.\"\n             else:\n                 return click.Path(exists=True, dir_okay=False).convert(\n                     value, param, ctx\n@@ -1712,8 +1804,20 @@\n     def main(config):\n         click.echo(repr(config), nl=False)\n \n-    result = runner.invoke(main)\n-    assert result.output == repr(None)\n+    with tempfile.NamedTemporaryFile(mode=\"w\") as named_tempfile:\n+        if \"foo.conf\" in args:\n+            named_tempfile.write(\"Blah blah\")\n+            named_tempfile.flush()\n+            args = [named_tempfile.name if a == \"foo.conf\" else a for a in args]\n+\n+        result = runner.invoke(main, args)\n+\n+        if isinstance(expected, re.Pattern):\n+            assert re.match(expected, result.output)\n+        else:\n+            assert result.output == repr(\n+                named_tempfile.name if expected == \"foo.conf\" else expected\n+            )\n \n \n class EngineType(enum.Enum):"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.29,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.95,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 3693,
+      "output_tokens": 116
+    }
+  },
+  "variant": "split"
+}

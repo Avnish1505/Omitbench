@@ -1,0 +1,67 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_wsgi.py::FakeRawIOStream` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_wsgi.py::read` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_wsgi.py::readline` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_wsgi.py::test_limited_stream_read_with_raw_io` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/tests/test_wsgi.py\n+++ b/tests/test_wsgi.py\n@@ -178,6 +178,57 @@\n     stream = wsgi.LimitedStream(io_, 255)\n     with pytest.raises(ClientDisconnected):\n         stream.read()\n+\n+\n+def test_limited_stream_read_with_raw_io():\n+    class FakeRawIOStream:\n+        \"\"\"\n+        Fakes Raw IO behavior where fewer bytes can be returned by ``read`` than what\n+        are asked for through `size`.\n+        \"\"\"\n+\n+        buf: bytes\n+\n+        def __init__(self, buf: bytes):\n+            self.buf = buf\n+            self.pos = 0\n+\n+        def read(self, size: int) -> bytes:\n+            if size is None or size == -1:\n+                raise ValueError(\"expected read to be called with specific limit\")\n+            if size == 0:\n+                return b\"\"\n+\n+            if len(self.buf) < self.pos:\n+                return b\"\"\n+\n+            b = self.buf[self.pos : self.pos + 1]\n+            self.pos += 1\n+            return b\n+\n+        def readline(self):\n+            raise NotImplementedError\n+\n+    data = b\"foo\"\n+    stream = wsgi.LimitedStream(FakeRawIOStream(data), 4)  # noqa\n+    assert stream.read(5) == b\"f\"\n+    assert stream.read(5) == b\"o\"\n+    assert stream.read(5) == b\"o\"\n+    # the underlying stream has fewer bytes than the expected limit\n+    with pytest.raises(ClientDisconnected):\n+        stream.read(5)\n+\n+    stream = wsgi.LimitedStream(FakeRawIOStream(data), 3)  # noqa\n+    assert stream.read(5) == b\"f\"\n+    assert stream.read(5) == b\"o\"\n+    assert stream.read(5) == b\"o\"\n+    assert stream.read(5) == b\"\"\n+\n+    stream = wsgi.LimitedStream(FakeRawIOStream(data), 3)  # noqa\n+    assert stream.read() == b\"foo\"\n+\n+    stream = wsgi.LimitedStream(FakeRawIOStream(data), 2)  # noqa\n+    assert stream.read() == b\"fo\"\n \n \n def test_get_host_fallback():"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.99,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.34,
+        "type": "noul"
+      },
+      "r2": {
+        "noul": 0.03,
+        "type": "noul"
+      },
+      "r3": {
+        "noul": 0.28,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1772,
+      "output_tokens": 72
+    }
+  },
+  "variant": "single"
+}

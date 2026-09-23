@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests.py::test_serializer_kwargs` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/itsdangerous.py\n+++ b/itsdangerous.py\n@@ -45,8 +45,8 @@\n     def loads(self, payload):\n         return json.loads(payload)\n \n-    def dumps(self, obj):\n-        return json.dumps(obj, ensure_ascii=False, separators=(',', ':'))\n+    def dumps(self, obj, **kwargs):\n+        return json.dumps(obj, ensure_ascii=False, separators=(',', ':'), **kwargs)\n \n \n compact_json = _CompactJSON()\n@@ -504,7 +504,7 @@\n     default_signer = Signer\n \n     def __init__(self, secret_key, salt=b'itsdangerous', serializer=None,\n-                 signer=None, signer_kwargs=None):\n+                 signer=None, signer_kwargs=None, serializer_kwargs=None):\n         self.secret_key = want_bytes(secret_key)\n         self.salt = want_bytes(salt)\n         if serializer is None:\n@@ -515,6 +515,7 @@\n             signer = self.default_signer\n         self.signer = signer\n         self.signer_kwargs = signer_kwargs or {}\n+        self.serializer_kwargs = serializer_kwargs or {}\n \n     def load_payload(self, payload, serializer=None):\n         \"\"\"Loads the encoded object.  This function raises :class:`BadPayload`\n@@ -541,7 +542,7 @@\n         bytestring.  If the internal serializer is text based the value\n         will automatically be encoded to utf-8.\n         \"\"\"\n-        return want_bytes(self.serializer.dumps(obj))\n+        return want_bytes(self.serializer.dumps(obj, **self.serializer_kwargs))\n \n     def make_signer(self, salt=None):\n         \"\"\"A method that creates a new instance of the signer to be used.\n@@ -664,9 +665,9 @@\n     default_serializer = compact_json\n \n     def __init__(self, secret_key, salt=None, serializer=None,\n-                 signer=None, signer_kwargs=None, algorithm_name=None):\n+                 signer=None, signer_kwargs=None, serializer_kwargs=None, algorithm_name=None):\n         Serializer.__init__(self, secret_key, salt, serializer,\n-                            signer, signer_kwargs)\n+                            signer, signer_kwargs, serializer_kwargs)\n         if algorithm_name is None:\n             algorithm_name = self.default_algorithm\n         self.algorithm_name = algorithm_name\n@@ -702,8 +703,8 @@\n         return payload\n \n     def dump_payload(self, header, obj):\n-        base64d_header = base64_encode(self.serializer.dumps(header))\n-        base64d_payload = base64_encode(self.serializer.dumps(obj))\n+        base64d_header = base64_encode(self.serializer.dumps(header, **self.serializer_kwargs))\n+        base64d_payload = base64_encode(self.serializer.dumps(obj, **self.serializer_kwargs))\n         return base64d_header + b'.' + base64d_payload\n \n     def make_algorithm(self, algorithm_name):\n\n--- a/tests.py\n+++ b/tests.py\n@@ -120,6 +120,9 @@\n         ts = s.dumps(value)\n         self.assertEqual(s.loads(ts), u'hello')\n \n+    def test_serializer_kwargs(self):\n+        raise NotImplementedError\n+\n \n class TimedSerializerTestCase(SerializerTestCase):\n     serializer_class = idmod.TimedSerializer\n@@ -282,6 +285,7 @@\n class PickleSerializerMixin(object):\n \n     def make_serializer(self, *args, **kwargs):\n+        kwargs.pop('serializer_kwargs', '')\n         kwargs.setdefault('serializer', pickle)\n         return super(PickleSerializerMixin, self).make_serializer(*args, **kwargs)\n "
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.01,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1303,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

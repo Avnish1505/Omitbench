@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_formparser.py::test_multipart_max_form_memory_size` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/werkzeug/formparser.py\n+++ b/src/werkzeug/formparser.py\n@@ -352,6 +352,7 @@\n         self, stream: t.IO[bytes], boundary: bytes, content_length: int | None\n     ) -> tuple[MultiDict[str, str], MultiDict[str, FileStorage]]:\n         current_part: Field | File\n+        field_size: int | None = None\n         container: t.IO[bytes] | list[bytes]\n         _write: t.Callable[[bytes], t.Any]\n \n@@ -370,13 +371,23 @@\n             while not isinstance(event, (Epilogue, NeedData)):\n                 if isinstance(event, Field):\n                     current_part = event\n+                    field_size = 0\n                     container = []\n                     _write = container.append\n                 elif isinstance(event, File):\n                     current_part = event\n+                    field_size = None\n                     container = self.start_file_streaming(event, content_length)\n                     _write = container.write\n                 elif isinstance(event, Data):\n+                    if self.max_form_memory_size is not None and field_size is not None:\n+                        # Ensure that accumulated data events do not exceed limit.\n+                        # Also checked within single event in MultipartDecoder.\n+                        field_size += len(event.data)\n+\n+                        if field_size > self.max_form_memory_size:\n+                            raise RequestEntityTooLarge()\n+\n                     _write(event.data)\n                     if not event.more_data:\n                         if isinstance(current_part, Field):\n\n--- a/src/werkzeug/sansio/multipart.py\n+++ b/src/werkzeug/sansio/multipart.py\n@@ -140,6 +140,8 @@\n             self.max_form_memory_size is not None\n             and len(self.buffer) + len(data) > self.max_form_memory_size\n         ):\n+            # Ensure that data within single event does not exceed limit.\n+            # Also checked across accumulated events in MultiPartParser.\n             raise RequestEntityTooLarge()\n         else:\n             self.buffer.extend(data)\n\n--- a/tests/test_formparser.py\n+++ b/tests/test_formparser.py\n@@ -457,3 +457,7 @@\n             assert request.files[\"rfc2231\"].filename == \"a b c d e f.txt\"\n             assert request.files[\"rfc2231\"].read() == b\"file contents\"\n \n+\n+def test_multipart_max_form_memory_size() -> None:\n+    raise NotImplementedError\n+"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.01,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1079,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

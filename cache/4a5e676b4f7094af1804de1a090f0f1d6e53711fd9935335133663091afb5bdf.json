@@ -1,0 +1,43 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_make.py::KWOnlyAndDefault` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_pre_init_kw_only_work_with_defaults` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/attr/_make.py\n+++ b/src/attr/_make.py\n@@ -2207,15 +2207,17 @@\n         # leading comma & kw_only args\n         args += f\"{', ' if args else ''}*, {', '.join(kw_only_args)}\"\n         pre_init_kw_only_args = \", \".join(\n-            [f\"{kw_arg}={kw_arg}\" for kw_arg in kw_only_args]\n-        )\n-        pre_init_args += (\n-            \", \" if pre_init_args else \"\"\n-        )  # handle only kwargs and no regular args\n+            [\n+                f\"{kw_arg_name}={kw_arg_name}\"\n+                # We need to remove the defaults from the kw_only_args.\n+                for kw_arg_name in (kwa.split(\"=\")[0] for kwa in kw_only_args)\n+            ]\n+        )\n+        pre_init_args += \", \" if pre_init_args else \"\"\n         pre_init_args += pre_init_kw_only_args\n \n     if call_pre_init and pre_init_has_args:\n-        # If pre init method has arguments, pass same arguments as `__init__`\n+        # If pre init method has arguments, pass same arguments as `__init__`.\n         lines[0] = f\"self.__attrs_pre_init__({pre_init_args})\"\n \n     # Python 3.7 doesn't allow backslashes in f strings.\n\n--- a/tests/test_make.py\n+++ b/tests/test_make.py\n@@ -695,6 +695,10 @@\n         assert 12 == getattr(c, \"z\", None)\n \n     @pytest.mark.usefixtures(\"with_and_without_validation\")\n+    def test_pre_init_kw_only_work_with_defaults(self):\n+        raise NotImplementedError\n+\n+    @pytest.mark.usefixtures(\"with_and_without_validation\")\n     def test_post_init(self):\n         \"\"\"\n         Verify that __attrs_post_init__ gets called if defined."
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.03,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.01,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1171,
+      "output_tokens": 38
+    }
+  },
+  "variant": "single"
+}

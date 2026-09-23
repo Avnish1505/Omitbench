@@ -1,0 +1,115 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `itsdangerous.py::TimedJSONWebSignatureSerializer` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests.py::TimedJSONWebSignatureSerializerTest` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests.py::test_creating_a_token_adds_the_expiry_date` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests.py::test_token_contains_issue_date_and_expiry_time` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests.py::test_token_expires_at_given_expiry_time` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r5": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests.py::test_token_is_invalid_if_expiry_time_is_missing` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r6": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests.py::test_token_is_invalid_if_expiry_time_is_negative` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r7": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests.py::test_token_is_invalid_if_expiry_time_is_of_wrong_type` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/itsdangerous.py\n+++ b/itsdangerous.py\n@@ -17,6 +17,7 @@\n import base64\n import hashlib\n import operator\n+import calendar\n from datetime import datetime\n \n \n@@ -710,6 +711,52 @@\n         return self._loads_unsafe_impl(s, salt, kwargs, kwargs)\n \n \n+class TimedJSONWebSignatureSerializer(JSONWebSignatureSerializer):\n+    \"\"\"Works like the regular :class:`JSONWebSignatureSerializer` but also\n+    records the time of the signing and can be used to expire signatures.\n+    The expiry date is encoded into the serialized object as specified\n+    in http://self-issued.info/docs/draft-ietf-oauth-json-web-token.html#expDef.\n+    The unsign method can raise a :exc:`SignatureExpired` method if the unsigning\n+    failed because the signature is expired.  This exception is a subclass\n+    of :exc:`BadSignature`.\n+    \"\"\"\n+\n+    DEFAULT_EXPIRES_IN = 3600\n+\n+    def __init__(self, secret_key, salt=None, serializer=None, signer=None, signer_kwargs=None, algorithm_name=None, expires_in=None):\n+        super(TimedJSONWebSignatureSerializer, self).__init__(secret_key, salt, serializer, signer, signer_kwargs,\n+            algorithm_name)\n+        if not expires_in:\n+            expires_in = self.DEFAULT_EXPIRES_IN\n+        self.expires_in = expires_in\n+\n+    def loads(self, s, salt=None, return_header=False):\n+        payload = super(TimedJSONWebSignatureSerializer, self).loads(s, salt, return_header)\n+\n+        if 'exp' not in payload:\n+            raise BadSignature(\"Missing ['exp'] expiry date\", payload=payload)\n+\n+        if not isinstance(payload['exp'], int) and payload['exp'] > 0:\n+            raise BadSignature(\"['exp'] expiry date is not an IntDate\", payload=payload)\n+\n+        if payload['exp'] < self.now():\n+            raise SignatureExpired(\n+                'Signature expired',\n+                payload=payload)\n+\n+        return super(TimedJSONWebSignatureSerializer, self).loads(s, salt, return_header)\n+\n+    def dumps(self, obj, salt=None, header_fields=None):\n+        iat = self.now()\n+        exp = iat + self.expires_in\n+        obj['iat'] = iat\n+        obj['exp'] = exp\n+        return super(TimedJSONWebSignatureSerializer, self).dumps(obj, salt=salt, header_fields=header_fields)\n+\n+    def now(self):\n+        return calendar.timegm(datetime.utcnow().utctimetuple())\n+\n+\n class URLSafeSerializerMixin(object):\n     \"\"\"Mixed in with a regular serializer it will attempt to zlib compress\n     the string to make it shorter if necessary.  It will also base64 encode\n\n--- a/tests.py\n+++ b/tests.py\n@@ -2,6 +2,7 @@\n import pickle\n import hashlib\n import unittest\n+import calendar\n from datetime import datetime\n \n import itsdangerous as idmod\n@@ -224,6 +225,44 @@\n             self.fail('Did not get algorithm mismatch')\n \n \n+class TimedJSONWebSignatureSerializerTest(unittest.TestCase):\n+    serializer_class = idmod.TimedJSONWebSignatureSerializer\n+\n+    def setUp(self):\n+        # Use the original implementation to create 'invalid' tokens\n+        self.invalid_token_empty = idmod.JSONWebSignatureSerializer(\"secret\").dumps({})\n+        self.invalid_token_wrong_type = idmod.JSONWebSignatureSerializer(\"secret\").dumps({'exp':'geloet'})\n+\n+    def test_token_contains_issue_date_and_expiry_time(self):\n+        s = self.serializer_class(\"secret\")\n+        result = s.dumps({'es': 'geht'})\n+        self.assertIn('exp', s.loads(result))\n+        self.assertIn('iat', s.loads(result))\n+\n+    def test_token_expires_at_given_expiry_time(self):\n+        s = self.serializer_class(\"secret\")\n+        an_hour_ago = calendar.timegm(datetime.utcnow().utctimetuple()) - 3601\n+        s.now = lambda: an_hour_ago\n+        result = s.dumps({'foo':'bar'})\n+        s = self.serializer_class(\"secret\")\n+        self.assertRaises(idmod.SignatureExpired, s.loads, result)\n+\n+    def test_token_is_invalid_if_expiry_time_is_missing(self):\n+        t = self.serializer_class(\"secret\")\n+        with self.assertRaises(idmod.BadSignature):\n+            t.loads(self.invalid_token_empty)\n+\n+    def test_token_is_invalid_if_expiry_time_is_of_wrong_type(self):\n+        s = self.serializer_class(\"secret\")\n+        self.assertRaises(idmod.BadSignature, s.loads, self.invalid_token_wrong_type)\n+\n+    def test_token_is_invalid_if_expiry_time_is_negative(self):\n+        s = self.serializer_class(\"secret\", expires_in=-123)\n+        result = s.dumps({'foo':'bar'})\n+        self.assertRaises(idmod.BadSignature, s.loads, result)\n+\n+\n+\n class URLSafeSerializerMixin(object):\n \n     def test_is_base62(self):"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.94,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.32,
+        "type": "noul"
+      },
+      "r2": {
+        "noul": 0.22,
+        "type": "noul"
+      },
+      "r3": {
+        "noul": 0.29,
+        "type": "noul"
+      },
+      "r4": {
+        "noul": 0.34,
+        "type": "noul"
+      },
+      "r5": {
+        "noul": 0.41,
+        "type": "noul"
+      },
+      "r6": {
+        "noul": 0.47,
+        "type": "noul"
+      },
+      "r7": {
+        "noul": 0.46,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 3444,
+      "output_tokens": 140
+    }
+  },
+  "variant": "single"
+}

@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_loader.py::test_filename_normpath` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/jinja2/loaders.py\n+++ b/src/jinja2/loaders.py\n@@ -213,7 +213,8 @@\n                 except OSError:\n                     return False\n \n-            return contents, filename, uptodate\n+            # Use normpath to convert Windows altsep to sep.\n+            return contents, os.path.normpath(filename), uptodate\n         raise TemplateNotFound(template)\n \n     def list_templates(self) -> t.List[str]:\n@@ -330,8 +331,11 @@\n         self, environment: \"Environment\", template: str\n     ) -> t.Tuple[str, str, t.Optional[t.Callable[[], bool]]]:\n         # Use posixpath even on Windows to avoid \"drive:\" or UNC\n-        # segments breaking out of the search directory.\n-        p = posixpath.join(self._template_root, *split_template_path(template))\n+        # segments breaking out of the search directory. Use normpath to\n+        # convert Windows altsep to sep.\n+        p = os.path.normpath(\n+            posixpath.join(self._template_root, *split_template_path(template))\n+        )\n         up_to_date: t.Optional[t.Callable[[], bool]]\n \n         if self._archive is None:\n\n--- a/tests/test_loader.py\n+++ b/tests/test_loader.py\n@@ -3,7 +3,6 @@\n import importlib.util\n import os\n import platform\n-import posixpath\n import shutil\n import sys\n import tempfile\n@@ -173,6 +172,7 @@\n         assert t.render() == expect\n \n \n+\n class TestModuleLoader:\n     archive = None\n \n@@ -304,7 +304,7 @@\n def test_package_dir_source(package_dir_loader, template, expect):\n     source, name, up_to_date = package_dir_loader.get_source(None, template)\n     assert source.rstrip() == expect\n-    assert name.endswith(posixpath.join(*split_template_path(template)))\n+    assert name.endswith(os.path.join(*split_template_path(template)))\n     assert up_to_date()\n \n \n@@ -326,7 +326,7 @@\n def test_package_file_source(package_file_loader, template, expect):\n     source, name, up_to_date = package_file_loader.get_source(None, template)\n     assert source.rstrip() == expect\n-    assert name.endswith(posixpath.join(*split_template_path(template)))\n+    assert name.endswith(os.path.join(*split_template_path(template)))\n     assert up_to_date()\n \n \n@@ -349,7 +349,7 @@\n def test_package_zip_source(package_zip_loader, template, expect):\n     source, name, up_to_date = package_zip_loader.get_source(None, template)\n     assert source.rstrip() == expect\n-    assert name.endswith(posixpath.join(*split_template_path(template)))\n+    assert name.endswith(os.path.join(*split_template_path(template)))\n     assert up_to_date is None\n \n "
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.02,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1149,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

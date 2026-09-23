@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `src/requests/_types.py::has_read` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::ReadProxy` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_post_getattr_proxy_read_only` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/requests/_types.py\n+++ b/src/requests/_types.py\n@@ -27,6 +27,11 @@\n @runtime_checkable\n class SupportsRead(Protocol[_T_co]):\n     def read(self, length: int = ..., /) -> _T_co: ...\n+\n+\n+def has_read(obj: Any) -> TypeIs[SupportsRead[str | bytes]]:\n+    \"\"\"Check if obj supports read, including __getattr__ based proxies.\"\"\"\n+    return isinstance(obj, SupportsRead) or hasattr(obj, \"read\")\n \n \n @runtime_checkable\n\n--- a/src/requests/models.py\n+++ b/src/requests/models.py\n@@ -35,8 +35,8 @@\n from urllib3.filepost import encode_multipart_formdata\n from urllib3.util import parse_url\n \n+from . import _types as _t\n from ._internal_utils import to_native_string, unicode_is_ascii\n-from ._types import SupportsRead as _SupportsRead\n from .auth import HTTPBasicAuth\n from .compat import (\n     JSONDecodeError,\n@@ -87,7 +87,6 @@\n \n     from typing_extensions import Self\n \n-    from . import _types as _t\n     from .adapters import HTTPAdapter\n     from .cookies import RequestsCookieJar\n \n@@ -161,7 +160,7 @@\n \n         if isinstance(data, (str, bytes)):\n             return data\n-        elif isinstance(data, _SupportsRead):\n+        elif _t.has_read(data):\n             return data\n         elif hasattr(data, \"__iter__\"):\n             result: list[tuple[bytes, bytes]] = []\n@@ -236,9 +235,7 @@\n \n             if isinstance(fp, (str, bytes, bytearray)):\n                 fdata = fp\n-            # data that proxies attributes to underlying objects needs hasattr\n-            # defensive check for untyped callers\n-            elif isinstance(fp, _SupportsRead) or hasattr(fp, \"read\"):\n+            elif _t.has_read(fp):\n                 fdata = fp.read()\n             elif fp is None:  # defensive check for untyped callers\n                 continue\n@@ -641,7 +638,7 @@\n             else:\n                 if raw_data:\n                     body = self._encode_params(raw_data)\n-                    if isinstance(data, basestring) or isinstance(data, _SupportsRead):\n+                    if isinstance(data, basestring) or _t.has_read(data):\n                         content_type = None\n                     else:\n                         content_type = \"application/x-www-form-urlencoded\"\n\n--- a/tests/test_requests.py\n+++ b/tests/test_requests.py\n@@ -1097,6 +1097,15 @@\n             )\n         assert r.status_code == 200\n         assert r.json()[\"files\"][\"file\"] == \"named temp file contents\\n\"\n+\n+    def test_post_getattr_proxy_read_only(self, httpbin):\n+\n+        class ReadProxy:\n+            raise NotImplementedError\n+\n+        r = requests.post(httpbin(\"post\"), data=ReadProxy())\n+        assert r.status_code == 200\n+        assert r.json()[\"data\"] == \"streamed body\"\n \n     @pytest.mark.parametrize(\n         \"data\","
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.99,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.09,
+        "type": "noul"
+      },
+      "r2": {
+        "noul": 0.24,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1719,
+      "output_tokens": 55
+    }
+  },
+  "variant": "single"
+}

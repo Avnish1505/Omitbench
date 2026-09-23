@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/client/test_client.py::test_merge_relative_url_with_encoded_slashes`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/client/test_client.py::test_merge_relative_url_with_encoded_slashes`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/client/test_client.py::test_merge_relative_url_with_encoded_slashes`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/httpx/_client.py\n+++ b/httpx/_client.py\n@@ -120,9 +120,9 @@\n         return self._trust_env\n \n     def _enforce_trailing_slash(self, url: URL) -> URL:\n-        if url.path.endswith(\"/\"):\n+        if url.raw_path.endswith(b\"/\"):\n             return url\n-        return url.copy_with(path=url.path + \"/\")\n+        return url.copy_with(raw_path=url.raw_path + b\"/\")\n \n     def _get_proxy_map(\n         self, proxies: typing.Optional[ProxiesTypes], allow_env_proxies: bool\n@@ -327,7 +327,7 @@\n         if merge_url.is_relative_url:\n             # We always ensure the base_url paths include the trailing '/',\n             # and always strip any leading '/' from the merge URL.\n-            merge_url = merge_url.copy_with(path=merge_url.path.lstrip(\"/\"))\n+            merge_url = merge_url.copy_with(raw_path=merge_url.raw_path.lstrip(b\"/\"))\n             return self.base_url.join(merge_url)\n         return merge_url\n \n\n--- a/tests/client/test_client.py\n+++ b/tests/client/test_client.py\n@@ -198,6 +198,8 @@\n     assert request.url == \"https://www.example.com/some/testing/123\"\n \n \n+\n+\n def test_pool_limits_deprecated():\n     limits = httpx.Limits()\n "
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.09,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.07,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.23,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 954,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

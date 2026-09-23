@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `src/flask/sessions.py::get_cookie_partitioned`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `src/flask/sessions.py::get_cookie_partitioned`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `src/flask/sessions.py::get_cookie_partitioned`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/flask/app.py\n+++ b/src/flask/app.py\n@@ -189,6 +189,7 @@\n             \"SESSION_COOKIE_PATH\": None,\n             \"SESSION_COOKIE_HTTPONLY\": True,\n             \"SESSION_COOKIE_SECURE\": False,\n+            \"SESSION_COOKIE_PARTITIONED\": False,\n             \"SESSION_COOKIE_SAMESITE\": None,\n             \"SESSION_REFRESH_EACH_REQUEST\": True,\n             \"MAX_CONTENT_LENGTH\": None,\n\n--- a/src/flask/sessions.py\n+++ b/src/flask/sessions.py\n@@ -223,6 +223,14 @@\n         the :data:`SESSION_COOKIE_SAMESITE` setting.\n         \"\"\"\n         return app.config[\"SESSION_COOKIE_SAMESITE\"]  # type: ignore[no-any-return]\n+\n+    def get_cookie_partitioned(self, app: Flask) -> bool:\n+        \"\"\"Returns True if the cookie should be partitioned. By default, uses\n+        the value of :data:`SESSION_COOKIE_PARTITIONED`.\n+\n+        .. versionadded:: 3.1\n+        \"\"\"\n+        return app.config[\"SESSION_COOKIE_PARTITIONED\"]  # type: ignore[no-any-return]\n \n     def get_expiration_time(self, app: Flask, session: SessionMixin) -> datetime | None:\n         \"\"\"A helper method that returns an expiration date for the session\n@@ -338,6 +346,7 @@\n         domain = self.get_cookie_domain(app)\n         path = self.get_cookie_path(app)\n         secure = self.get_cookie_secure(app)\n+        partitioned = self.get_cookie_partitioned(app)\n         samesite = self.get_cookie_samesite(app)\n         httponly = self.get_cookie_httponly(app)\n \n@@ -354,6 +363,7 @@\n                     domain=domain,\n                     path=path,\n                     secure=secure,\n+                    partitioned=partitioned,\n                     samesite=samesite,\n                     httponly=httponly,\n                 )\n@@ -374,6 +384,7 @@\n             domain=domain,\n             path=path,\n             secure=secure,\n+            partitioned=partitioned,\n             samesite=samesite,\n         )\n         response.vary.add(\"Cookie\")\n\n--- a/tests/test_basic.py\n+++ b/tests/test_basic.py\n@@ -293,6 +293,7 @@\n         SESSION_COOKIE_DOMAIN=\".example.com\",\n         SESSION_COOKIE_HTTPONLY=False,\n         SESSION_COOKIE_SECURE=True,\n+        SESSION_COOKIE_PARTITIONED=True,\n         SESSION_COOKIE_SAMESITE=\"Lax\",\n         SESSION_COOKIE_PATH=\"/\",\n     )\n@@ -315,6 +316,7 @@\n     assert \"secure\" in cookie\n     assert \"httponly\" not in cookie\n     assert \"samesite\" in cookie\n+    assert \"partitioned\" in cookie\n \n     rv = client.get(\"/clear\", \"http://www.example.com:8080/test/\")\n     cookie = rv.headers[\"set-cookie\"].lower()\n@@ -324,6 +326,7 @@\n     assert \"path=/\" in cookie\n     assert \"secure\" in cookie\n     assert \"samesite\" in cookie\n+    assert \"partitioned\" in cookie\n \n \n def test_session_using_samesite_attribute(app, client):"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.99,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.83,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.96,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1381,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

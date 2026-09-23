@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_routing.py::test_newline_match`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_routing.py::test_newline_match`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_routing.py::test_newline_match`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/werkzeug/routing.py\n+++ b/src/werkzeug/routing.py\n@@ -665,6 +665,11 @@\n         If ``True``, this rule is only matches for WebSocket (``ws://``,\n         ``wss://``) requests. By default, rules will only match for HTTP\n         requests.\n+\n+    .. versionchanged:: 2.1\n+        Percent-encoded newlines (``%0a``), which are decoded by WSGI\n+        servers, are considered when routing instead of terminating the\n+        match early.\n \n     .. versionadded:: 1.0\n         Added ``websocket``.\n@@ -892,7 +897,9 @@\n         else:\n             tail = \"\"\n \n-        regex = f\"^{''.join(regex_parts)}{tail}$\"\n+        # Use \\Z instead of $ to avoid matching before a %0a decoded to\n+        # a \\n by WSGI.\n+        regex = rf\"^{''.join(regex_parts)}{tail}$\\Z\"\n         self._regex = re.compile(regex)\n \n     def match(\n\n--- a/tests/test_routing.py\n+++ b/tests/test_routing.py\n@@ -1347,3 +1347,7 @@\n         )\n     r.Rule(\"/ws\", endpoint=\"ws\", websocket=True, methods=[\"get\", \"head\", \"options\"])\n \n+\n+def test_newline_match():\n+    raise NotImplementedError\n+"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.04,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.1,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 972,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

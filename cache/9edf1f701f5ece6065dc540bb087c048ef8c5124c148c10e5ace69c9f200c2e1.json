@@ -1,0 +1,43 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `requests/utils.py::resolve_proxies` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_proxy_authorization_preserved_on_request` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/requests/sessions.py\n+++ b/requests/sessions.py\n@@ -29,7 +29,7 @@\n \n from .utils import (\n     requote_uri, get_environ_proxies, get_netrc_auth, should_bypass_proxies,\n-    get_auth_from_url, rewind_body\n+    get_auth_from_url, rewind_body, resolve_proxies\n )\n \n from .status_codes import codes\n@@ -269,7 +269,6 @@\n         if new_auth is not None:\n             prepared_request.prepare_auth(new_auth)\n \n-\n     def rebuild_proxies(self, prepared_request, proxies):\n         \"\"\"This method re-evaluates the proxy configuration by considering the\n         environment variables. If we are redirected to a URL covered by\n@@ -282,21 +281,9 @@\n \n         :rtype: dict\n         \"\"\"\n-        proxies = proxies if proxies is not None else {}\n         headers = prepared_request.headers\n-        url = prepared_request.url\n-        scheme = urlparse(url).scheme\n-        new_proxies = proxies.copy()\n-        no_proxy = proxies.get('no_proxy')\n-\n-        bypass_proxy = should_bypass_proxies(url, no_proxy=no_proxy)\n-        if self.trust_env and not bypass_proxy:\n-            environ_proxies = get_environ_proxies(url, no_proxy=no_proxy)\n-\n-            proxy = environ_proxies.get(scheme, environ_proxies.get('all'))\n-\n-            if proxy:\n-                new_proxies.setdefault(scheme, proxy)\n+        scheme = urlparse(prepared_request.url).scheme\n+        new_proxies = resolve_proxies(prepared_request, proxies, self.trust_env)\n \n         if 'Proxy-Authorization' in headers:\n             del headers['Proxy-Authorization']\n@@ -633,7 +620,10 @@\n         kwargs.setdefault('stream', self.stream)\n         kwargs.setdefault('verify', self.verify)\n         kwargs.setdefault('cert', self.cert)\n-        kwargs.setdefault('proxies', self.rebuild_proxies(request, self.proxies))\n+        if 'proxies' not in kwargs:\n+            kwargs['proxies'] = resolve_proxies(\n+                request, self.proxies, self.trust_env\n+            )\n \n         # It's possible that users might accidentally send a Request object.\n         # Guard against that specific failure case.\n\n--- a/requests/utils.py\n+++ b/requests/utils.py\n@@ -828,6 +828,34 @@\n             break\n \n     return proxy\n+\n+\n+def resolve_proxies(request, proxies, trust_env=True):\n+    \"\"\"This method takes proxy information from a request and configuration\n+    input to resolve a mapping of target proxies. This will consider settings\n+    such a NO_PROXY to strip proxy configurations.\n+\n+    :param request: Request or PreparedRequest\n+    :param proxies: A dictionary of schemes or schemes and hosts to proxy URLs\n+    :param trust_env: Boolean declaring whether to trust environment configs\n+\n+    :rtype: dict\n+    \"\"\"\n+    proxies = proxies if proxies is not None else {}\n+    url = request.url\n+    scheme = urlparse(url).scheme\n+    no_proxy = proxies.get('no_proxy')\n+    new_proxies = proxies.copy()\n+\n+    bypass_proxy = should_bypass_proxies(url, no_proxy=no_proxy)\n+    if trust_env and not bypass_proxy:\n+        environ_proxies = get_environ_proxies(url, no_proxy=no_proxy)\n+\n+        proxy = environ_proxies.get(scheme, environ_proxies.get('all'))\n+\n+        if proxy:\n+            new_proxies.setdefault(scheme, proxy)\n+    return new_proxies\n \n \n def default_user_agent(name=\"python-requests\"):\n\n--- a/tests/test_requests.py\n+++ b/tests/test_requests.py\n@@ -589,6 +589,9 @@\n             with pytest.raises(ProxyError):\n                 session = requests.Session()\n                 session.request(method='GET', url=httpbin())\n+\n+    def test_proxy_authorization_preserved_on_request(self, httpbin):\n+        raise NotImplementedError\n \n     def test_basicauth_with_netrc(self, httpbin):\n         auth = ('user', 'pass')"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.99,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.01,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1678,
+      "output_tokens": 38
+    }
+  },
+  "variant": "single"
+}

@@ -1,0 +1,91 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_asgi.py::test_deprecated_shortcut`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_asgi.py::test_deprecated_shortcut`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_asgi.py::test_deprecated_shortcut`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_wsgi.py::test_deprecated_shortcut`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_wsgi.py::test_deprecated_shortcut`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_wsgi.py::test_deprecated_shortcut`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/httpx/_client.py\n+++ b/httpx/_client.py\n@@ -672,6 +672,13 @@\n             if proxy:\n                 raise RuntimeError(\"Use either `proxy` or 'proxies', not both.\")\n \n+        if app:\n+            message = (\n+                \"The 'app' shortcut is now deprecated.\"\n+                \" Use the explicit style 'transport=WSGITransport(app=...)' instead.\"\n+            )\n+            warnings.warn(message, DeprecationWarning)\n+\n         allow_env_proxies = trust_env and app is None and transport is None\n         proxy_map = self._get_proxy_map(proxies or proxy, allow_env_proxies)\n \n@@ -1411,7 +1418,14 @@\n             if proxy:\n                 raise RuntimeError(\"Use either `proxy` or 'proxies', not both.\")\n \n-        allow_env_proxies = trust_env and app is None and transport is None\n+        if app:\n+            message = (\n+                \"The 'app' shortcut is now deprecated.\"\n+                \" Use the explicit style 'transport=ASGITransport(app=...)' instead.\"\n+            )\n+            warnings.warn(message, DeprecationWarning)\n+\n+        allow_env_proxies = trust_env and transport is None\n         proxy_map = self._get_proxy_map(proxies or proxy, allow_env_proxies)\n \n         self._transport = self._init_transport(\n\n--- a/tests/test_asgi.py\n+++ b/tests/test_asgi.py\n@@ -92,7 +92,8 @@\n \n @pytest.mark.anyio\n async def test_asgi():\n-    async with httpx.AsyncClient(app=hello_world) as client:\n+    transport = httpx.ASGITransport(app=hello_world)\n+    async with httpx.AsyncClient(transport=transport) as client:\n         response = await client.get(\"http://www.example.org/\")\n \n     assert response.status_code == 200\n@@ -101,7 +102,8 @@\n \n @pytest.mark.anyio\n async def test_asgi_urlencoded_path():\n-    async with httpx.AsyncClient(app=echo_path) as client:\n+    transport = httpx.ASGITransport(app=echo_path)\n+    async with httpx.AsyncClient(transport=transport) as client:\n         url = httpx.URL(\"http://www.example.org/\").copy_with(path=\"/user@example.org\")\n         response = await client.get(url)\n \n@@ -111,7 +113,8 @@\n \n @pytest.mark.anyio\n async def test_asgi_raw_path():\n-    async with httpx.AsyncClient(app=echo_raw_path) as client:\n+    transport = httpx.ASGITransport(app=echo_raw_path)\n+    async with httpx.AsyncClient(transport=transport) as client:\n         url = httpx.URL(\"http://www.example.org/\").copy_with(path=\"/user@example.org\")\n         response = await client.get(url)\n \n@@ -124,7 +127,8 @@\n     \"\"\"\n     See https://github.com/encode/httpx/issues/2810\n     \"\"\"\n-    async with httpx.AsyncClient(app=echo_raw_path) as client:\n+    transport = httpx.ASGITransport(app=echo_raw_path)\n+    async with httpx.AsyncClient(transport=transport) as client:\n         url = httpx.URL(\"http://www.example.org/path?query\")\n         response = await client.get(url)\n \n@@ -134,7 +138,8 @@\n \n @pytest.mark.anyio\n async def test_asgi_upload():\n-    async with httpx.AsyncClient(app=echo_body) as client:\n+    transport = httpx.ASGITransport(app=echo_body)\n+    async with httpx.AsyncClient(transport=transport) as client:\n         response = await client.post(\"http://www.example.org/\", content=b\"example\")\n \n     assert response.status_code == 200\n@@ -143,7 +148,8 @@\n \n @pytest.mark.anyio\n async def test_asgi_headers():\n-    async with httpx.AsyncClient(app=echo_headers) as client:\n+    transport = httpx.ASGITransport(app=echo_headers)\n+    async with httpx.AsyncClient(transport=transport) as client:\n         response = await client.get(\"http://www.example.org/\")\n \n     assert response.status_code == 200\n@@ -160,14 +166,16 @@\n \n @pytest.mark.anyio\n async def test_asgi_exc():\n-    async with httpx.AsyncClient(app=raise_exc) as client:\n+    transport = httpx.ASGITransport(app=raise_exc)\n+    async with httpx.AsyncClient(transport=transport) as client:\n         with pytest.raises(RuntimeError):\n             await client.get(\"http://www.example.org/\")\n \n \n @pytest.mark.anyio\n async def test_asgi_exc_after_response():\n-    async with httpx.AsyncClient(app=raise_exc_after_response) as client:\n+    transport = httpx.ASGITransport(app=raise_exc_after_response)\n+    async with httpx.AsyncClient(transport=transport) as client:\n         with pytest.raises(RuntimeError):\n             await client.get(\"http://www.example.org/\")\n \n@@ -199,7 +207,8 @@\n         message = await receive()\n         disconnect = message.get(\"type\") == \"http.disconnect\"\n \n-    async with httpx.AsyncClient(app=read_body) as client:\n+    transport = httpx.ASGITransport(app=read_body)\n+    async with httpx.AsyncClient(transport=transport) as client:\n         response = await client.post(\"http://www.example.org/\", content=b\"example\")\n \n     assert response.status_code == 200\n@@ -214,3 +223,13 @@\n \n         assert response.status_code == 500\n \n+\n+@pytest.mark.anyio\n+async def test_deprecated_shortcut():\n+    \"\"\"\n+    The `app=...` shortcut is now deprecated.\n+    Use the explicit transport style instead.\n+    \"\"\"\n+    with pytest.warns(DeprecationWarning):\n+        httpx.AsyncClient(app=hello_world)\n+\n\n--- a/tests/test_wsgi.py\n+++ b/tests/test_wsgi.py\n@@ -92,41 +92,47 @@\n \n \n def test_wsgi():\n-    client = httpx.Client(app=application_factory([b\"Hello, World!\"]))\n+    transport = httpx.WSGITransport(app=application_factory([b\"Hello, World!\"]))\n+    client = httpx.Client(transport=transport)\n     response = client.get(\"http://www.example.org/\")\n     assert response.status_code == 200\n     assert response.text == \"Hello, World!\"\n \n \n def test_wsgi_upload():\n-    client = httpx.Client(app=echo_body)\n+    transport = httpx.WSGITransport(app=echo_body)\n+    client = httpx.Client(transport=transport)\n     response = client.post(\"http://www.example.org/\", content=b\"example\")\n     assert response.status_code == 200\n     assert response.text == \"example\"\n \n \n def test_wsgi_upload_with_response_stream():\n-    client = httpx.Client(app=echo_body_with_response_stream)\n+    transport = httpx.WSGITransport(app=echo_body_with_response_stream)\n+    client = httpx.Client(transport=transport)\n     response = client.post(\"http://www.example.org/\", content=b\"example\")\n     assert response.status_code == 200\n     assert response.text == \"example\"\n \n \n def test_wsgi_exc():\n-    client = httpx.Client(app=raise_exc)\n+    transport = httpx.WSGITransport(app=raise_exc)\n+    client = httpx.Client(transport=transport)\n     with pytest.raises(ValueError):\n         client.get(\"http://www.example.org/\")\n \n \n def test_wsgi_http_error():\n-    client = httpx.Client(app=partial(raise_exc, exc=RuntimeError))\n+    transport = httpx.WSGITransport(app=partial(raise_exc, exc=RuntimeError))\n+    client = httpx.Client(transport=transport)\n     with pytest.raises(RuntimeError):\n         client.get(\"http://www.example.org/\")\n \n \n def test_wsgi_generator():\n     output = [b\"\", b\"\", b\"Some content\", b\" and more content\"]\n-    client = httpx.Client(app=application_factory(output))\n+    transport = httpx.WSGITransport(app=application_factory(output))\n+    client = httpx.Client(transport=transport)\n     response = client.get(\"http://www.example.org/\")\n     assert response.status_code == 200\n     assert response.text == \"Some content and more content\"\n@@ -134,7 +140,8 @@\n \n def test_wsgi_generator_empty():\n     output = [b\"\", b\"\", b\"\", b\"\"]\n-    client = httpx.Client(app=application_factory(output))\n+    transport = httpx.WSGITransport(app=application_factory(output))\n+    client = httpx.Client(transport=transport)\n     response = client.get(\"http://www.example.org/\")\n     assert response.status_code == 200\n     assert response.text == \"\"\n@@ -170,7 +177,8 @@\n         server_port = environ[\"SERVER_PORT\"]\n         return hello_world_app(environ, start_response)\n \n-    client = httpx.Client(app=app)\n+    transport = httpx.WSGITransport(app=app)\n+    client = httpx.Client(transport=transport)\n     response = client.get(url)\n     assert response.status_code == 200\n     assert response.text == \"Hello, World!\"\n@@ -186,10 +194,20 @@\n         start_response(\"200 OK\", [(\"Content-Type\", \"text/plain\")])\n         return [b\"success\"]\n \n-    with httpx.Client(app=app, base_url=\"http://testserver\") as client:\n+    transport = httpx.WSGITransport(app=app)\n+    with httpx.Client(transport=transport, base_url=\"http://testserver\") as client:\n         response = client.get(\"/\")\n \n     assert response.status_code == 200\n     assert response.text == \"success\"\n     assert server_protocol == \"HTTP/1.1\"\n \n+\n+def test_deprecated_shortcut():\n+    \"\"\"\n+    The `app=...` shortcut is now deprecated.\n+    Use the explicit transport style instead.\n+    \"\"\"\n+    with pytest.warns(DeprecationWarning):\n+        httpx.Client(app=application_factory([b\"Hello, World!\"]))\n+"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.94,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.35,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.94,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.22,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 3494,
+      "output_tokens": 116
+    }
+  },
+  "variant": "split"
+}

@@ -1,0 +1,127 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/models/test_headers.py::test_obfuscate_sensitive_headers`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/models/test_headers.py::test_obfuscate_sensitive_headers`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/models/test_headers.py::test_obfuscate_sensitive_headers`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/models/test_headers.py::test_parse_header_links`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/models/test_headers.py::test_parse_header_links`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/models/test_headers.py::test_parse_header_links`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/models/test_headers.py::test_parse_header_links_no_link`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/models/test_headers.py::test_parse_header_links_no_link`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/models/test_headers.py::test_parse_header_links_no_link`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/httpx/_models.py\n+++ b/httpx/_models.py\n@@ -1,8 +1,10 @@\n from __future__ import annotations\n \n+import codecs\n import datetime\n import email.message\n import json as jsonlib\n+import re\n import typing\n import urllib.request\n from collections.abc import Mapping\n@@ -44,14 +46,22 @@\n     SyncByteStream,\n )\n from ._urls import URL\n-from ._utils import (\n-    is_known_encoding,\n-    obfuscate_sensitive_headers,\n-    parse_content_type_charset,\n-    parse_header_links,\n-)\n+from ._utils import to_bytes_or_str, to_str\n \n __all__ = [\"Cookies\", \"Headers\", \"Request\", \"Response\"]\n+\n+SENSITIVE_HEADERS = {\"authorization\", \"proxy-authorization\"}\n+\n+\n+def _is_known_encoding(encoding: str) -> bool:\n+    \"\"\"\n+    Return `True` if `encoding` is a known codec.\n+    \"\"\"\n+    try:\n+        codecs.lookup(encoding)\n+    except LookupError:\n+        return False\n+    return True\n \n \n def _normalize_header_key(key: str | bytes, encoding: str | None = None) -> bytes:\n@@ -70,6 +80,60 @@\n     if not isinstance(value, str):\n         raise TypeError(f\"Header value must be str or bytes, not {type(value)}\")\n     return value.encode(encoding or \"ascii\")\n+\n+\n+def _parse_content_type_charset(content_type: str) -> str | None:\n+    # We used to use `cgi.parse_header()` here, but `cgi` became a dead battery.\n+    # See: https://peps.python.org/pep-0594/#cgi\n+    msg = email.message.Message()\n+    msg[\"content-type\"] = content_type\n+    return msg.get_content_charset(failobj=None)\n+\n+\n+def _parse_header_links(value: str) -> list[dict[str, str]]:\n+    \"\"\"\n+    Returns a list of parsed link headers, for more info see:\n+    https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Link\n+    The generic syntax of those is:\n+    Link: < uri-reference >; param1=value1; param2=\"value2\"\n+    So for instance:\n+    Link; '<http:/.../front.jpeg>; type=\"image/jpeg\",<http://.../back.jpeg>;'\n+    would return\n+        [\n+            {\"url\": \"http:/.../front.jpeg\", \"type\": \"image/jpeg\"},\n+            {\"url\": \"http://.../back.jpeg\"},\n+        ]\n+    :param value: HTTP Link entity-header field\n+    :return: list of parsed link headers\n+    \"\"\"\n+    links: list[dict[str, str]] = []\n+    replace_chars = \" '\\\"\"\n+    value = value.strip(replace_chars)\n+    if not value:\n+        return links\n+    for val in re.split(\", *<\", value):\n+        try:\n+            url, params = val.split(\";\", 1)\n+        except ValueError:\n+            url, params = val, \"\"\n+        link = {\"url\": url.strip(\"<> '\\\"\")}\n+        for param in params.split(\";\"):\n+            try:\n+                key, value = param.split(\"=\")\n+            except ValueError:\n+                break\n+            link[key.strip(replace_chars)] = value.strip(replace_chars)\n+        links.append(link)\n+    return links\n+\n+\n+def _obfuscate_sensitive_headers(\n+    items: typing.Iterable[tuple[typing.AnyStr, typing.AnyStr]],\n+) -> typing.Iterator[tuple[typing.AnyStr, typing.AnyStr]]:\n+    for k, v in items:\n+        if to_str(k.lower()) in SENSITIVE_HEADERS:\n+            v = to_bytes_or_str(\"[secure]\", match_type_of=v)\n+        yield k, v\n \n \n class Headers(typing.MutableMapping[str, str]):\n@@ -306,7 +370,7 @@\n         if self.encoding != \"ascii\":\n             encoding_str = f\", encoding={self.encoding!r}\"\n \n-        as_list = list(obfuscate_sensitive_headers(self.multi_items()))\n+        as_list = list(_obfuscate_sensitive_headers(self.multi_items()))\n         as_dict = dict(as_list)\n \n         no_duplicate_keys = len(as_dict) == len(as_list)\n@@ -599,7 +663,7 @@\n         \"\"\"\n         if not hasattr(self, \"_encoding\"):\n             encoding = self.charset_encoding\n-            if encoding is None or not is_known_encoding(encoding):\n+            if encoding is None or not _is_known_encoding(encoding):\n                 if isinstance(self.default_encoding, str):\n                     encoding = self.default_encoding\n                 elif hasattr(self, \"_content\"):\n@@ -630,7 +694,7 @@\n         if content_type is None:\n             return None\n \n-        return parse_content_type_charset(content_type)\n+        return _parse_content_type_charset(content_type)\n \n     def _get_content_decoder(self) -> ContentDecoder:\n         \"\"\"\n@@ -785,7 +849,7 @@\n \n         return {\n             (link.get(\"rel\") or link.get(\"url\")): link\n-            for link in parse_header_links(header)\n+            for link in _parse_header_links(header)\n         }\n \n     @property\n\n--- a/httpx/_utils.py\n+++ b/httpx/_utils.py\n@@ -1,7 +1,5 @@\n from __future__ import annotations\n \n-import codecs\n-import email.message\n import ipaddress\n import os\n import re\n@@ -27,74 +25,6 @@\n     elif value is None:\n         return \"\"\n     return str(value)\n-\n-\n-def is_known_encoding(encoding: str) -> bool:\n-    \"\"\"\n-    Return `True` if `encoding` is a known codec.\n-    \"\"\"\n-    try:\n-        codecs.lookup(encoding)\n-    except LookupError:\n-        return False\n-    return True\n-\n-\n-def parse_header_links(value: str) -> list[dict[str, str]]:\n-    \"\"\"\n-    Returns a list of parsed link headers, for more info see:\n-    https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Link\n-    The generic syntax of those is:\n-    Link: < uri-reference >; param1=value1; param2=\"value2\"\n-    So for instance:\n-    Link; '<http:/.../front.jpeg>; type=\"image/jpeg\",<http://.../back.jpeg>;'\n-    would return\n-        [\n-            {\"url\": \"http:/.../front.jpeg\", \"type\": \"image/jpeg\"},\n-            {\"url\": \"http://.../back.jpeg\"},\n-        ]\n-    :param value: HTTP Link entity-header field\n-    :return: list of parsed link headers\n-    \"\"\"\n-    links: list[dict[str, str]] = []\n-    replace_chars = \" '\\\"\"\n-    value = value.strip(replace_chars)\n-    if not value:\n-        return links\n-    for val in re.split(\", *<\", value):\n-        try:\n-            url, params = val.split(\";\", 1)\n-        except ValueError:\n-            url, params = val, \"\"\n-        link = {\"url\": url.strip(\"<> '\\\"\")}\n-        for param in params.split(\";\"):\n-            try:\n-                key, value = param.split(\"=\")\n-            except ValueError:\n-                break\n-            link[key.strip(replace_chars)] = value.strip(replace_chars)\n-        links.append(link)\n-    return links\n-\n-\n-def parse_content_type_charset(content_type: str) -> str | None:\n-    # We used to use `cgi.parse_header()` here, but `cgi` became a dead battery.\n-    # See: https://peps.python.org/pep-0594/#cgi\n-    msg = email.message.Message()\n-    msg[\"content-type\"] = content_type\n-    return msg.get_content_charset(failobj=None)\n-\n-\n-SENSITIVE_HEADERS = {\"authorization\", \"proxy-authorization\"}\n-\n-\n-def obfuscate_sensitive_headers(\n-    items: typing.Iterable[tuple[typing.AnyStr, typing.AnyStr]],\n-) -> typing.Iterator[tuple[typing.AnyStr, typing.AnyStr]]:\n-    for k, v in items:\n-        if to_str(k.lower()) in SENSITIVE_HEADERS:\n-            v = to_bytes_or_str(\"[secure]\", match_type_of=v)\n-        yield k, v\n \n \n def port_or_default(url: URL) -> int | None:\n\n--- a/tests/models/test_headers.py\n+++ b/tests/models/test_headers.py\n@@ -175,3 +175,46 @@\n     h = httpx.Headers({header: value})\n     assert repr(h) == \"Headers({'%s': '[secure]'})\" % header\n \n+\n+@pytest.mark.parametrize(\n+    \"headers, output\",\n+    [\n+        ([(\"content-type\", \"text/html\")], [(\"content-type\", \"text/html\")]),\n+        ([(\"authorization\", \"s3kr3t\")], [(\"authorization\", \"[secure]\")]),\n+        ([(\"proxy-authorization\", \"s3kr3t\")], [(\"proxy-authorization\", \"[secure]\")]),\n+    ],\n+)\n+def test_obfuscate_sensitive_headers(headers, output):\n+    as_dict = {k: v for k, v in output}\n+    headers_class = httpx.Headers({k: v for k, v in headers})\n+    assert repr(headers_class) == f\"Headers({as_dict!r})\"\n+\n+\n+@pytest.mark.parametrize(\n+    \"value, expected\",\n+    (\n+        (\n+            '<http:/.../front.jpeg>; rel=front; type=\"image/jpeg\"',\n+            [{\"url\": \"http:/.../front.jpeg\", \"rel\": \"front\", \"type\": \"image/jpeg\"}],\n+        ),\n+        (\"<http:/.../front.jpeg>\", [{\"url\": \"http:/.../front.jpeg\"}]),\n+        (\"<http:/.../front.jpeg>;\", [{\"url\": \"http:/.../front.jpeg\"}]),\n+        (\n+            '<http:/.../front.jpeg>; type=\"image/jpeg\",<http://.../back.jpeg>;',\n+            [\n+                {\"url\": \"http:/.../front.jpeg\", \"type\": \"image/jpeg\"},\n+                {\"url\": \"http://.../back.jpeg\"},\n+            ],\n+        ),\n+        (\"\", []),\n+    ),\n+)\n+def test_parse_header_links(value, expected):\n+    all_links = httpx.Response(200, headers={\"link\": value}).links.values()\n+    assert all(link in all_links for link in expected)\n+\n+\n+def test_parse_header_links_no_link():\n+    all_links = httpx.Response(200).links\n+    assert all_links == {}\n+\n\n--- a/tests/test_utils.py\n+++ b/tests/test_utils.py\n@@ -51,35 +51,6 @@\n     content = '\\ufeff{\"abc\": 123}'.encode(encoding)\n     response = httpx.Response(200, content=content)\n     assert response.json() == {\"abc\": 123}\n-\n-\n-@pytest.mark.parametrize(\n-    \"value, expected\",\n-    (\n-        (\n-            '<http:/.../front.jpeg>; rel=front; type=\"image/jpeg\"',\n-            [{\"url\": \"http:/.../front.jpeg\", \"rel\": \"front\", \"type\": \"image/jpeg\"}],\n-        ),\n-        (\"<http:/.../front.jpeg>\", [{\"url\": \"http:/.../front.jpeg\"}]),\n-        (\"<http:/.../front.jpeg>;\", [{\"url\": \"http:/.../front.jpeg\"}]),\n-        (\n-            '<http:/.../front.jpeg>; type=\"image/jpeg\",<http://.../back.jpeg>;',\n-            [\n-                {\"url\": \"http:/.../front.jpeg\", \"type\": \"image/jpeg\"},\n-                {\"url\": \"http://.../back.jpeg\"},\n-            ],\n-        ),\n-        (\"\", []),\n-    ),\n-)\n-def test_parse_header_links(value, expected):\n-    all_links = httpx.Response(200, headers={\"link\": value}).links.values()\n-    assert all(link in all_links for link in expected)\n-\n-\n-def test_parse_header_links_no_link():\n-    all_links = httpx.Response(200).links\n-    assert all_links == {}\n \n \n def test_logging_request(server, caplog):\n@@ -142,20 +113,6 @@\n     os.environ.update(environment)\n \n     assert get_environment_proxies() == proxies\n-\n-\n-@pytest.mark.parametrize(\n-    \"headers, output\",\n-    [\n-        ([(\"content-type\", \"text/html\")], [(\"content-type\", \"text/html\")]),\n-        ([(\"authorization\", \"s3kr3t\")], [(\"authorization\", \"[secure]\")]),\n-        ([(\"proxy-authorization\", \"s3kr3t\")], [(\"proxy-authorization\", \"[secure]\")]),\n-    ],\n-)\n-def test_obfuscate_sensitive_headers(headers, output):\n-    as_dict = {k: v for k, v in output}\n-    headers_class = httpx.Headers({k: v for k, v in headers})\n-    assert repr(headers_class) == f\"Headers({as_dict!r})\"\n \n \n def test_same_origin():"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.95,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.78,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.99,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.95,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.76,
+        "type": "noul"
+      },
+      "r2_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "noul": 0.92,
+        "type": "noul"
+      },
+      "r2_wired": {
+        "noul": 0.34,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 4362,
+      "output_tokens": 172
+    }
+  },
+  "variant": "split"
+}

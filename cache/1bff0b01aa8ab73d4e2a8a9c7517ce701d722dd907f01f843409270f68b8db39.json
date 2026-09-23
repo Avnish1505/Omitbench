@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_utils.py::test_invalid_unc_path`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_utils.py::test_invalid_unc_path`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_utils.py::test_invalid_unc_path`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/requests/utils.py\n+++ b/requests/utils.py\n@@ -251,6 +251,10 @@\n     archive, member = os.path.split(path)\n     while archive and not os.path.exists(archive):\n         archive, prefix = os.path.split(archive)\n+        if not prefix:\n+            # If we don't check for an empty prefix after the split (in other words, archive remains unchanged after the split),\n+            # we _can_ end up in an infinite loop on a rare corner case affecting a small number of users\n+            break\n         member = '/'.join([prefix, member])\n \n     if not zipfile.is_zipfile(archive):\n\n--- a/tests/test_utils.py\n+++ b/tests/test_utils.py\n@@ -285,6 +285,9 @@\n         assert os.path.exists(extracted_path)\n         assert filecmp.cmp(extracted_path, __file__)\n \n+    def test_invalid_unc_path(self):\n+        raise NotImplementedError\n+\n \n class TestContentEncodingDetection:\n "
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.94,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.04,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.07,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 861,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

@@ -1,0 +1,79 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `src/click/exceptions.py::NoSuchCommand` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_commands.py::declare` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_commands.py::refine` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_commands.py::test_suggest_possible_commands` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_commands.py::test_unknown_command` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/click/__init__.py\n+++ b/src/click/__init__.py\n@@ -33,6 +33,7 @@\n from .exceptions import ClickException as ClickException\n from .exceptions import FileError as FileError\n from .exceptions import MissingParameter as MissingParameter\n+from .exceptions import NoSuchCommand as NoSuchCommand\n from .exceptions import NoSuchOption as NoSuchOption\n from .exceptions import UsageError as UsageError\n from .formatting import HelpFormatter as HelpFormatter\n\n--- a/src/click/core.py\n+++ b/src/click/core.py\n@@ -29,6 +29,7 @@\n from .exceptions import Exit\n from .exceptions import MissingParameter\n from .exceptions import NoArgsIsHelpError\n+from .exceptions import NoSuchCommand\n from .exceptions import UsageError\n from .formatting import HelpFormatter\n from .formatting import join_options\n@@ -1937,7 +1938,6 @@\n         self, ctx: Context, args: list[str]\n     ) -> tuple[str | None, Command | None, list[str]]:\n         cmd_name = make_str(args[0])\n-        original_cmd_name = cmd_name\n \n         # Get the command\n         cmd = self.get_command(ctx, cmd_name)\n@@ -1957,7 +1957,7 @@\n         if cmd is None and not ctx.resilient_parsing:\n             if _split_opt(cmd_name)[0]:\n                 self.parse_args(ctx, args)\n-            ctx.fail(_(\"No such command {name!r}.\").format(name=original_cmd_name))\n+            raise NoSuchCommand(cmd_name, possibilities=self.commands, ctx=ctx)\n         return cmd_name if cmd else None, cmd, args[1:]\n \n     def shell_complete(self, ctx: Context, incomplete: str) -> list[CompletionItem]:\n\n--- a/src/click/exceptions.py\n+++ b/src/click/exceptions.py\n@@ -21,6 +21,15 @@\n         return \" / \".join(repr(x) for x in param_hint)\n \n     return param_hint\n+\n+\n+def _format_possibilities(possibilities: list[str]) -> str:\n+    possibility_str = \", \".join(repr(p) for p in sorted(possibilities))\n+    return ngettext(\n+        \"Did you mean {possibility}?\",\n+        \"(Did you mean one of: {possibilities}?)\",\n+        len(possibilities),\n+    ).format(possibility=possibility_str, possibilities=possibility_str)\n \n \n class ClickException(Exception):\n@@ -210,8 +219,7 @@\n \n \n class NoSuchOption(UsageError):\n-    \"\"\"Raised if click attempted to handle an option that does not\n-    exist.\n+    \"\"\"Raised if Click attempted to handle an option that does not exist.\n \n     .. versionadded:: 4.0\n     \"\"\"\n@@ -220,27 +228,51 @@\n         self,\n         option_name: str,\n         message: str | None = None,\n-        possibilities: cabc.Sequence[str] | None = None,\n+        possibilities: cabc.Iterable[str] | None = None,\n         ctx: Context | None = None,\n     ) -> None:\n         if message is None:\n-            message = _(\"No such option: {name}\").format(name=option_name)\n+            message = _(\"No such option {name!r}.\").format(name=option_name)\n \n         super().__init__(message, ctx)\n         self.option_name = option_name\n-        self.possibilities = possibilities\n+        self.possibilities: list[str] | None = None\n+        if possibilities:\n+            from difflib import get_close_matches\n+\n+            self.possibilities = get_close_matches(option_name, possibilities)\n \n     def format_message(self) -> str:\n         if not self.possibilities:\n             return self.message\n-\n-        possibility_str = \", \".join(sorted(self.possibilities))\n-        suggest = ngettext(\n-            \"Did you mean {possibility}?\",\n-            \"(Possible options: {possibilities})\",\n-            len(self.possibilities),\n-        ).format(possibility=possibility_str, possibilities=possibility_str)\n-        return f\"{self.message} {suggest}\"\n+        return f\"{self.message} {_format_possibilities(self.possibilities)}\"\n+\n+\n+class NoSuchCommand(UsageError):\n+    \"\"\"Raised if Click attempted to handle a command that does not exist.\"\"\"\n+\n+    def __init__(\n+        self,\n+        command_name: str,\n+        message: str | None = None,\n+        possibilities: cabc.Iterable[str] | None = None,\n+        ctx: Context | None = None,\n+    ) -> None:\n+        if message is None:\n+            message = _(\"No such command {name!r}.\").format(name=command_name)\n+\n+        super().__init__(message, ctx)\n+        self.command_name = command_name\n+        self.possibilities: list[str] | None = None\n+        if possibilities:\n+            from difflib import get_close_matches\n+\n+            self.possibilities = get_close_matches(command_name, possibilities)\n+\n+    def format_message(self) -> str:\n+        if not self.possibilities:\n+            return self.message\n+        return f\"{self.message} {_format_possibilities(self.possibilities)}\"\n \n \n class BadOptionUsage(UsageError):\n\n--- a/src/click/parser.py\n+++ b/src/click/parser.py\n@@ -360,10 +360,7 @@\n         self, opt: str, explicit_value: str | None, state: _ParsingState\n     ) -> None:\n         if opt not in self._long_opt:\n-            from difflib import get_close_matches\n-\n-            possibilities = get_close_matches(opt, self._long_opt)\n-            raise NoSuchOption(opt, possibilities=possibilities, ctx=self.ctx)\n+            raise NoSuchOption(opt, possibilities=self._long_opt, ctx=self.ctx)\n \n         option = self._long_opt[opt]\n         if option.takes_value:\n\n--- a/tests/test_commands.py\n+++ b/tests/test_commands.py\n@@ -574,3 +574,33 @@\n     assert isinstance(rv.exception.__cause__, exc)\n     assert rv.exception.__cause__.args == (\"catch me!\",)\n \n+\n+def test_unknown_command(runner):\n+    result = runner.invoke(click.Group(), \"unknown\")\n+    assert result.exception\n+    assert \"No such command 'unknown'.\" in result.output\n+\n+\n+@pytest.mark.parametrize(\n+    (\"value\", \"expect\"),\n+    [\n+        (\"pause\", \"Did you mean 'push'?\"),\n+        (\"decline\", \"(Did you mean one of: 'declare', 'refine'?)\"),\n+    ],\n+)\n+def test_suggest_possible_commands(runner, value, expect):\n+    cli = click.Group()\n+\n+    @cli.command()\n+    def push():\n+        pass\n+\n+    @cli.command()\n+\n+    @cli.command()\n+    def refine():\n+        pass\n+\n+    result = runner.invoke(cli, [value])\n+    assert expect in result.output\n+\n\n--- a/tests/test_options.py\n+++ b/tests/test_options.py\n@@ -141,15 +141,15 @@\n \n     result = runner.invoke(cli, [unknown_flag])\n     assert result.exception\n-    assert f\"No such option: {unknown_flag}\" in result.output\n+    assert f\"No such option '{unknown_flag}'.\" in result.output\n \n \n @pytest.mark.parametrize(\n     (\"value\", \"expect\"),\n     [\n-        (\"--cat\", \"Did you mean --count?\"),\n-        (\"--bounds\", \"(Possible options: --bound, --count)\"),\n-        (\"--bount\", \"(Possible options: --bound, --count)\"),\n+        (\"--cat\", \"Did you mean '--count'?\"),\n+        (\"--bounds\", \"(Did you mean one of: '--bound', '--count'?)\"),\n+        (\"--bount\", \"(Did you mean one of: '--bound', '--count'?)\"),\n     ],\n )\n def test_suggest_possible_options(runner, value, expect):"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.99,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.05,
+        "type": "noul"
+      },
+      "r2": {
+        "noul": 0.16,
+        "type": "noul"
+      },
+      "r3": {
+        "noul": 0.4,
+        "type": "noul"
+      },
+      "r4": {
+        "noul": 0.26,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 3337,
+      "output_tokens": 89
+    }
+  },
+  "variant": "single"
+}

@@ -1,0 +1,43 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_options.py::test_string_show_default_shows_custom_string_in_prompt` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_termui.py::test_string_show_default_shows_custom_string_in_prompt` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/click/core.py\n+++ b/src/click/core.py\n@@ -3164,10 +3164,10 @@\n                 default = bool(default)\n             return confirm(self.prompt, default)\n \n-        # If show_default is set to True/False, provide this to `prompt` as well. For\n-        # non-bool values of `show_default`, we use `prompt`'s default behavior\n+        # If show_default is given, provide this to `prompt` as well,\n+        # otherwise we use `prompt`'s default behavior\n         prompt_kwargs: t.Any = {}\n-        if isinstance(self.show_default, bool):\n+        if self.show_default is not None:\n             prompt_kwargs[\"show_default\"] = self.show_default\n \n         return prompt(\n\n--- a/src/click/termui.py\n+++ b/src/click/termui.py\n@@ -60,7 +60,7 @@\n def _build_prompt(\n     text: str,\n     suffix: str,\n-    show_default: bool = False,\n+    show_default: bool | str = False,\n     default: t.Any | None = None,\n     show_choices: bool = True,\n     type: ParamType | None = None,\n@@ -68,6 +68,8 @@\n     prompt = text\n     if type is not None and show_choices and isinstance(type, Choice):\n         prompt += f\" ({', '.join(map(str, type.choices))})\"\n+    if isinstance(show_default, str):\n+        default = f\"({show_default})\"\n     if default is not None and show_default:\n         prompt = f\"{prompt} [{_format_default(default)}]\"\n     return f\"{prompt}{suffix}\"\n@@ -88,7 +90,7 @@\n     type: ParamType | t.Any | None = None,\n     value_proc: t.Callable[[str], t.Any] | None = None,\n     prompt_suffix: str = \": \",\n-    show_default: bool = True,\n+    show_default: bool | str = True,\n     err: bool = False,\n     show_choices: bool = True,\n ) -> t.Any:\n@@ -112,12 +114,17 @@\n                        convert a value.\n     :param prompt_suffix: a suffix that should be added to the prompt.\n     :param show_default: shows or hides the default value in the prompt.\n+                         If this value is a string, it shows that string\n+                         in parentheses instead of the actual value.\n     :param err: if set to true the file defaults to ``stderr`` instead of\n                 ``stdout``, the same as with echo.\n     :param show_choices: Show or hide choices if the passed type is a Choice.\n                          For example if type is a Choice of either day or week,\n                          show_choices is true and text is \"Group by\" then the\n                          prompt will be \"Group by (day, week): \".\n+\n+    .. versionadded:: 8.2\n+        ``show_default`` can be a custom string.\n \n     .. versionchanged:: 8.3.1\n         A space is no longer appended to the prompt.\n\n--- a/tests/test_options.py\n+++ b/tests/test_options.py\n@@ -1257,6 +1257,19 @@\n     assert opt.get_help_extra(ctx) == {\"default\": \"(unlimited)\"}\n     message = opt.get_help_record(ctx)[1]\n     assert \"[default: (unlimited)]\" in message\n+\n+\n+def test_string_show_default_shows_custom_string_in_prompt(runner):\n+    @click.command()\n+    @click.option(\n+        \"--arg1\", show_default=\"custom\", prompt=True, default=\"my-default-value\"\n+    )\n+    def cmd(arg1):\n+        pass\n+\n+    result = runner.invoke(cmd, input=\"my-input\", standalone_mode=False)\n+    assert \"(custom)\" in result.output\n+    assert \"my-default-value\" not in result.output\n \n \n class _StrictEq:\n\n--- a/tests/test_termui.py\n+++ b/tests/test_termui.py\n@@ -715,6 +715,8 @@\n     # is False\n     result = runner.invoke(cmd, input=\"my-input\", standalone_mode=False)\n     assert \"my-default-value\" not in result.output\n+\n+\n \n \n REPEAT = object()"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.22,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.04,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1701,
+      "output_tokens": 38
+    }
+  },
+  "variant": "single"
+}

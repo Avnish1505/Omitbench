@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_content.py::AsyncBytesIO` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_content.py::aread` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_content.py::test_async_bytesio_content` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/httpx/_content.py\n+++ b/httpx/_content.py\n@@ -38,6 +38,8 @@\n \n \n class IteratorByteStream(SyncByteStream):\n+    CHUNK_SIZE = 65_536\n+\n     def __init__(self, stream: Iterable[bytes]):\n         self._stream = stream\n         self._is_stream_consumed = False\n@@ -48,11 +50,21 @@\n             raise StreamConsumed()\n \n         self._is_stream_consumed = True\n-        for part in self._stream:\n-            yield part\n+        if hasattr(self._stream, \"read\"):\n+            # File-like interfaces should use 'read' directly.\n+            chunk = self._stream.read(self.CHUNK_SIZE)  # type: ignore\n+            while chunk:\n+                yield chunk\n+                chunk = self._stream.read(self.CHUNK_SIZE)  # type: ignore\n+        else:\n+            # Otherwise iterate.\n+            for part in self._stream:\n+                yield part\n \n \n class AsyncIteratorByteStream(AsyncByteStream):\n+    CHUNK_SIZE = 65_536\n+\n     def __init__(self, stream: AsyncIterable[bytes]):\n         self._stream = stream\n         self._is_stream_consumed = False\n@@ -63,8 +75,16 @@\n             raise StreamConsumed()\n \n         self._is_stream_consumed = True\n-        async for part in self._stream:\n-            yield part\n+        if hasattr(self._stream, \"aread\"):\n+            # File-like interfaces should use 'aread' directly.\n+            chunk = await self._stream.aread(self.CHUNK_SIZE)  # type: ignore\n+            while chunk:\n+                yield chunk\n+                chunk = await self._stream.aread(self.CHUNK_SIZE)  # type: ignore\n+        else:\n+            # Otherwise iterate.\n+            async for part in self._stream:\n+                yield part\n \n \n class UnattachedStream(AsyncByteStream, SyncByteStream):\n\n--- a/httpx/_multipart.py\n+++ b/httpx/_multipart.py\n@@ -71,6 +71,8 @@\n     A single file field item, within a multipart form field.\n     \"\"\"\n \n+    CHUNK_SIZE = 64 * 1024\n+\n     def __init__(self, name: str, value: FileTypes) -> None:\n         self.name = name\n \n@@ -142,8 +144,10 @@\n             self.file.seek(0)\n         self._consumed = True\n \n-        for chunk in self.file:\n+        chunk = self.file.read(self.CHUNK_SIZE)\n+        while chunk:\n             yield to_bytes(chunk)\n+            chunk = self.file.read(self.CHUNK_SIZE)\n \n     def render(self) -> typing.Iterator[bytes]:\n         yield self.render_headers()\n\n--- a/tests/test_content.py\n+++ b/tests/test_content.py\n@@ -57,6 +57,31 @@\n     content = b\"\".join([part for part in stream])\n \n     assert headers == {\"Content-Length\": \"13\"}\n+    assert content == b\"Hello, world!\"\n+\n+\n+@pytest.mark.asyncio\n+async def test_async_bytesio_content():\n+    class AsyncBytesIO:\n+        def __init__(self, content):\n+            self._idx = 0\n+            self._content = content\n+\n+        async def aread(self, chunk_size: int):\n+            chunk = self._content[self._idx : self._idx + chunk_size]\n+            self._idx = self._idx + chunk_size\n+            return chunk\n+\n+        async def __aiter__(self):\n+            yield self._content  # pragma: nocover\n+\n+    headers, stream = encode_request(content=AsyncBytesIO(b\"Hello, world!\"))\n+    assert not isinstance(stream, typing.Iterable)\n+    assert isinstance(stream, typing.AsyncIterable)\n+\n+    content = b\"\".join([part async for part in stream])\n+\n+    assert headers == {\"Transfer-Encoding\": \"chunked\"}\n     assert content == b\"Hello, world!\"\n \n "
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.52,
+        "type": "noul"
+      },
+      "r2": {
+        "noul": 0.26,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1932,
+      "output_tokens": 55
+    }
+  },
+  "variant": "single"
+}

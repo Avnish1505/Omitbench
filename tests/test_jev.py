@@ -160,15 +160,19 @@ def test_post_sends_bearer_retries_429_and_parses(monkeypatch):
     import json
     import threading
 
-    seen = {"n": 0, "auth": None, "body": None}
+    seen = {"n": 0, "auth": None, "body": None, "ua": None, "accept": None}
 
     class H(http.server.BaseHTTPRequestHandler):
         def do_POST(self):
             seen["n"] += 1
             seen["auth"] = self.headers.get("Authorization")
+            seen["ua"] = self.headers.get("User-Agent")
+            seen["accept"] = self.headers.get("Accept")
             seen["body"] = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
-            if seen["n"] == 1:
-                self.send_response(429)
+            if seen["n"] in (1, 2):
+                # 429 rate limit, then a Cloudflare 520 origin error: both
+                # transient, both must be retried.
+                self.send_response(429 if seen["n"] == 1 else 520)
                 self.end_headers()
                 return
             out = json.dumps({"model": V.PINNED_MODEL,
@@ -192,8 +196,12 @@ def test_post_sends_bearer_retries_429_and_parses(monkeypatch):
         resp = V._post(payload)
     finally:
         srv.shutdown()
-    assert seen["n"] == 2, "429 must be retried"
+    assert seen["n"] == 3, "429 and 520 must both be retried"
     assert seen["auth"] == "Bearer sk-test"
+    # Cloudflare answers urllib's default UA with 403 / error code 1010.
+    assert seen["ua"] == V.USER_AGENT
+    assert not seen["ua"].startswith("Python-urllib")
+    assert seen["accept"] == "application/json"
     assert seen["body"] == payload
     assert resp["answers"]["r0"]["noul"] == 0.7
 
@@ -236,3 +244,23 @@ def test_run_jev_refuses_python_314_plus(ver):
 @pytest.mark.parametrize("ver", [(3, 11, 9), (3, 12, 14), (3, 13, 5)])
 def test_run_jev_accepts_python_up_to_313(ver):
     _load_run_jev().check_interpreter(ver)
+
+
+# ---------------- calibration script tie rule ------------------------------
+
+def test_calibration_mcc_treats_half_as_implemented():
+    # Pre-registered: OMITTED iff P(implemented) < 0.5, so P(omitted) == 0.5
+    # is IMPLEMENTED -- same as jev.verdicts_from and scripts/analyze.py.
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(
+        "analyze_calibration", "scripts/analyze_calibration.py")
+    AC = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(AC)
+    tie = 1.0 - 0.5
+    assert V.verdicts_from({"a": 0.5})[0]["a"] == "IMPLEMENTED"
+    # (p_omit, y): a tie on a true omission must count as a miss (fn), so
+    # with one clean tp and one clean tn the MCC is strictly below 1.
+    pairs = [(0.9, 1), (0.1, 0), (tie, 1)]
+    assert AC.mcc(pairs) < 1.0
+    # and a tie on a clean requirement must count as a true negative
+    assert AC.mcc([(0.9, 1), (0.1, 0), (tie, 0)]) == 1.0

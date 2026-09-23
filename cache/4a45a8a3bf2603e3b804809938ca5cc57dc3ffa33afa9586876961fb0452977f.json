@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_next_gen.py::test_field_type` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/attr/_next_gen.py\n+++ b/src/attr/_next_gen.py\n@@ -167,6 +167,7 @@\n     hash=None,\n     init=True,\n     metadata=None,\n+    type=None,\n     converter=None,\n     factory=None,\n     kw_only=False,\n@@ -179,6 +180,10 @@\n     Identical to `attr.ib`, except keyword-only and with some arguments\n     removed.\n \n+    .. versionadded:: 22.3.0\n+       The *type* parameter has been re-added; mostly for\n+       {func}`attrs.make_class`. Please note that type checkers ignore this\n+       metadata.\n     .. versionadded:: 20.1.0\n     \"\"\"\n     return attrib(\n@@ -188,6 +193,7 @@\n         hash=hash,\n         init=init,\n         metadata=metadata,\n+        type=type,\n         converter=converter,\n         factory=factory,\n         kw_only=kw_only,\n\n--- a/tests/test_next_gen.py\n+++ b/tests/test_next_gen.py\n@@ -27,6 +27,7 @@\n         Instantiation works.\n         \"\"\"\n         C(\"1\", 2)\n+\n \n     def test_no_slots(self):\n         \"\"\""
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.02,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 789,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

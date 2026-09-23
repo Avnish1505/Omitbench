@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_basicauth_with_netrc_leak` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/tests/test_requests.py\n+++ b/tests/test_requests.py\n@@ -7,6 +7,7 @@\n import os\n import pickle\n import re\n+import tempfile\n import threading\n import warnings\n from unittest import mock\n@@ -703,6 +704,7 @@\n             assert r.status_code == 401\n         finally:\n             requests.sessions.get_netrc_auth = old_auth\n+\n \n     def test_DIGEST_HTTP_200_OK_GET(self, httpbin):\n         for authtype in self.digest_auth_algo:"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.03,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 625,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

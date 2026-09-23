@@ -1,0 +1,271 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_options.py::Color`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_options.py::Color`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_options.py::Color`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_options.py::ColorInt`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_options.py::ColorInt`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_options.py::ColorInt`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_options.py::HashType`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_options.py::HashType`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_options.py::HashType`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_options.py::Letter`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_options.py::Letter`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_options.py::Letter`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_options.py::Number`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_options.py::Number`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_options.py::Number`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r5_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_options.py::test_choice_default_rendering`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r5_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_options.py::test_choice_default_rendering`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r5_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_options.py::test_choice_default_rendering`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r6_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_shell_completion.py::test_zsh_full_complete_with_colons`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r6_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_shell_completion.py::test_zsh_full_complete_with_colons`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r6_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_shell_completion.py::test_zsh_full_complete_with_colons`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/click/core.py\n+++ b/src/click/core.py\n@@ -2872,6 +2872,8 @@\n                 default_string = f\"({self.show_default})\"\n             elif isinstance(default_value, (list, tuple)):\n                 default_string = \", \".join(str(d) for d in default_value)\n+            elif isinstance(default_value, enum.Enum):\n+                default_string = default_value.name\n             elif inspect.isfunction(default_value):\n                 default_string = _(\"(dynamic)\")\n             elif self.is_bool_flag and self.secondary_opts:\n\n--- a/src/click/exceptions.py\n+++ b/src/click/exceptions.py\n@@ -115,7 +115,7 @@\n         message: str,\n         ctx: Context | None = None,\n         param: Parameter | None = None,\n-        param_hint: str | None = None,\n+        param_hint: cabc.Sequence[str] | str | None = None,\n     ) -> None:\n         super().__init__(message, ctx)\n         self.param = param\n@@ -151,7 +151,7 @@\n         message: str | None = None,\n         ctx: Context | None = None,\n         param: Parameter | None = None,\n-        param_hint: str | None = None,\n+        param_hint: cabc.Sequence[str] | str | None = None,\n         param_type: str | None = None,\n     ) -> None:\n         super().__init__(message or \"\", ctx, param, param_hint)\n@@ -159,7 +159,7 @@\n \n     def format_message(self) -> str:\n         if self.param_hint is not None:\n-            param_hint: str | None = self.param_hint\n+            param_hint: cabc.Sequence[str] | str | None = self.param_hint\n         elif self.param is not None:\n             param_hint = self.param.get_error_hint(self.ctx)  # type: ignore\n         else:\n\n--- a/src/click/shell_completion.py\n+++ b/src/click/shell_completion.py\n@@ -124,6 +124,12 @@\n %(complete_func)s_setup;\n \"\"\"\n \n+# See ZshComplete.format_completion below, and issue #2703, before\n+# changing this script.\n+#\n+# (TL;DR: _describe is picky about the format, but this Zsh script snippet\n+# is already widely deployed.  So freeze this script, and use clever-ish\n+# handling of colons in ZshComplet.format_completion.)\n _SOURCE_ZSH = \"\"\"\\\n #compdef %(prog_name)s\n \n@@ -373,7 +379,21 @@\n         return args, incomplete\n \n     def format_completion(self, item: CompletionItem) -> str:\n-        return f\"{item.type}\\n{item.value}\\n{item.help if item.help else '_'}\"\n+        help_ = item.help or \"_\"\n+        # The zsh completion script uses `_describe` on items with help\n+        # texts (which splits the item help from the item value at the\n+        # first unescaped colon) and `compadd` on items without help\n+        # text (which uses the item value as-is and does not support\n+        # colon escaping).  So escape colons in the item value if and\n+        # only if the item help is not the sentinel \"_\" value, as used\n+        # by the completion script.\n+        #\n+        # (The zsh completion script is potentially widely deployed, and\n+        # thus harder to fix than this method.)\n+        #\n+        # See issue #1812 and issue #2703 for further context.\n+        value = item.value.replace(\":\", r\"\\:\") if help_ != \"_\" else item.value\n+        return f\"{item.type}\\n{value}\\n{help_}\"\n \n \n class FishComplete(ShellComplete):\n\n--- a/src/click/testing.py\n+++ b/src/click/testing.py\n@@ -98,6 +98,18 @@\n         self.output: io.BytesIO = io.BytesIO()\n         self.stdout: io.BytesIO = BytesIOCopy(copy_to=self.output)\n         self.stderr: io.BytesIO = BytesIOCopy(copy_to=self.output)\n+\n+    def __del__(self) -> None:\n+        \"\"\"\n+        Guarantee that embedded file-like objects are closed in a\n+        predictable order, protecting against races between\n+        self.output being closed and other streams being flushed on close\n+\n+        .. versionadded:: 8.2.2\n+        \"\"\"\n+        self.stderr.close()\n+        self.stdout.close()\n+        self.output.close()\n \n \n class _NamedTextIOWrapper(io.TextIOWrapper):\n\n--- a/tests/test_options.py\n+++ b/tests/test_options.py\n@@ -1,5 +1,10 @@\n+import enum\n import os\n import re\n+import sys\n+\n+if sys.version_info < (3, 11):\n+    enum.StrEnum = enum.Enum  # type: ignore[assignment]\n \n import pytest\n \n@@ -1300,6 +1305,30 @@\n     assert result.exit_code == 0\n \n \n+class HashType(enum.Enum):\n+    MD5 = enum.auto()\n+    SHA1 = enum.auto()\n+\n+\n+\n+\n+class Letter(enum.StrEnum):\n+    A = enum.auto()\n+    B = enum.auto()\n+\n+\n+class Color(enum.Flag):\n+    RED = enum.auto()\n+    GREEN = enum.auto()\n+    BLUE = enum.auto()\n+\n+\n+class ColorInt(enum.IntFlag):\n+    RED = enum.auto()\n+    GREEN = enum.auto()\n+    BLUE = enum.auto()\n+\n+\n @pytest.mark.parametrize(\n     (\"choices\", \"metavars\"),\n     [\n@@ -1308,6 +1337,11 @@\n         pytest.param([1.0, 2.0], \"[FLOAT]\", id=\"float choices\"),\n         pytest.param([True, False], \"[BOOLEAN]\", id=\"bool choices\"),\n         pytest.param([\"foo\", 1], \"[TEXT|INTEGER]\", id=\"text/int choices\"),\n+        pytest.param(HashType, \"[HASHTYPE]\", id=\"enum choices\"),\n+        pytest.param(Number, \"[NUMBER]\", id=\"int enum choices\"),\n+        pytest.param(Letter, \"[LETTER]\", id=\"str enum choices\"),\n+        pytest.param(Color, \"[COLOR]\", id=\"flag enum choices\"),\n+        pytest.param(ColorInt, \"[COLORINT]\", id=\"int flag enum choices\"),\n     ],\n )\n def test_usage_show_choices(runner, choices, metavars):\n@@ -1330,10 +1364,59 @@\n         pass\n \n     result = runner.invoke(cli_with_choices, [\"--help\"])\n-    assert f\"[{'|'.join([str(i) for i in choices])}]\" in result.output\n+    assert (\n+        f\"[{'|'.join(i.name if isinstance(i, enum.Enum) else str(i) for i in choices)}]\"\n+        in result.output\n+    )\n \n     result = runner.invoke(cli_without_choices, [\"--help\"])\n     assert metavars in result.output\n+\n+\n+@pytest.mark.parametrize(\n+    (\"choices\", \"default\", \"default_string\"),\n+    [\n+        ([\"foo\", \"bar\"], \"bar\", \"bar\"),\n+        # The default value is not enforced to be in the choices.\n+        ([\"foo\", \"bar\"], \"random\", \"random\"),\n+        # None cannot be a default value as-is: it left the default value as unset.\n+        ([\"foo\", \"bar\"], None, None),\n+        ([0, 1], 0, \"0\"),\n+        # Values are not coerced to the type of the choice, even if equivalent.\n+        ([0, 1], 0.0, \"0.0\"),\n+        ([1, 2], 2, \"2\"),\n+        ([1.0, 2.0], 2, \"2\"),\n+        ([1.0, 2.0], 2.0, \"2.0\"),\n+        ([True, False], True, \"True\"),\n+        ([True, False], False, \"False\"),\n+        ([\"foo\", 1], \"foo\", \"foo\"),\n+        ([\"foo\", 1], 1, \"1\"),\n+        # Enum choices are rendered as their names.\n+        # See: https://github.com/pallets/click/issues/2911\n+        (HashType, HashType.SHA1, \"SHA1\"),\n+        # Enum choices allow defaults strings that are their names.\n+        (HashType, \"SHA1\", \"SHA1\"),\n+        (Number, Number.TWO, \"TWO\"),\n+        (Letter, Letter.B, \"B\"),\n+        (Color, Color.GREEN, \"GREEN\"),\n+        (ColorInt, ColorInt.GREEN, \"GREEN\"),\n+    ],\n+)\n+def test_choice_default_rendering(runner, choices, default, default_string):\n+    @click.command()\n+    @click.option(\"-g\", type=click.Choice(choices), default=default, show_default=True)\n+    def cli_with_choices(g):\n+        pass\n+\n+    # Check that the default value is kept normalized to the type of the choice.\n+    assert cli_with_choices.params[0].default == default\n+\n+    result = runner.invoke(cli_with_choices, [\"--help\"])\n+    extra_usage = f\"[default: {default_string}]\"\n+    if default_string is None:\n+        assert extra_usage not in result.output\n+    else:\n+        assert extra_usage in result.output\n \n \n @pytest.mark.parametrize(\n\n--- a/tests/test_shell_completion.py\n+++ b/tests/test_shell_completion.py\n@@ -1,4 +1,6 @@\n+import textwrap\n import warnings\n+from collections.abc import Mapping\n \n import pytest\n \n@@ -354,6 +356,79 @@\n     assert result.output == expect\n \n \n+@pytest.mark.parametrize(\n+    (\"env\", \"expect\"),\n+    [\n+        (\n+            {\"COMP_WORDS\": \"\", \"COMP_CWORD\": \"0\"},\n+            textwrap.dedent(\n+                \"\"\"\\\n+                    plain\n+                    a\n+                    _\n+                    plain\n+                    b\n+                    bee\n+                    plain\n+                    c\\\\:d\n+                    cee:dee\n+                    plain\n+                    c:e\n+                    _\n+                \"\"\"\n+            ),\n+        ),\n+        (\n+            {\"COMP_WORDS\": \"a c\", \"COMP_CWORD\": \"1\"},\n+            textwrap.dedent(\n+                \"\"\"\\\n+                    plain\n+                    c\\\\:d\n+                    cee:dee\n+                    plain\n+                    c:e\n+                    _\n+                \"\"\"\n+            ),\n+        ),\n+        (\n+            {\"COMP_WORDS\": \"a c:\", \"COMP_CWORD\": \"1\"},\n+            textwrap.dedent(\n+                \"\"\"\\\n+                    plain\n+                    c\\\\:d\n+                    cee:dee\n+                    plain\n+                    c:e\n+                    _\n+                \"\"\"\n+            ),\n+        ),\n+    ],\n+)\n+@pytest.mark.usefixtures(\"_patch_for_completion\")\n+def test_zsh_full_complete_with_colons(\n+    runner, env: Mapping[str, str], expect: str\n+) -> None:\n+    cli = Group(\n+        \"cli\",\n+        commands=[\n+            Command(\"a\"),\n+            Command(\"b\", help=\"bee\"),\n+            Command(\"c:d\", help=\"cee:dee\"),\n+            Command(\"c:e\"),\n+        ],\n+    )\n+    result = runner.invoke(\n+        cli,\n+        env={\n+            **env,\n+            \"_CLI_COMPLETE\": \"zsh_complete\",\n+        },\n+    )\n+    assert result.output == expect\n+\n+\n @pytest.mark.usefixtures(\"_patch_for_completion\")\n def test_context_settings(runner):\n     def complete(ctx, param, incomplete):\n\n--- a/tests/test_testing.py\n+++ b/tests/test_testing.py\n@@ -448,8 +448,7 @@\n \n     with runner.isolation() as (_, err, _):\n         click.echo(\"\\udce2\", err=True, nl=False)\n-\n-    assert err.getvalue() == b\"\\\\udce2\"\n+        assert err.getvalue() == b\"\\\\udce2\"\n \n \n def test_isolation_flushes_unflushed_stderr():\n@@ -460,8 +459,7 @@\n \n     with runner.isolation() as (_, err, _):\n         click.echo(\"\\udce2\", err=True, nl=False)\n-\n-    assert err.getvalue() == b\"\\\\udce2\"\n+        assert err.getvalue() == b\"\\\\udce2\"\n \n     @click.command()\n     def cli():"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.25,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.99,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.34,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.95,
+        "type": "noul"
+      },
+      "r2_defined": {
+        "noul": 0.99,
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "noul": 0.45,
+        "type": "noul"
+      },
+      "r2_wired": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r3_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r3_real_body": {
+        "noul": 0.23,
+        "type": "noul"
+      },
+      "r3_wired": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r4_defined": {
+        "noul": 0.16,
+        "type": "noul"
+      },
+      "r4_real_body": {
+        "noul": 0.12,
+        "type": "noul"
+      },
+      "r4_wired": {
+        "noul": 0.94,
+        "type": "noul"
+      },
+      "r5_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r5_real_body": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r5_wired": {
+        "noul": 0.91,
+        "type": "noul"
+      },
+      "r6_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r6_real_body": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r6_wired": {
+        "noul": 0.42,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 5627,
+      "output_tokens": 396
+    }
+  },
+  "variant": "split"
+}

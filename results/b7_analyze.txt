@@ -1,0 +1,48 @@
+records 17472 | instances 310 | repos 8 (attrs, click, flask, httpx, itsdangerous, jinja, requests, werkzeug)
+requirements scored per detector 2184 | base rate 27.9% OMITTED
+
+detector                         P     R    F1    MCC        MCC 95% CI    FPR
+------------------------------------------------------------------------------
+B0 flag-nothing               0.00  0.00  0.00  0.000  [ 0.000, 0.000]  0.000
+B1 flag-everything            0.28  1.00  0.44  0.000  [ 0.000, 0.000]  1.000
+B3 line-grep (no AST)         0.75  0.30  0.43  0.371  [ 0.317, 0.421]  0.039
+B4 LLM judge (gpt-oss-120b)   0.40  0.97  0.56  0.388  [ 0.345, 0.434]  0.569
+B5 LLM judge (mid-tier)       0.74  0.84  0.79  0.701  [ 0.650, 0.756]  0.113
+B7 Jev (single)               0.35  0.97  0.52  0.293  [ 0.251, 0.335]  0.691
+B7 Jev (split)                0.43  0.98  0.60  0.442  [ 0.399, 0.486]  0.500
+P1 defined                    0.80  0.44  0.57  0.499  [ 0.449, 0.545]  0.043
+
+RECALL BY OMISSION CLASS  (n per cell in parens)
+detector                              ABSENT         UNWIRED            STUB
+----------------------------------------------------------------------------
+B0 flag-nothing                   0.00 (281)      0.00 ( 19)      0.00 (309)
+B1 flag-everything                1.00 (281)      1.00 ( 19)      1.00 (309)
+B3 line-grep (no AST)             0.65 (281)      0.00 ( 19)      0.00 (309)
+B4 LLM judge (gpt-oss-120b)       0.98 (281)      0.68 ( 19)      0.99 (309)
+B5 LLM judge (mid-tier)           0.84 (281)      0.21 ( 19)      0.87 (309)
+B7 Jev (single)                   0.96 (281)      0.58 ( 19)      0.99 (309)
+B7 Jev (split)                    0.98 (281)      0.58 ( 19)      0.99 (309)
+P1 defined                        0.96 (281)      0.00 ( 19)      0.00 (309)
+
+PAIRED cluster bootstrap of MCC difference (95% CI). Interval containing 0 => ordering unsupported.
+  P1 defined                   vs B3 line-grep (no AST)     +0.128  [+0.103,+0.156]  *
+
+  P1 defined                   vs B4 LLM judge (gpt-oss-120b)   +0.111  [+0.055,+0.164]  *
+  P1 defined                   vs B5 LLM judge (mid-tier)       -0.202  [-0.252,-0.150]  *
+  P1 defined                   vs B7 Jev (single)               +0.206  [+0.144,+0.262]  *
+  P1 defined                   vs B7 Jev (split)                +0.057  [-0.003,+0.117]
+  (this is the central claim RELATED.md exists to test -- read it plainly, do not re-run to change it)
+
+  B7 Jev (single)              vs B5 LLM judge (mid-tier)       -0.408  [-0.465,-0.347]  *
+  B7 Jev (split)               vs B5 LLM judge (mid-tier)       -0.259  [-0.316,-0.203]  *
+  (B7 calibration: python3 scripts/analyze_calibration.py)
+
+PER-REPO MCC for P1 defined (generalisation check)
+  attrs             0.364   P 0.54  R 0.46   n=332
+  click             0.487   P 0.75  R 0.44   n=323
+  flask             0.526   P 0.85  R 0.42   n=329
+  httpx             0.593   P 0.95  R 0.45   n=326
+  itsdangerous      0.469   P 0.87  R 0.43   n=152
+  jinja             0.570   P 0.90  R 0.46   n=292
+  requests          0.455   P 0.79  R 0.47   n=203
+  werkzeug          0.565   P 1.00  R 0.42   n=227

@@ -1,0 +1,91 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_wrappers.py::test_bad_content_type`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_wrappers.py::test_bad_content_type`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_wrappers.py::test_bad_content_type`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_wrappers.py::test_bad_data`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_wrappers.py::test_bad_data`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_wrappers.py::test_bad_data`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/werkzeug/wrappers/request.py\n+++ b/src/werkzeug/wrappers/request.py\n@@ -530,6 +530,12 @@\n         (:mimetype:`application/json`, see :attr:`is_json`).\n \n         Calls :meth:`get_json` with default arguments.\n+\n+        If the request content type is not ``application/json``, this\n+        will raise a 400 Bad Request error.\n+\n+        .. versionchanged:: 2.1\n+            Raise a 400 error if the content type is incorrect.\n         \"\"\"\n         return self.get_json()\n \n@@ -543,23 +549,28 @@\n         \"\"\"Parse :attr:`data` as JSON.\n \n         If the mimetype does not indicate JSON\n-        (:mimetype:`application/json`, see :attr:`is_json`), this\n-        returns ``None``.\n-\n-        If parsing fails, :meth:`on_json_loading_failed` is called and\n-        its return value is used as the return value.\n+        (:mimetype:`application/json`, see :attr:`is_json`), or parsing\n+        fails, :meth:`on_json_loading_failed` is called and\n+        its return value is used as the return value. By default this\n+        raises a 400 Bad Request error.\n \n         :param force: Ignore the mimetype and always try to parse JSON.\n-        :param silent: Silence parsing errors and return ``None``\n-            instead.\n+        :param silent: Silence mimetype and parsing errors, and\n+            return ``None`` instead.\n         :param cache: Store the parsed JSON to return for subsequent\n             calls.\n+\n+        .. versionchanged:: 2.1\n+            Raise a 400 error if the content type is incorrect.\n         \"\"\"\n         if cache and self._cached_json[silent] is not Ellipsis:\n             return self._cached_json[silent]\n \n         if not (force or self.is_json):\n-            return None\n+            if not silent:\n+                return self.on_json_loading_failed(None)\n+            else:\n+                return None\n \n         data = self.get_data(cache=cache)\n \n@@ -584,11 +595,21 @@\n \n         return rv\n \n-    def on_json_loading_failed(self, e: ValueError) -> t.Any:\n-        \"\"\"Called if :meth:`get_json` parsing fails and isn't silenced.\n+    def on_json_loading_failed(self, e: t.Optional[ValueError]) -> t.Any:\n+        \"\"\"Called if :meth:`get_json` fails and isn't silenced.\n+\n         If this method returns a value, it is used as the return value\n         for :meth:`get_json`. The default implementation raises\n         :exc:`~werkzeug.exceptions.BadRequest`.\n-        \"\"\"\n-        raise BadRequest(f\"Failed to decode JSON object: {e}\")\n-\n+\n+        :param e: If parsing failed, this is the exception. It will be\n+            ``None`` if the content type wasn't ``application/json``.\n+        \"\"\"\n+        if e is not None:\n+            raise BadRequest(f\"Failed to decode JSON object: {e}\")\n+\n+        raise BadRequest(\n+            \"Did not attempt to load JSON data because the request\"\n+            \" Content-Type was not 'application/json'.\"\n+        )\n+\n\n--- a/tests/test_wrappers.py\n+++ b/tests/test_wrappers.py\n@@ -1346,13 +1346,8 @@\n         )\n         assert response.json == value\n \n-    def test_force(self):\n-        value = [1, 2, 3]\n-        request = wrappers.Request.from_values(json=value, content_type=\"text/plain\")\n-        assert request.json is None\n-        assert request.get_json(force=True) == value\n-\n-    def test_silent(self):\n+\n+    def test_bad_data(self):\n         request = wrappers.Request.from_values(\n             data=b'{\"a\":}', content_type=\"application/json\"\n         )"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.08,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.08,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.31,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.66,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.45,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1895,
+      "output_tokens": 116
+    }
+  },
+  "variant": "split"
+}

@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_testing.py::test_session_transaction_ipv6`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_testing.py::test_session_transaction_ipv6`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_testing.py::test_session_transaction_ipv6`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/flask/testing.py\n+++ b/src/flask/testing.py\n@@ -177,7 +177,7 @@\n             app.session_interface.save_session(app, sess, resp)\n \n         self._update_cookies_from_response(\n-            ctx.request.host.partition(\":\")[0],\n+            urlsplit(ctx.request.host_url).hostname or \"localhost\",\n             ctx.request.path,\n             resp.headers.getlist(\"Set-Cookie\"),\n         )\n\n--- a/tests/test_testing.py\n+++ b/tests/test_testing.py\n@@ -171,6 +171,20 @@\n             assert sess[\"foo\"] == [42]\n \n \n+def test_session_transaction_ipv6(app):\n+    base_url = \"http://[::1]:8000/\"\n+    client = app.test_client()\n+\n+    @app.get(\"/\")\n+    def index():\n+        return str(flask.session.get(\"value\"))\n+\n+    with client.session_transaction(base_url=base_url) as sess:\n+        sess[\"value\"] = 42\n+\n+    assert client.get(\"/\", base_url=base_url).text == \"42\"\n+\n+\n def test_session_transactions_no_null_sessions():\n     app = flask.Flask(__name__)\n "
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.19,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 889,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

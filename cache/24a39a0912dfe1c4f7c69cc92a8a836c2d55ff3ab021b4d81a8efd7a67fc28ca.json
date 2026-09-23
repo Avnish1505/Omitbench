@@ -1,0 +1,79 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/typing/typing_route.py::hello_generator` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/typing/typing_route.py::hello_generator_expression` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/typing/typing_route.py::hello_iterator` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/typing/typing_route.py::return_template_stream` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/typing/typing_route.py::show` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/flask/app.py\n+++ b/src/flask/app.py\n@@ -5,6 +5,7 @@\n import sys\n import typing as t\n import weakref\n+from collections.abc import Iterator as _abc_Iterator\n from datetime import timedelta\n from itertools import chain\n from threading import Lock\n@@ -1843,6 +1844,10 @@\n             ``dict``\n                 A dictionary that will be jsonify'd before being returned.\n \n+            ``generator`` or ``iterator``\n+                A generator that returns ``str`` or ``bytes`` to be\n+                streamed as the response.\n+\n             ``tuple``\n                 Either ``(body, status, headers)``, ``(body, status)``, or\n                 ``(body, headers)``, where ``body`` is any of the other types\n@@ -1861,6 +1866,12 @@\n             :func:`callable`\n                 The function is called as a WSGI application. The result is\n                 used to create a response object.\n+\n+        .. versionchanged:: 2.2\n+            A generator will be converted to a streaming response.\n+\n+        .. versionchanged:: 1.1\n+            A dict will be converted to a JSON response.\n \n         .. versionchanged:: 0.9\n            Previously a tuple was interpreted as the arguments for the\n@@ -1900,7 +1911,7 @@\n \n         # make sure the body is an instance of the response class\n         if not isinstance(rv, self.response_class):\n-            if isinstance(rv, (str, bytes, bytearray)):\n+            if isinstance(rv, (str, bytes, bytearray)) or isinstance(rv, _abc_Iterator):\n                 # let the response class set the status and headers instead of\n                 # waiting to do it manually, so that the class can handle any\n                 # special logic\n\n--- a/src/flask/typing.py\n+++ b/src/flask/typing.py\n@@ -6,7 +6,9 @@\n     from werkzeug.wrappers import Response  # noqa: F401\n \n # The possible types that are directly convertible or are a Response object.\n-ResponseValue = t.Union[\"Response\", str, bytes, t.Dict[str, t.Any]]\n+ResponseValue = t.Union[\n+    \"Response\", str, bytes, t.Dict[str, t.Any], t.Iterator[str], t.Iterator[bytes]\n+]\n \n # the possible types for an individual HTTP header\n # This should be a Union, but mypy doesn't pass unless it's a TypeVar.\n\n--- a/tests/test_basic.py\n+++ b/tests/test_basic.py\n@@ -1274,6 +1274,11 @@\n     rv = flask.make_response(\"W00t\", 404)\n     assert rv.status_code == 404\n     assert rv.data == b\"W00t\"\n+    assert rv.mimetype == \"text/html\"\n+\n+    rv = flask.make_response(c for c in \"Hello\")\n+    assert rv.status_code == 200\n+    assert rv.data == b\"Hello\"\n     assert rv.mimetype == \"text/html\"\n \n \n\n--- a/tests/typing/typing_route.py\n+++ b/tests/typing/typing_route.py\n@@ -1,9 +1,11 @@\n from __future__ import annotations\n \n+import typing as t\n from http import HTTPStatus\n \n from flask import Flask\n from flask import jsonify\n+from flask import stream_template\n from flask.templating import render_template\n from flask.views import View\n from flask.wrappers import Response\n@@ -24,6 +26,25 @@\n @app.route(\"/json\")\n def hello_json() -> Response:\n     return jsonify({\"response\": \"Hello, World!\"})\n+\n+\n+@app.route(\"/generator\")\n+def hello_generator() -> t.Generator[str, None, None]:\n+    def show() -> t.Generator[str, None, None]:\n+        for x in range(100):\n+            yield f\"data:{x}\\n\\n\"\n+\n+    return show()\n+\n+\n+@app.route(\"/generator-expression\")\n+def hello_generator_expression() -> t.Iterator[bytes]:\n+    return (f\"data:{x}\\n\\n\".encode() for x in range(100))\n+\n+\n+@app.route(\"/iterator\")\n+def hello_iterator() -> t.Iterator[str]:\n+    return iter([f\"data:{x}\\n\\n\" for x in range(100)])\n \n \n @app.route(\"/status\")\n@@ -48,6 +69,11 @@\n     return render_template(\"index.html\", name=name)\n \n \n+@app.route(\"/template\")\n+def return_template_stream() -> t.Iterator[str]:\n+    return stream_template(\"index.html\", name=\"Hello\")\n+\n+\n class RenderTemplateView(View):\n     def __init__(self: RenderTemplateView, template_name: str) -> None:\n         self.template_name = template_name"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.18,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.16,
+        "type": "noul"
+      },
+      "r2": {
+        "noul": 0.13,
+        "type": "noul"
+      },
+      "r3": {
+        "noul": 0.2,
+        "type": "noul"
+      },
+      "r4": {
+        "noul": 0.67,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 2591,
+      "output_tokens": 89
+    }
+  },
+  "variant": "single"
+}

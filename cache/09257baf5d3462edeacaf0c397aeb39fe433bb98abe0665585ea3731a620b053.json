@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_utils.py::test_urlize_mail_mastodon`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_utils.py::test_urlize_mail_mastodon`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_utils.py::test_urlize_mail_mastodon`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/jinja2/utils.py\n+++ b/src/jinja2/utils.py\n@@ -333,6 +333,8 @@\n         elif (\n             \"@\" in middle\n             and not middle.startswith(\"www.\")\n+            # ignore values like `@a@b`\n+            and not middle.startswith(\"@\")\n             and \":\" not in middle\n             and _email_re.match(middle)\n         ):\n\n--- a/tests/test_utils.py\n+++ b/tests/test_utils.py\n@@ -142,6 +142,14 @@\n             \"http://example.org</a>\"\n         )\n \n+    def test_urlize_mail_mastodon(self):\n+        fr = \"nabijaczleweli@nabijaczleweli.xyz\\n@eater@cijber.social\\n\"\n+        to = (\n+            '<a href=\"mailto:nabijaczleweli@nabijaczleweli.xyz\">'\n+            \"nabijaczleweli@nabijaczleweli.xyz</a>\\n@eater@cijber.social\\n\"\n+        )\n+        assert urlize(fr) == to\n+\n \n class TestLoremIpsum:\n     def test_lorem_ipsum_markup(self):"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.95,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.35,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 891,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

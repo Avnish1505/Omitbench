@@ -1,0 +1,91 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `requests/exceptions.py::InvalidJSONError`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `requests/exceptions.py::InvalidJSONError`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `requests/exceptions.py::InvalidJSONError`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_post_json_nan`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_post_json_nan`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_post_json_nan`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/requests/exceptions.py\n+++ b/requests/exceptions.py\n@@ -23,6 +23,10 @@\n                 hasattr(response, 'request')):\n             self.request = self.response.request\n         super(RequestException, self).__init__(*args, **kwargs)\n+\n+\n+class InvalidJSONError(RequestException):\n+    \"\"\"A JSON error occurred.\"\"\"\n \n \n class HTTPError(RequestException):\n\n--- a/requests/models.py\n+++ b/requests/models.py\n@@ -29,7 +29,7 @@\n from .cookies import cookiejar_from_dict, get_cookie_header, _copy_cookie_jar\n from .exceptions import (\n     HTTPError, MissingSchema, InvalidURL, ChunkedEncodingError,\n-    ContentDecodingError, ConnectionError, StreamConsumedError)\n+    ContentDecodingError, ConnectionError, StreamConsumedError, InvalidJSONError)\n from ._internal_utils import to_native_string, unicode_is_ascii\n from .utils import (\n     guess_filename, get_auth_from_url, requote_uri,\n@@ -466,7 +466,12 @@\n             # urllib3 requires a bytes-like body. Python 2's json.dumps\n             # provides this natively, but Python 3 gives a Unicode string.\n             content_type = 'application/json'\n-            body = complexjson.dumps(json)\n+\n+            try:\n+              body = complexjson.dumps(json, allow_nan=False)\n+            except ValueError as ve:\n+              raise InvalidJSONError(ve, request=self)\n+\n             if not isinstance(body, bytes):\n                 body = body.encode('utf-8')\n \n\n--- a/tests/test_requests.py\n+++ b/tests/test_requests.py\n@@ -24,7 +24,7 @@\n from requests.exceptions import (\n     ConnectionError, ConnectTimeout, InvalidSchema, InvalidURL,\n     MissingSchema, ReadTimeout, Timeout, RetryError, TooManyRedirects,\n-    ProxyError, InvalidHeader, UnrewindableBodyError, SSLError, InvalidProxyURL)\n+    ProxyError, InvalidHeader, UnrewindableBodyError, SSLError, InvalidProxyURL, InvalidJSONError)\n from requests.models import PreparedRequest\n from requests.structures import CaseInsensitiveDict\n from requests.sessions import SessionRedirectMixin\n@@ -2567,3 +2567,8 @@\n         p = r.prepare()\n         assert p.url == expected\n \n+    def test_post_json_nan(self, httpbin):\n+        data = {\"foo\": float(\"nan\")}\n+        with pytest.raises(requests.exceptions.InvalidJSONError):\n+          r = requests.post(httpbin('post'), json=data)\n+"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.99,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.09,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.97,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1674,
+      "output_tokens": 116
+    }
+  },
+  "variant": "split"
+}

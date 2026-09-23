@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/models/test_cookies.py::test_cookies_repr`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/models/test_cookies.py::test_cookies_repr`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/models/test_cookies.py::test_cookies_repr`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/httpx/_models.py\n+++ b/httpx/_models.py\n@@ -1491,6 +1491,16 @@\n             return True\n         return False\n \n+    def __repr__(self) -> str:\n+        cookies_repr = \", \".join(\n+            [\n+                f\"<Cookie {cookie.name}={cookie.value} for {cookie.domain} />\"\n+                for cookie in self.jar\n+            ]\n+        )\n+\n+        return f\"<Cookies[{cookies_repr}]>\"\n+\n     class _CookieCompatRequest(urllib.request.Request):\n         \"\"\"\n         Wraps a `Request` instance up in a compatibility interface suitable\n\n--- a/tests/models/test_cookies.py\n+++ b/tests/models/test_cookies.py\n@@ -86,3 +86,7 @@\n     for k, v in cookies_val:\n         assert cookies[k] == v\n \n+\n+def test_cookies_repr():\n+    raise NotImplementedError\n+"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.03,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.16,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 853,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

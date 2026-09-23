@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/sansio/test_utils.py::test_get_content_length`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/sansio/test_utils.py::test_get_content_length`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/sansio/test_utils.py::test_get_content_length`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/tests/sansio/test_utils.py\n+++ b/tests/sansio/test_utils.py\n@@ -2,6 +2,7 @@\n \n import pytest\n \n+from werkzeug.sansio.utils import get_content_length\n from werkzeug.sansio.utils import get_host\n \n \n@@ -31,3 +32,23 @@\n ) -> None:\n     assert get_host(scheme, host_header, server) == expected\n \n+\n+@pytest.mark.parametrize(\n+    (\"http_content_length\", \"http_transfer_encoding\", \"expected\"),\n+    [\n+        (\"2\", None, 2),\n+        (\" 2\", None, 2),\n+        (\"2 \", None, 2),\n+        (None, None, None),\n+        (None, \"chunked\", None),\n+        (\"a\", None, 0),\n+        (\"-2\", None, 0),\n+    ],\n+)\n+def test_get_content_length(\n+    http_content_length: str | None,\n+    http_transfer_encoding: str | None,\n+    expected: int | None,\n+) -> None:\n+    raise NotImplementedError\n+"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.95,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.03,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.22,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 881,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

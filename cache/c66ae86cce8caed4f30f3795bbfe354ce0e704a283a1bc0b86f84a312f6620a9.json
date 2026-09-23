@@ -1,0 +1,127 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_asyncfilters.py::customfilter`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_asyncfilters.py::customfilter`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_asyncfilters.py::customfilter`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_asyncfilters.py::test_custom_async_filter`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_asyncfilters.py::test_custom_async_filter`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_asyncfilters.py::test_custom_async_filter`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_asyncfilters.py::test_custom_async_iteratable_filter`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_asyncfilters.py::test_custom_async_iteratable_filter`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_asyncfilters.py::test_custom_async_iteratable_filter`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/jinja2/nodes.py\n+++ b/src/jinja2/nodes.py\n@@ -2,6 +2,7 @@\n some node tree helper functions used by the parser and compiler in order\n to normalize nodes.\n \"\"\"\n+import inspect\n import operator\n from collections import deque\n from typing import Any\n@@ -649,10 +650,12 @@\n         if filter_ is None or getattr(filter_, \"contextfilter\", False) is True:\n             raise Impossible()\n \n-        # We cannot constant handle async filters, so we need to make sure\n-        # to not go down this path.\n-        if eval_ctx.environment.is_async and getattr(\n-            filter_, \"asyncfiltervariant\", False\n+        # We cannot constant handle async filters, so we need to make\n+        # sure to not go down this path. Account for both sync/async and\n+        # pure-async filters.\n+        if eval_ctx.environment.is_async and (\n+            getattr(filter_, \"asyncfiltervariant\", False)\n+            or inspect.iscoroutinefunction(filter_)\n         ):\n             raise Impossible()\n \n\n--- a/tests/test_asyncfilters.py\n+++ b/tests/test_asyncfilters.py\n@@ -3,6 +3,7 @@\n import pytest\n \n from jinja2 import Environment\n+from jinja2.asyncsupport import auto_aiter\n from jinja2.utils import Markup\n \n \n@@ -223,3 +224,29 @@\n         \"[[0, 1, 2, 3], [4, 5, 6, 'X'], [7, 8, 9, 'X']]\"\n     )\n \n+\n+def test_custom_async_filter(env_async):\n+\n+    env_async.filters[\"customfilter\"] = customfilter\n+    tmpl = env_async.from_string(\"{{ 'static'|customfilter }} {{ arg|customfilter }}\")\n+    out = tmpl.render(arg=\"dynamic\")\n+    assert out == \"static dynamic\"\n+\n+\n+@mark_dualiter(\"items\", lambda: range(10))\n+def test_custom_async_iteratable_filter(env_async, items):\n+    async def customfilter(iterable):\n+        items = []\n+        async for item in auto_aiter(iterable):\n+            items.append(str(item))\n+            if len(items) == 3:\n+                break\n+        return \",\".join(items)\n+\n+    env_async.filters[\"customfilter\"] = customfilter\n+    tmpl = env_async.from_string(\n+        \"{{ items()|customfilter }} .. {{ [3, 4, 5, 6]|customfilter }}\"\n+    )\n+    out = tmpl.render(items=items)\n+    assert out == \"0,1,2 .. 3,4,5\"\n+"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.36,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.26,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.82,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.86,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.89,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.79,
+        "type": "noul"
+      },
+      "r2_defined": {
+        "noul": 0.94,
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r2_wired": {
+        "noul": 0.68,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 2024,
+      "output_tokens": 172
+    }
+  },
+  "variant": "split"
+}

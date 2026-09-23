@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_http.py::test_authorization_basic_incorrect_padding`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_http.py::test_authorization_basic_incorrect_padding`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_http.py::test_authorization_basic_incorrect_padding`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/werkzeug/datastructures/auth.py\n+++ b/src/werkzeug/datastructures/auth.py\n@@ -1,6 +1,7 @@\n from __future__ import annotations\n \n import base64\n+import binascii\n import typing as t\n import warnings\n from functools import wraps\n@@ -107,7 +108,7 @@\n         if scheme == \"basic\":\n             try:\n                 username, _, password = base64.b64decode(rest).decode().partition(\":\")\n-            except UnicodeError:\n+            except (binascii.Error, UnicodeError):\n                 return None\n \n             return cls(scheme, {\"username\": username, \"password\": password})\n\n--- a/tests/test_http.py\n+++ b/tests/test_http.py\n@@ -215,6 +215,9 @@\n         a = Authorization.from_header(f\"Token {token}\")\n         assert a.type == \"token\"\n         assert a.token == token\n+\n+    def test_authorization_basic_incorrect_padding(self):\n+        raise NotImplementedError\n \n     def test_bad_authorization_header_encoding(self):\n         \"\"\"If the base64 encoded bytes can't be decoded as UTF-8\"\"\""
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.95,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.03,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.13,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 914,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

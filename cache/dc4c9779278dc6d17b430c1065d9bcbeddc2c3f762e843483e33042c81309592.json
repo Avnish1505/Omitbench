@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `itsdangerous.py::byte2int`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `itsdangerous.py::byte2int`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `itsdangerous.py::byte2int`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/itsdangerous.py\n+++ b/itsdangerous.py\n@@ -129,30 +129,36 @@\n \n \n def base64_encode(string):\n-    \"\"\"base64 encodes a single string.  The resulting string is safe for\n-    putting into URLs.\n-    \"\"\"\n-    return base64.urlsafe_b64encode(string).strip('=')\n+    \"\"\"base64 encodes a single bytestring.\n+    The resulting bytestring is safe for putting into URLs.\n+    \"\"\"\n+    return base64.urlsafe_b64encode(string).strip(b'=')\n \n \n def base64_decode(string):\n-    \"\"\"base64 decodes a single string.\"\"\"\n-    if isinstance(string, unicode):\n+    \"\"\"base64 decodes a single bytestring (and is tolerant to getting\n+    called with a unicode string).\n+    The result is also a bytestring.\n+    \"\"\"\n+    if isinstance(string, six.text_type):\n         string = string.encode('ascii', 'ignore')\n-    return base64.urlsafe_b64decode(string + '=' * (-len(string) % 4))\n+    return base64.urlsafe_b64decode(string + b'=' * (-len(string) % 4))\n \n \n def int_to_bytes(num):\n     assert num >= 0\n     rv = []\n     while num:\n-        rv.append(chr(num & 0xff))\n+        rv.append(six.int2byte(num & 0xff))\n         num >>= 8\n-    return ''.join(reversed(rv))\n-\n-\n-def bytes_to_int(bytes):\n-    return reduce(lambda a, b: a << 8 | b, map(ord, bytes), 0)\n+    return b''.join(reversed(rv))\n+\n+\n+def bytes_to_int(bytestr):\n+    assert isinstance(bytestr, bytes)\n+    def byte2int(b):\n+        return b if six.PY3 else ord(b)\n+    return reduce(lambda a, b: a << 8 | b, map(byte2int, bytestr), 0)\n \n \n class SigningAlgorithm(object):"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.93,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.93,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1089,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

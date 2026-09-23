@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/models/test_queryparams.py::test_empty_query_params`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/models/test_queryparams.py::test_empty_query_params`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/models/test_queryparams.py::test_empty_query_params`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/httpx/_urls.py\n+++ b/httpx/_urls.py\n@@ -540,7 +540,7 @@\n         items: typing.Sequence[typing.Tuple[str, PrimitiveData]]\n         if value is None or isinstance(value, (str, bytes)):\n             value = value.decode(\"ascii\") if isinstance(value, bytes) else value\n-            self._dict = parse_qs(value)\n+            self._dict = parse_qs(value, keep_blank_values=True)\n         elif isinstance(value, QueryParams):\n             self._dict = {k: list(v) for k, v in value._dict.items()}\n         else:\n\n--- a/tests/models/test_queryparams.py\n+++ b/tests/models/test_queryparams.py\n@@ -76,6 +76,17 @@\n     assert str(q) == \"a=1&a=2\"\n \n \n+def test_empty_query_params():\n+    q = httpx.QueryParams({\"a\": \"\"})\n+    assert str(q) == \"a=\"\n+\n+    q = httpx.QueryParams(\"a=\")\n+    assert str(q) == \"a=\"\n+\n+    q = httpx.QueryParams(\"a\")\n+    assert str(q) == \"a=\"\n+\n+\n def test_queryparam_update_is_hard_deprecated():\n     q = httpx.QueryParams(\"a=123\")\n     with pytest.raises(RuntimeError):"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.34,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 940,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

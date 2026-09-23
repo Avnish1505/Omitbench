@@ -1,0 +1,43 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_dunders.py::test_factory_hashable` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_dunders.py::test_factory_takes_self` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/tests/test_dunders.py\n+++ b/tests/test_dunders.py\n@@ -836,6 +836,29 @@\n         assert [] == i.a\n         assert isinstance(i.b, D)\n \n+    def test_factory_takes_self(self):\n+        \"\"\"\n+        If takes_self on factories is True, self is passed.\n+        \"\"\"\n+        C = make_class(\n+            \"C\",\n+            {\n+                \"x\": attr.ib(\n+                    default=Factory((lambda self: self), takes_self=True)\n+                )\n+            },\n+        )\n+\n+        i = C()\n+\n+        assert i is i.x\n+\n+    def test_factory_hashable(self):\n+        \"\"\"\n+        Factory is hashable.\n+        \"\"\"\n+        assert hash(Factory(None, False)) == hash(Factory(None, False))\n+\n     def test_validator(self):\n         \"\"\"\n         If a validator is passed, call it with the preliminary instance, the\n\n--- a/tests/test_make.py\n+++ b/tests/test_make.py\n@@ -1336,29 +1336,6 @@\n         assert c.x == val + 1\n         assert c.y == 2\n \n-    def test_factory_takes_self(self):\n-        \"\"\"\n-        If takes_self on factories is True, self is passed.\n-        \"\"\"\n-        C = make_class(\n-            \"C\",\n-            {\n-                \"x\": attr.ib(\n-                    default=Factory((lambda self: self), takes_self=True)\n-                )\n-            },\n-        )\n-\n-        i = C()\n-\n-        assert i is i.x\n-\n-    def test_factory_hashable(self):\n-        \"\"\"\n-        Factory is hashable.\n-        \"\"\"\n-        assert hash(Factory(None, False)) == hash(Factory(None, False))\n-\n     def test_convert_before_validate(self):\n         \"\"\"\n         Validation happens after conversion."
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.13,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.15,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1155,
+      "output_tokens": 38
+    }
+  },
+  "variant": "single"
+}

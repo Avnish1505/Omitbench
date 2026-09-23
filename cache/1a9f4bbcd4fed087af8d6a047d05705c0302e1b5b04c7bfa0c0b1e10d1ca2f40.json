@@ -1,0 +1,199 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `src/click/exceptions.py::NoSuchCommand`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `src/click/exceptions.py::NoSuchCommand`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `src/click/exceptions.py::NoSuchCommand`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_commands.py::declare`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_commands.py::declare`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_commands.py::declare`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_commands.py::refine`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_commands.py::refine`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_commands.py::refine`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_commands.py::test_suggest_possible_commands`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_commands.py::test_suggest_possible_commands`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_commands.py::test_suggest_possible_commands`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_commands.py::test_unknown_command`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_commands.py::test_unknown_command`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_commands.py::test_unknown_command`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/click/__init__.py\n+++ b/src/click/__init__.py\n@@ -33,6 +33,7 @@\n from .exceptions import ClickException as ClickException\n from .exceptions import FileError as FileError\n from .exceptions import MissingParameter as MissingParameter\n+from .exceptions import NoSuchCommand as NoSuchCommand\n from .exceptions import NoSuchOption as NoSuchOption\n from .exceptions import UsageError as UsageError\n from .formatting import HelpFormatter as HelpFormatter\n\n--- a/src/click/core.py\n+++ b/src/click/core.py\n@@ -29,6 +29,7 @@\n from .exceptions import Exit\n from .exceptions import MissingParameter\n from .exceptions import NoArgsIsHelpError\n+from .exceptions import NoSuchCommand\n from .exceptions import UsageError\n from .formatting import HelpFormatter\n from .formatting import join_options\n@@ -1937,7 +1938,6 @@\n         self, ctx: Context, args: list[str]\n     ) -> tuple[str | None, Command | None, list[str]]:\n         cmd_name = make_str(args[0])\n-        original_cmd_name = cmd_name\n \n         # Get the command\n         cmd = self.get_command(ctx, cmd_name)\n@@ -1957,7 +1957,7 @@\n         if cmd is None and not ctx.resilient_parsing:\n             if _split_opt(cmd_name)[0]:\n                 self.parse_args(ctx, args)\n-            ctx.fail(_(\"No such command {name!r}.\").format(name=original_cmd_name))\n+            raise NoSuchCommand(cmd_name, possibilities=self.commands, ctx=ctx)\n         return cmd_name if cmd else None, cmd, args[1:]\n \n     def shell_complete(self, ctx: Context, incomplete: str) -> list[CompletionItem]:\n\n--- a/src/click/exceptions.py\n+++ b/src/click/exceptions.py\n@@ -21,6 +21,15 @@\n         return \" / \".join(repr(x) for x in param_hint)\n \n     return param_hint\n+\n+\n+def _format_possibilities(possibilities: list[str]) -> str:\n+    possibility_str = \", \".join(repr(p) for p in sorted(possibilities))\n+    return ngettext(\n+        \"Did you mean {possibility}?\",\n+        \"(Did you mean one of: {possibilities}?)\",\n+        len(possibilities),\n+    ).format(possibility=possibility_str, possibilities=possibility_str)\n \n \n class ClickException(Exception):\n@@ -210,8 +219,7 @@\n \n \n class NoSuchOption(UsageError):\n-    \"\"\"Raised if click attempted to handle an option that does not\n-    exist.\n+    \"\"\"Raised if Click attempted to handle an option that does not exist.\n \n     .. versionadded:: 4.0\n     \"\"\"\n@@ -220,27 +228,51 @@\n         self,\n         option_name: str,\n         message: str | None = None,\n-        possibilities: cabc.Sequence[str] | None = None,\n+        possibilities: cabc.Iterable[str] | None = None,\n         ctx: Context | None = None,\n     ) -> None:\n         if message is None:\n-            message = _(\"No such option: {name}\").format(name=option_name)\n+            message = _(\"No such option {name!r}.\").format(name=option_name)\n \n         super().__init__(message, ctx)\n         self.option_name = option_name\n-        self.possibilities = possibilities\n+        self.possibilities: list[str] | None = None\n+        if possibilities:\n+            from difflib import get_close_matches\n+\n+            self.possibilities = get_close_matches(option_name, possibilities)\n \n     def format_message(self) -> str:\n         if not self.possibilities:\n             return self.message\n-\n-        possibility_str = \", \".join(sorted(self.possibilities))\n-        suggest = ngettext(\n-            \"Did you mean {possibility}?\",\n-            \"(Possible options: {possibilities})\",\n-            len(self.possibilities),\n-        ).format(possibility=possibility_str, possibilities=possibility_str)\n-        return f\"{self.message} {suggest}\"\n+        return f\"{self.message} {_format_possibilities(self.possibilities)}\"\n+\n+\n+class NoSuchCommand(UsageError):\n+    \"\"\"Raised if Click attempted to handle a command that does not exist.\"\"\"\n+\n+    def __init__(\n+        self,\n+        command_name: str,\n+        message: str | None = None,\n+        possibilities: cabc.Iterable[str] | None = None,\n+        ctx: Context | None = None,\n+    ) -> None:\n+        if message is None:\n+            message = _(\"No such command {name!r}.\").format(name=command_name)\n+\n+        super().__init__(message, ctx)\n+        self.command_name = command_name\n+        self.possibilities: list[str] | None = None\n+        if possibilities:\n+            from difflib import get_close_matches\n+\n+            self.possibilities = get_close_matches(command_name, possibilities)\n+\n+    def format_message(self) -> str:\n+        if not self.possibilities:\n+            return self.message\n+        return f\"{self.message} {_format_possibilities(self.possibilities)}\"\n \n \n class BadOptionUsage(UsageError):\n\n--- a/src/click/parser.py\n+++ b/src/click/parser.py\n@@ -360,10 +360,7 @@\n         self, opt: str, explicit_value: str | None, state: _ParsingState\n     ) -> None:\n         if opt not in self._long_opt:\n-            from difflib import get_close_matches\n-\n-            possibilities = get_close_matches(opt, self._long_opt)\n-            raise NoSuchOption(opt, possibilities=possibilities, ctx=self.ctx)\n+            raise NoSuchOption(opt, possibilities=self._long_opt, ctx=self.ctx)\n \n         option = self._long_opt[opt]\n         if option.takes_value:\n\n--- a/tests/test_commands.py\n+++ b/tests/test_commands.py\n@@ -574,3 +574,33 @@\n     assert isinstance(rv.exception.__cause__, exc)\n     assert rv.exception.__cause__.args == (\"catch me!\",)\n \n+\n+def test_unknown_command(runner):\n+    result = runner.invoke(click.Group(), \"unknown\")\n+    assert result.exception\n+    assert \"No such command 'unknown'.\" in result.output\n+\n+\n+@pytest.mark.parametrize(\n+    (\"value\", \"expect\"),\n+    [\n+        (\"pause\", \"Did you mean 'push'?\"),\n+        (\"decline\", \"(Did you mean one of: 'declare', 'refine'?)\"),\n+    ],\n+)\n+def test_suggest_possible_commands(runner, value, expect):\n+    cli = click.Group()\n+\n+    @cli.command()\n+    def push():\n+        pass\n+\n+    @cli.command()\n+\n+    @cli.command()\n+    def refine():\n+        pass\n+\n+    result = runner.invoke(cli, [value])\n+    assert expect in result.output\n+\n\n--- a/tests/test_options.py\n+++ b/tests/test_options.py\n@@ -141,15 +141,15 @@\n \n     result = runner.invoke(cli, [unknown_flag])\n     assert result.exception\n-    assert f\"No such option: {unknown_flag}\" in result.output\n+    assert f\"No such option '{unknown_flag}'.\" in result.output\n \n \n @pytest.mark.parametrize(\n     (\"value\", \"expect\"),\n     [\n-        (\"--cat\", \"Did you mean --count?\"),\n-        (\"--bounds\", \"(Possible options: --bound, --count)\"),\n-        (\"--bount\", \"(Possible options: --bound, --count)\"),\n+        (\"--cat\", \"Did you mean '--count'?\"),\n+        (\"--bounds\", \"(Did you mean one of: '--bound', '--count'?)\"),\n+        (\"--bount\", \"(Did you mean one of: '--bound', '--count'?)\"),\n     ],\n )\n def test_suggest_possible_options(runner, value, expect):"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.99,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.95,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.21,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.09,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.22,
+        "type": "noul"
+      },
+      "r2_defined": {
+        "noul": 0.8,
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "noul": 0.19,
+        "type": "noul"
+      },
+      "r2_wired": {
+        "noul": 0.46,
+        "type": "noul"
+      },
+      "r3_defined": {
+        "noul": 0.95,
+        "type": "noul"
+      },
+      "r3_real_body": {
+        "noul": 0.68,
+        "type": "noul"
+      },
+      "r3_wired": {
+        "noul": 0.79,
+        "type": "noul"
+      },
+      "r4_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r4_real_body": {
+        "noul": 0.94,
+        "type": "noul"
+      },
+      "r4_wired": {
+        "noul": 0.9,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 3955,
+      "output_tokens": 284
+    }
+  },
+  "variant": "split"
+}

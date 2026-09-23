@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `src/werkzeug/routing/map.py::merge_slashes`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `src/werkzeug/routing/map.py::merge_slashes`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `src/werkzeug/routing/map.py::merge_slashes`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/werkzeug/routing/map.py\n+++ b/src/werkzeug/routing/map.py\n@@ -109,7 +109,6 @@\n \n         self.default_subdomain = default_subdomain\n         self.strict_slashes = strict_slashes\n-        self.merge_slashes = merge_slashes\n         self.redirect_defaults = redirect_defaults\n         self.host_matching = host_matching\n \n@@ -122,6 +121,14 @@\n \n         for rulefactory in rules or ():\n             self.add(rulefactory)\n+\n+    @property\n+    def merge_slashes(self) -> bool:\n+        raise NotImplementedError\n+\n+    @merge_slashes.setter\n+    def merge_slashes(self, value: bool) -> None:\n+        self._matcher.merge_slashes = value\n \n     def is_endpoint_expecting(self, endpoint: str, *arguments: str) -> bool:\n         \"\"\"Iterate over all rules and check if the endpoint expects\n\n--- a/src/werkzeug/routing/matcher.py\n+++ b/src/werkzeug/routing/matcher.py\n@@ -177,7 +177,7 @@\n                 rv = _match(self._root, [domain, *path.split(\"/\")], [])\n             except SlashRequired:\n                 raise RequestPath(f\"{path}/\") from None\n-            if rv is None:\n+            if rv is None or rv[0].merge_slashes is False:\n                 raise NoMatch(have_match_for, websocket_mismatch)\n             else:\n                 raise RequestPath(f\"{path}\")\n\n--- a/tests/test_routing.py\n+++ b/tests/test_routing.py\n@@ -95,6 +95,7 @@\n             r.Rule(\"/yes/tail/\", endpoint=\"yes_tail\"),\n             r.Rule(\"/with/<path:path>\", endpoint=\"with_path\"),\n             r.Rule(\"/no//merge\", endpoint=\"no_merge\", merge_slashes=False),\n+            r.Rule(\"/no/merging\", endpoint=\"no_merging\", merge_slashes=False),\n         ]\n     )\n     adapter = url_map.bind(\"localhost\", \"/\")\n@@ -123,6 +124,9 @@\n     assert rv[\"path\"] == \"x//y\"\n \n     assert adapter.match(\"/no//merge\")[0] == \"no_merge\"\n+\n+    assert adapter.match(\"/no/merging\")[0] == \"no_merging\"\n+    pytest.raises(NotFound, lambda: adapter.match(\"/no//merging\"))\n \n \n @pytest.mark.parametrize("
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.71,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.24,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.88,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1214,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

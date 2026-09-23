@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_json_decode_errors_are_serializable_deserializable`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_json_decode_errors_are_serializable_deserializable`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_json_decode_errors_are_serializable_deserializable`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/requests/exceptions.py\n+++ b/src/requests/exceptions.py\n@@ -40,6 +40,16 @@\n         \"\"\"\n         CompatJSONDecodeError.__init__(self, *args)\n         InvalidJSONError.__init__(self, *self.args, **kwargs)\n+\n+    def __reduce__(self):\n+        \"\"\"\n+        The __reduce__ method called when pickling the object must\n+        be the one from the JSONDecodeError (be it json/simplejson)\n+        as it expects all the arguments for instantiation, not just\n+        one like the IOError, and the MRO would by default call the\n+        __reduce__ method from the IOError due to the inheritance order.\n+        \"\"\"\n+        return CompatJSONDecodeError.__reduce__(self)\n \n \n class HTTPError(RequestException):\n\n--- a/tests/test_requests.py\n+++ b/tests/test_requests.py\n@@ -2811,3 +2811,7 @@\n         assert r5 == 425\n         assert r6 == 425\n \n+\n+def test_json_decode_errors_are_serializable_deserializable():\n+    raise NotImplementedError\n+"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.95,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.03,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.18,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 932,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

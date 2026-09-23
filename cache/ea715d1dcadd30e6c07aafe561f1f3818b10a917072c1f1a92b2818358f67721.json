@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_json_decode_persists_doc_attr`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_json_decode_persists_doc_attr`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_json_decode_persists_doc_attr`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/requests/exceptions.py\n+++ b/requests/exceptions.py\n@@ -33,6 +33,16 @@\n \n class JSONDecodeError(InvalidJSONError, CompatJSONDecodeError):\n     \"\"\"Couldn't decode the text into json\"\"\"\n+\n+    def __init__(self, *args, **kwargs):\n+        \"\"\"\n+        Construct the JSONDecodeError instance first with all\n+        args. Then use it's args to construct the IOError so that\n+        the json specific args aren't used as IOError specific args\n+        and the error message from JSONDecodeError is preserved.\n+        \"\"\"\n+        CompatJSONDecodeError.__init__(self, *args)\n+        InvalidJSONError.__init__(self, *self.args, **kwargs)\n \n \n class HTTPError(RequestException):\n\n--- a/tests/test_requests.py\n+++ b/tests/test_requests.py\n@@ -23,14 +23,14 @@\n     cookiejar_from_dict, morsel_to_cookie)\n from requests.exceptions import (\n     ConnectionError, ConnectTimeout, InvalidSchema, InvalidURL,\n-    MissingSchema, ReadTimeout, Timeout, RetryError, TooManyRedirects,\n+    MissingSchema, ReadTimeout, Timeout, RetryError, RequestException, TooManyRedirects,\n     ProxyError, InvalidHeader, UnrewindableBodyError, SSLError, InvalidProxyURL, InvalidJSONError)\n from requests.models import PreparedRequest\n from requests.structures import CaseInsensitiveDict\n from requests.sessions import SessionRedirectMixin\n from requests.models import urlencode\n from requests.hooks import default_hooks\n-from requests.compat import MutableMapping\n+from requests.compat import JSONDecodeError, is_py3, MutableMapping\n \n from .compat import StringIO, u\n from .utils import override_environ\n@@ -2585,6 +2585,16 @@\n \n     def test_json_decode_compatibility(self, httpbin):\n         r = requests.get(httpbin('bytes/20'))\n-        with pytest.raises(requests.exceptions.JSONDecodeError):\n+        with pytest.raises(requests.exceptions.JSONDecodeError) as excinfo:\n             r.json()\n-\n+        assert isinstance(excinfo.value, RequestException)\n+        assert isinstance(excinfo.value, JSONDecodeError)\n+        assert r.text not in str(excinfo.value)\n+\n+    @pytest.mark.skipif(not is_py3, reason=\"doc attribute is only present on py3\")\n+    def test_json_decode_persists_doc_attr(self, httpbin):\n+        r = requests.get(httpbin('bytes/20'))\n+        with pytest.raises(requests.exceptions.JSONDecodeError) as excinfo:\n+            r.json()\n+        assert excinfo.value.doc == r.text\n+"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.95,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.69,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1324,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

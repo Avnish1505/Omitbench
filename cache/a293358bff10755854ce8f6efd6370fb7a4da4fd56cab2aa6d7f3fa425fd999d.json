@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_context.py::test_with_resource_nested_exception`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_context.py::test_with_resource_nested_exception`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_context.py::test_with_resource_nested_exception`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/tests/test_context.py\n+++ b/tests/test_context.py\n@@ -478,42 +478,7 @@\n             )\n             raise TestException()\n \n-    base_val_nested = 11\n-    with ctx.scope():\n-        rv = ctx.with_resource(TestContext(base_val=base_val))\n-        rv_nested = ctx.with_resource(TestContext(base_val=base_val_nested))\n-        assert rv[0] == base_val\n-        assert rv_nested[0] == base_val_nested\n-\n-    assert rv == [base_val - 1]\n-    assert rv_nested == [base_val_nested - 1]\n-\n-    with ctx.scope():\n-        rv = ctx.with_resource(TestContext(base_val=base_val))\n-        rv_nested = ctx.with_resource(TestContext(base_val=base_val_nested))\n-        raise TestException()\n-\n-    # If one of the context \"eats\" the exceptions they will not be forwarded to other\n-    # parts. This is due to how ExitStack unwinding works\n-    assert rv_nested == [base_val_nested + 1]\n-    assert rv == [base_val - 1]\n-\n-    with ctx.scope():\n-        rv = ctx.with_resource(TestContext(base_val=base_val))\n-        rv_nested = ctx.with_resource(\n-            TestContext(base_val=base_val_nested, handle_exception=False)\n-        )\n-        raise TestException()\n-\n-    assert rv_nested == [base_val_nested + 1]\n-    assert rv == [base_val + 1]\n-\n-    with pytest.raises(TestException):\n-        rv = ctx.with_resource(TestContext(base_val=base_val, handle_exception=False))\n-        rv_nested = ctx.with_resource(\n-            TestContext(base_val=base_val_nested, handle_exception=False)\n-        )\n-        raise TestException()\n+\n \n \n def test_make_pass_decorator_args(runner):"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.25,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.16,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.26,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1058,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

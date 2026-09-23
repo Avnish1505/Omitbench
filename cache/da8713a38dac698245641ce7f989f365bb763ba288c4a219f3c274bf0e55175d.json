@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_validators.py::TestOr` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/attr/validators.py\n+++ b/src/attr/validators.py\n@@ -35,6 +35,7 @@\n     \"min_len\",\n     \"not_\",\n     \"optional\",\n+    \"or_\",\n     \"set_disabled\",\n ]\n \n@@ -615,3 +616,46 @@\n         exc_types = (exc_types,)\n     return _NotValidator(validator, msg, exc_types)\n \n+\n+@attrs(repr=False, slots=True, hash=True)\n+class _OrValidator:\n+    validators = attrib()\n+\n+    def __call__(self, inst, attr, value):\n+        for v in self.validators:\n+            try:\n+                v(inst, attr, value)\n+            except Exception:  # noqa: BLE001, PERF203, S112\n+                continue\n+            else:\n+                return\n+\n+        msg = f\"None of {self.validators!r} satisfied for value {value!r}\"\n+        raise ValueError(msg)\n+\n+    def __repr__(self):\n+        return f\"<or validator wrapping {self.validators!r}>\"\n+\n+\n+def or_(*validators):\n+    \"\"\"\n+    A validator that composes multiple validators into one.\n+\n+    When called on a value, it runs all wrapped validators until one of them\n+    is satisfied.\n+\n+    :param ~collections.abc.Iterable[typing.Callable] validators: Arbitrary\n+        number of validators.\n+\n+    :raises ValueError: If no validator is satisfied. Raised with a\n+        human-readable error message listing all the wrapped validators and\n+        the value that failed all of them.\n+\n+    .. versionadded:: 24.1.0\n+    \"\"\"\n+    vals = []\n+    for v in validators:\n+        vals.extend(v.validators if isinstance(v, _OrValidator) else [v])\n+\n+    return _OrValidator(tuple(vals))\n+\n\n--- a/tests/test_validators.py\n+++ b/tests/test_validators.py\n@@ -30,6 +30,7 @@\n     min_len,\n     not_,\n     optional,\n+    or_,\n )\n \n from .utils import simple_attr\n@@ -1262,3 +1263,7 @@\n             \"(got <class 'str'>).\"\n         ) == e.value.args[0]\n \n+\n+class TestOr:\n+    raise NotImplementedError\n+"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.01,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1054,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

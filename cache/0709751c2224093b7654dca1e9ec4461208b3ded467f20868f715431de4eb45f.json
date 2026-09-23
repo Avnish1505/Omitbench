@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_wrappers.py::test_advertise_accept_ranges` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/werkzeug/wrappers/response.py\n+++ b/src/werkzeug/wrappers/response.py\n@@ -667,22 +667,26 @@\n         :raises: :class:`~werkzeug.exceptions.RequestedRangeNotSatisfiable`\n                  if `Range` header could not be parsed or satisfied.\n \n+        .. versionchanged:: 3.2\n+            Adds the ``Accept-Ranges`` header if ``accept_ranges`` is passed,\n+            even if this is not a satisfiable range request.\n+\n         .. versionchanged:: 2.0\n             Returns ``False`` if the length is 0.\n         \"\"\"\n         from ..exceptions import RequestedRangeNotSatisfiable\n \n-        if (\n-            not accept_ranges\n-            or complete_length is None\n-            or complete_length == 0\n-            or not self._is_range_request_processable(environ)\n-        ):\n+        if not accept_ranges:\n             return False\n \n         if accept_ranges is True:\n             accept_ranges = \"bytes\"\n \n+        self.accept_ranges = accept_ranges\n+\n+        if not (complete_length and self._is_range_request_processable(environ)):\n+            return False\n+\n         parsed_range = parse_range_header(environ.get(\"HTTP_RANGE\"))\n \n         if parsed_range is None:\n@@ -695,8 +699,7 @@\n             raise RequestedRangeNotSatisfiable(complete_length)\n \n         content_length = range_tuple[1] - range_tuple[0]\n-        self.headers[\"Content-Length\"] = str(content_length)\n-        self.headers[\"Accept-Ranges\"] = accept_ranges\n+        self.content_length = content_length\n         self.content_range = content_range_header\n         self.status_code = 206\n         self._wrap_range_response(range_tuple[0], content_length)\n@@ -742,6 +745,10 @@\n                                 Range Requests completion.\n         :raises: :class:`~werkzeug.exceptions.RequestedRangeNotSatisfiable`\n                  if `Range` header could not be parsed or satisfied.\n+\n+        .. versionchangedd: 3.2\n+            Adds the ``Accept-Ranges`` header if ``accept_ranges`` is passed,\n+            even if this is not a satisfiable range request.\n \n         .. versionchanged:: 2.0\n             Range processing is skipped if length is 0 instead of\n\n--- a/tests/test_wrappers.py\n+++ b/tests/test_wrappers.py\n@@ -595,6 +595,15 @@\n     assert response.content_length == 999\n \n \n+def test_advertise_accept_ranges() -> None:\n+    env = create_environ()\n+    response = wrappers.Response()\n+    response.make_conditional(env, accept_ranges=True)\n+    assert response.status_code == 200\n+    assert response.headers[\"Accept-Ranges\"] == \"bytes\"\n+    assert \"Content-Range\" not in response.headers\n+\n+\n def test_range_request_basic():\n     env = create_environ()\n     response = wrappers.Response(\"Hello World\")"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.14,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1199,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

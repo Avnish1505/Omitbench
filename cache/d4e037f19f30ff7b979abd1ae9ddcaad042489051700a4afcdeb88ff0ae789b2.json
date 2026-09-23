@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_types.py::test_path_dash_no_byteswarning`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_types.py::test_path_dash_no_byteswarning`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_types.py::test_path_dash_no_byteswarning`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/click/types.py\n+++ b/src/click/types.py\n@@ -1104,7 +1104,8 @@\n     ) -> str | bytes | os.PathLike[str]:\n         rv = value\n \n-        is_dash = self.file_okay and self.allow_dash and rv in (b\"-\", \"-\")\n+        dash = b\"-\" if isinstance(rv, bytes) else \"-\"\n+        is_dash = self.file_okay and self.allow_dash and rv == dash\n \n         if not is_dash:\n             if self.resolve_path:\n\n--- a/tests/test_types.py\n+++ b/tests/test_types.py\n@@ -1,6 +1,8 @@\n import os.path\n import pathlib\n import platform\n+import subprocess\n+import sys\n import tempfile\n \n import pytest\n@@ -125,6 +127,10 @@\n     assert result.return_value == expect\n \n \n+def test_path_dash_no_byteswarning():\n+    raise NotImplementedError\n+\n+\n def _symlinks_supported():\n     with tempfile.TemporaryDirectory(prefix=\"click-pytest-\") as tempdir:\n         target = os.path.join(tempdir, \"target\")"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.03,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.12,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 897,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

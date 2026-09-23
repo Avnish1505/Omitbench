@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/sansio/test_multipart.py::test_empty_field`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/sansio/test_multipart.py::test_empty_field`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/sansio/test_multipart.py::test_empty_field`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/werkzeug/sansio/multipart.py\n+++ b/src/werkzeug/sansio/multipart.py\n@@ -4,6 +4,7 @@\n from enum import Enum\n from typing import cast\n from typing import List\n+from typing import Match\n from typing import Optional\n from typing import Tuple\n \n@@ -58,6 +59,7 @@\n     PREAMBLE = auto()\n     PART = auto()\n     DATA = auto()\n+    DATA_START = auto()\n     EPILOGUE = auto()\n     COMPLETE = auto()\n \n@@ -172,7 +174,11 @@\n             match = BLANK_LINE_RE.search(self.buffer, self._search_position)\n             if match is not None:\n                 headers = self._parse_headers(self.buffer[: match.start()])\n-                del self.buffer[: match.end()]\n+                # The final header ends with a single CRLF, however a\n+                # blank line indicates the start of the\n+                # body. Therefore the end is after the first CRLF.\n+                headers_end = (match.start() + match.end()) // 2\n+                del self.buffer[:headers_end]\n \n                 if \"content-disposition\" not in headers:\n                     raise ValueError(\"Missing Content-Disposition header\")\n@@ -193,7 +199,7 @@\n                         headers=headers,\n                         name=name,\n                     )\n-                self.state = State.DATA\n+                self.state = State.DATA_START\n                 self._search_position = 0\n                 self._parts_decoded += 1\n \n@@ -205,28 +211,15 @@\n                 # safe buffer for part of the search target.\n                 self._search_position = max(0, len(self.buffer) - SEARCH_EXTRA_LENGTH)\n \n+        elif self.state == State.DATA_START:\n+            data, del_index, more_data = self._parse_data(self.buffer, start=True)\n+            del self.buffer[:del_index]\n+            event = Data(data=data, more_data=more_data)\n+            if more_data:\n+                self.state = State.DATA\n+\n         elif self.state == State.DATA:\n-            if self.buffer.find(b\"--\" + self.boundary) == -1:\n-                # No complete boundary in the buffer, but there may be\n-                # a partial boundary at the end. As the boundary\n-                # starts with either a nl or cr find the earliest and\n-                # return up to that as data.\n-                data_length = del_index = self.last_newline()\n-                more_data = True\n-            else:\n-                match = self.boundary_re.search(self.buffer)\n-                if match is not None:\n-                    if match.group(1).startswith(b\"--\"):\n-                        self.state = State.EPILOGUE\n-                    else:\n-                        self.state = State.PART\n-                    data_length = match.start()\n-                    del_index = match.end()\n-                else:\n-                    data_length = del_index = self.last_newline()\n-                more_data = match is None\n-\n-            data = bytes(self.buffer[:data_length])\n+            data, del_index, more_data = self._parse_data(self.buffer, start=False)\n             del self.buffer[:del_index]\n             if data or not more_data:\n                 event = Data(data=data, more_data=more_data)\n@@ -252,6 +245,28 @@\n                 headers.append((name.strip(), value.strip()))\n         return Headers(headers)\n \n+    def _parse_data(self, data: bytes, *, start: bool) -> Tuple[bytes, int, bool]:\n+        # Body parts must start with CRLF (or CR or LF)\n+        if start:\n+            match = LINE_BREAK_RE.match(data)\n+            data_start = cast(Match[bytes], match).end()\n+        else:\n+            data_start = 0\n+\n+        match = self.boundary_re.search(data)\n+        if match is not None:\n+            if match.group(1).startswith(b\"--\"):\n+                self.state = State.EPILOGUE\n+            else:\n+                self.state = State.PART\n+            data_end = match.start()\n+            del_index = match.end()\n+        else:\n+            data_end = del_index = self.last_newline()\n+        more_data = match is None\n+\n+        return bytes(data[data_start:data_end]), del_index, more_data\n+\n \n class MultipartEncoder:\n     def __init__(self, boundary: bytes) -> None:\n@@ -267,7 +282,6 @@\n             State.PART,\n             State.DATA,\n         }:\n-            self.state = State.DATA\n             data = b\"\\r\\n--\" + self.boundary + b\"\\r\\n\"\n             data += b'Content-Disposition: form-data; name=\"%s\"' % _to_bytes(event.name)\n             if isinstance(event, File):\n@@ -276,8 +290,14 @@\n             for name, value in cast(Field, event).headers:\n                 if name.lower() != \"content-disposition\":\n                     data += _to_bytes(f\"{name}: {value}\\r\\n\")\n-            data += b\"\\r\\n\"\n+            self.state = State.DATA_START\n             return data\n+        elif isinstance(event, Data) and self.state == State.DATA_START:\n+            self.state = State.DATA\n+            if len(event.data) > 0:\n+                return b\"\\r\\n\" + event.data\n+            else:\n+                return event.data\n         elif isinstance(event, Data) and self.state == State.DATA:\n             return event.data\n         elif isinstance(event, Epilogue):\n\n--- a/tests/sansio/test_multipart.py\n+++ b/tests/sansio/test_multipart.py\n@@ -30,7 +30,7 @@\n     decoder.receive_data(data)\n     decoder.receive_data(None)\n     events = [decoder.next_event()]\n-    while not isinstance(events[-1], Epilogue) and len(events) < 6:\n+    while not isinstance(events[-1], Epilogue):\n         events.append(decoder.next_event())\n     assert events == [\n         Preamble(data=b\"\"),\n@@ -79,3 +79,5 @@\n     decoder.receive_data(None)\n     assert isinstance(decoder.next_event(), Epilogue)\n \n+\n+"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.21,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.12,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.6,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 2013,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

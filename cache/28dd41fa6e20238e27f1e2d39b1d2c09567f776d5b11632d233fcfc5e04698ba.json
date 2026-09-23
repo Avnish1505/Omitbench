@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_context.py::test_with_resource_nested_exception` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/tests/test_context.py\n+++ b/tests/test_context.py\n@@ -478,7 +478,41 @@\n             )\n             raise TestException()\n \n+\n+def test_with_resource_nested_exception() -> None:\n+    class TestContext(AbstractContextManager[list[int]]):\n+        _handle_exception: bool\n+        _base_val: int\n+        val: list[int]\n+\n+        def __init__(self, base_val: int = 1, *, handle_exception: bool = True) -> None:\n+            self._handle_exception = handle_exception\n+            self._base_val = base_val\n+\n+        def __enter__(self) -> list[int]:\n+            self.val = [self._base_val]\n+            return self.val\n+\n+        def __exit__(\n+            self,\n+            exc_type: type[BaseException] | None,\n+            exc_value: BaseException | None,\n+            traceback: TracebackType | None,\n+        ) -> bool | None:\n+            if not exc_type:\n+                self.val[0] = self._base_val - 1\n+                return None\n+\n+            self.val[0] = self._base_val + 1\n+            return self._handle_exception\n+\n+    class TestException(Exception):\n+        pass\n+\n+    ctx = click.Context(click.Command(\"test\"))\n+    base_val = 1\n     base_val_nested = 11\n+\n     with ctx.scope():\n         rv = ctx.with_resource(TestContext(base_val=base_val))\n         rv_nested = ctx.with_resource(TestContext(base_val=base_val_nested))"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.35,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 864,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

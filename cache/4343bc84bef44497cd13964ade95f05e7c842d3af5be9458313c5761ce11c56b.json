@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `src/jinja2/environment.py::to_list` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/jinja2/environment.py\n+++ b/src/jinja2/environment.py\n@@ -2,6 +2,7 @@\n options.\n \"\"\"\n import os\n+import sys\n import typing\n import typing as t\n import weakref\n@@ -1278,8 +1279,22 @@\n         if self.environment.is_async:\n             import asyncio\n \n-            loop = asyncio.get_event_loop()\n-            return loop.run_until_complete(self.render_async(*args, **kwargs))\n+            close = False\n+\n+            if sys.version_info < (3, 7):\n+                loop = asyncio.get_event_loop()\n+            else:\n+                try:\n+                    loop = asyncio.get_running_loop()\n+                except RuntimeError:\n+                    loop = asyncio.new_event_loop()\n+                    close = True\n+\n+            try:\n+                return loop.run_until_complete(self.render_async(*args, **kwargs))\n+            finally:\n+                if close:\n+                    loop.close()\n \n         ctx = self.new_context(dict(*args, **kwargs))\n \n@@ -1326,14 +1341,17 @@\n         if self.environment.is_async:\n             import asyncio\n \n-            loop = asyncio.get_event_loop()\n-            async_gen = self.generate_async(*args, **kwargs)\n-\n-            try:\n-                while True:\n-                    yield loop.run_until_complete(async_gen.__anext__())\n-            except StopAsyncIteration:\n-                return\n+            async def to_list() -> t.List[str]:\n+                raise NotImplementedError\n+\n+            if sys.version_info < (3, 7):\n+                loop = asyncio.get_event_loop()\n+                out = loop.run_until_complete(to_list())\n+            else:\n+                out = asyncio.run(to_list())\n+\n+            yield from out\n+            return\n \n         ctx = self.new_context(dict(*args, **kwargs))\n \n\n--- a/tests/test_async.py\n+++ b/tests/test_async.py\n@@ -1,4 +1,5 @@\n import asyncio\n+import sys\n \n import pytest\n \n@@ -13,9 +14,17 @@\n from jinja2.nativetypes import NativeEnvironment\n \n \n-def run(coro):\n-    loop = asyncio.get_event_loop()\n-    return loop.run_until_complete(coro)\n+if sys.version_info < (3, 7):\n+\n+    def run(coro):\n+        loop = asyncio.get_event_loop()\n+        return loop.run_until_complete(coro)\n+\n+\n+else:\n+\n+    def run(coro):\n+        return asyncio.run(coro)\n \n \n def test_basic_async():"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.02,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1070,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

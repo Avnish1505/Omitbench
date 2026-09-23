@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_utils.py::test_tarfile_member`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_utils.py::test_tarfile_member`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_utils.py::test_tarfile_member`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/requests/utils.py\n+++ b/requests/utils.py\n@@ -124,7 +124,10 @@\n     elif hasattr(o, 'fileno'):\n         try:\n             fileno = o.fileno()\n-        except io.UnsupportedOperation:\n+        except (io.UnsupportedOperation, AttributeError):\n+            # AttributeError is a surprising exception, seeing as how we've just checked\n+            # that `hasattr(o, 'fileno')`.  It happens for objects obtained via\n+            # `Tarfile.extractfile()`, per issue 5229.\n             pass\n         else:\n             total_length = os.fstat(fileno).st_size\n\n--- a/tests/test_utils.py\n+++ b/tests/test_utils.py\n@@ -4,6 +4,7 @@\n import copy\n import filecmp\n from io import BytesIO\n+import tarfile\n import zipfile\n from collections import deque\n \n@@ -86,6 +87,18 @@\n             assert super_len(fd) == 4\n         assert len(recwarn) == warnings_num\n \n+    def test_tarfile_member(self, tmpdir):\n+        file_obj = tmpdir.join('test.txt')\n+        file_obj.write('Test')\n+\n+        tar_obj = str(tmpdir.join('test.tar'))\n+        with tarfile.open(tar_obj, 'w') as tar:\n+            tar.add(str(file_obj), arcname='test.txt')\n+\n+        with tarfile.open(tar_obj) as tar:\n+            member = tar.extractfile('test.txt')\n+            assert super_len(member) == 4\n+\n     def test_super_len_with__len__(self):\n         foo = [1,2,3,4]\n         len_foo = super_len(foo)"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.56,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1021,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

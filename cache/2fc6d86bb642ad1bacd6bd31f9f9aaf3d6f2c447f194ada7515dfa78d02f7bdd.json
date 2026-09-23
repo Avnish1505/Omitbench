@@ -1,0 +1,163 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_arguments.py::test_argument_custom_class_can_override_type_cast_value_and_never_sees_unset`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_arguments.py::test_argument_custom_class_can_override_type_cast_value_and_never_sees_unset`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_arguments.py::test_argument_custom_class_can_override_type_cast_value_and_never_sees_unset`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_arguments.py::type_cast_value`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_arguments.py::type_cast_value`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_arguments.py::type_cast_value`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_options.py::test_option_custom_class_can_override_type_cast_value_and_never_sees_unset`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_options.py::test_option_custom_class_can_override_type_cast_value_and_never_sees_unset`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_options.py::test_option_custom_class_can_override_type_cast_value_and_never_sees_unset`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_options.py::type_cast_value`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_options.py::type_cast_value`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_options.py::type_cast_value`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/click/core.py\n+++ b/src/click/core.py\n@@ -2338,7 +2338,7 @@\n         \"\"\"Convert and validate a value against the parameter's\n         :attr:`type`, :attr:`multiple`, and :attr:`nargs`.\n         \"\"\"\n-        if value in (None, UNSET):\n+        if value is None:\n             if self.multiple or self.nargs == -1:\n                 return ()\n             else:\n@@ -2421,7 +2421,16 @@\n \n         :meta private:\n         \"\"\"\n-        value = self.type_cast_value(ctx, value)\n+        # shelter `type_cast_value` from ever seeing an `UNSET` value by handling the\n+        # cases in which `UNSET` gets special treatment explicitly at this layer\n+        #\n+        # Refs:\n+        # https://github.com/pallets/click/issues/3069\n+        if value is UNSET:\n+            if self.multiple or self.nargs == -1:\n+                value = ()\n+        else:\n+            value = self.type_cast_value(ctx, value)\n \n         if self.required and self.value_is_missing(value):\n             raise MissingParameter(ctx=ctx, param=self)\n@@ -3256,13 +3265,22 @@\n \n         return value, source\n \n-    def type_cast_value(self, ctx: Context, value: t.Any) -> t.Any:\n-        if self.is_flag and not self.required:\n-            if value is UNSET:\n-                if self.is_bool_flag:\n-                    # If the flag is a boolean flag, we return False if it is not set.\n-                    value = False\n-        return super().type_cast_value(ctx, value)\n+    def process_value(self, ctx: Context, value: t.Any) -> t.Any:\n+        # process_value has to be overridden on Options in order to capture\n+        # `value == UNSET` cases before `type_cast_value()` gets called.\n+        #\n+        # Refs:\n+        # https://github.com/pallets/click/issues/3069\n+        if self.is_flag and not self.required and self.is_bool_flag and value is UNSET:\n+            value = False\n+\n+            if self.callback is not None:\n+                value = self.callback(ctx, self, value)\n+\n+            return value\n+\n+        # in the normal case, rely on Parameter.process_value\n+        return super().process_value(ctx, value)\n \n \n class Argument(Parameter):\n\n--- a/tests/test_arguments.py\n+++ b/tests/test_arguments.py\n@@ -580,3 +580,22 @@\n     with pytest.warns(UserWarning):\n         runner.invoke(cli, [])\n \n+\n+@pytest.mark.parametrize(\n+    (\"argument_kwargs\", \"pass_argv\"),\n+    (\n+        # there is a large potential parameter space to explore here\n+        # this is just a very small sample of it\n+        ({}, [\"myvalue\"]),\n+        ({\"nargs\": -1}, []),\n+        ({\"nargs\": -1}, [\"myvalue\"]),\n+        ({\"default\": None}, [\"myvalue\"]),\n+        ({\"required\": False}, []),\n+        ({\"required\": False}, [\"myvalue\"]),\n+    ),\n+)\n+def test_argument_custom_class_can_override_type_cast_value_and_never_sees_unset(\n+    runner, argument_kwargs, pass_argv\n+):\n+    raise NotImplementedError\n+\n\n--- a/tests/test_options.py\n+++ b/tests/test_options.py\n@@ -1010,6 +1010,42 @@\n     result = runner.invoke(cmd, [\"--help\"])\n     assert \"I am a help text\" in result.output\n     assert \"you wont see me\" not in result.output\n+\n+\n+@pytest.mark.parametrize(\n+    (\"param_decl\", \"option_kwargs\", \"pass_argv\"),\n+    (\n+        # there is a large potential parameter space to explore here\n+        # this is just a very small sample of it\n+        (\"--opt\", {}, []),\n+        (\"--opt\", {\"multiple\": True}, []),\n+        (\"--opt\", {\"is_flag\": True}, []),\n+        (\"--opt/--no-opt\", {\"is_flag\": True, \"default\": None}, []),\n+        (\"--req\", {\"is_flag\": True, \"required\": True}, [\"--req\"]),\n+    ),\n+)\n+def test_option_custom_class_can_override_type_cast_value_and_never_sees_unset(\n+    runner, param_decl, option_kwargs, pass_argv\n+):\n+    \"\"\"\n+    Test that overriding type_cast_value is supported\n+\n+    In particular, the option is never passed an UNSET sentinel value.\n+    \"\"\"\n+\n+    class CustomOption(click.Option):\n+        def type_cast_value(self, ctx, value):\n+            assert value is not UNSET\n+            return value\n+\n+    @click.command()\n+    @click.option(\"myparam\", param_decl, **option_kwargs, cls=CustomOption)\n+    def cmd(myparam):\n+        click.echo(\"ok\")\n+\n+    result = runner.invoke(cmd, pass_argv)\n+    assert not result.exception\n+    assert result.exit_code == 0\n \n \n def test_option_custom_class_reusable(runner):"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.83,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.03,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.19,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.09,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.07,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.71,
+        "type": "noul"
+      },
+      "r2_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r2_wired": {
+        "noul": 0.74,
+        "type": "noul"
+      },
+      "r3_defined": {
+        "noul": 0.16,
+        "type": "noul"
+      },
+      "r3_real_body": {
+        "noul": 0.31,
+        "type": "noul"
+      },
+      "r3_wired": {
+        "noul": 0.86,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 2951,
+      "output_tokens": 228
+    }
+  },
+  "variant": "split"
+}

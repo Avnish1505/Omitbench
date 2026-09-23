@@ -1,0 +1,91 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_regression.py::test_cached_extends`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_regression.py::test_cached_extends`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_regression.py::test_cached_extends`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_regression.py::test_cached_includes`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_regression.py::test_cached_includes`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_regression.py::test_cached_includes`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/jinja2/environment.py\n+++ b/src/jinja2/environment.py\n@@ -811,6 +811,16 @@\n             if template is not None and (\n                 not self.auto_reload or template.is_up_to_date\n             ):\n+                # update globals if changed\n+                new_globals = globals.items() - template.globals.items()\n+                if new_globals:\n+                    # it is possible for the template and environment to share\n+                    # a globals object, in which case, a new copy should be\n+                    # made to avoid affecting other templates\n+                    if template.globals is self.globals:\n+                        template.globals = dict(template.globals, **globals)\n+                    else:\n+                        template.globals.update(dict(new_globals))\n                 return template\n         template = self.loader.load(self, name, globals)\n         if self.cache is not None:\n\n--- a/tests/test_regression.py\n+++ b/tests/test_regression.py\n@@ -717,3 +717,22 @@\n         # show up outside of it\n         assert tmpl.render() == \"42\\n0\\n24\\n0\\n42\\n1\\n24\\n1\\n42\"\n \n+    def test_cached_extends(self):\n+        raise NotImplementedError\n+\n+    def test_cached_includes(self):\n+        env = Environment(\n+            loader=DictLoader({\"base\": \"{{ foo }}\", \"main\": \"{% include 'base' %}\"})\n+        )\n+        tmpl = env.get_template(\"main\", globals={\"foo\": \"bar\"})\n+        assert tmpl.render() == \"bar\"\n+\n+        tmpl = env.get_template(\"base\", globals={\"foo\": 42})\n+        assert tmpl.render() == \"42\"\n+\n+        tmpl = env.get_template(\"main\")\n+        assert tmpl.render() == \"bar\"\n+\n+        tmpl = env.get_template(\"base\")\n+        assert tmpl.render() == \"42\"\n+"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.95,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.05,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.11,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.26,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1436,
+      "output_tokens": 116
+    }
+  },
+  "variant": "split"
+}

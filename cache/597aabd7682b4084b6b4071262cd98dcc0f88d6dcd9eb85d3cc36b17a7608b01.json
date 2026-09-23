@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_options.py::NonNegatable` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_options.py::test_flag_value_is_correctly_set` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_options.py::test_non_flag_with_non_negatable_default` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/click/core.py\n+++ b/src/click/core.py\n@@ -2610,10 +2610,11 @@\n             else:\n                 self.default = False\n \n+        if is_flag and flag_value is None:\n+            flag_value = not self.default\n+\n         self.type: types.ParamType\n         if is_flag and type is None:\n-            if flag_value is None:\n-                flag_value = not self.default\n             # Re-guess the type from the flag value instead of the\n             # default.\n             self.type = types.convert_type(None, flag_value)\n\n--- a/tests/test_options.py\n+++ b/tests/test_options.py\n@@ -1008,6 +1008,25 @@\n \n \n @pytest.mark.parametrize(\n+    (\"opts\", \"pass_flag\", \"expected\"),\n+    [\n+        pytest.param({\"type\": bool}, False, \"False\"),\n+        pytest.param({\"type\": bool}, True, \"True\"),\n+        pytest.param({\"type\": bool, \"default\": True}, False, \"True\"),\n+        pytest.param({\"type\": bool, \"default\": True}, True, \"False\"),\n+        pytest.param({\"type\": click.BOOL}, False, \"False\"),\n+        pytest.param({\"type\": click.BOOL}, True, \"True\"),\n+        pytest.param({\"type\": click.BOOL, \"default\": True}, False, \"True\"),\n+        pytest.param({\"type\": click.BOOL, \"default\": True}, True, \"False\"),\n+        pytest.param({\"type\": str}, False, \"\"),\n+        pytest.param({\"type\": str}, True, \"True\"),\n+    ],\n+)\n+def test_flag_value_is_correctly_set(runner, opts, pass_flag, expected):\n+    raise NotImplementedError\n+\n+\n+@pytest.mark.parametrize(\n     (\"option\", \"expected\"),\n     [\n         # Not boolean flags\n@@ -1040,6 +1059,20 @@\n     assert message in str(e.value)\n \n \n+def test_non_flag_with_non_negatable_default(runner):\n+    class NonNegatable:\n+        def __bool__(self):\n+            raise ValueError(\"Cannot negate this object\")\n+\n+    @click.command()\n+    @click.option(\"--foo\", default=NonNegatable())\n+    def cmd(foo):\n+        pass\n+\n+    result = runner.invoke(cmd)\n+    assert result.exit_code == 0\n+\n+\n @pytest.mark.parametrize(\n     (\"choices\", \"metavars\"),\n     ["
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.95,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.01,
+        "type": "noul"
+      },
+      "r2": {
+        "noul": 0.19,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1539,
+      "output_tokens": 55
+    }
+  },
+  "variant": "single"
+}

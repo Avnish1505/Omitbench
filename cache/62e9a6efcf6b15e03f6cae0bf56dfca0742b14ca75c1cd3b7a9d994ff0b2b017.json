@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_proxy_authorization_not_appended_to_https_request`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_proxy_authorization_not_appended_to_https_request`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_proxy_authorization_not_appended_to_https_request`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/requests/sessions.py\n+++ b/requests/sessions.py\n@@ -324,7 +324,9 @@\n         except KeyError:\n             username, password = None, None\n \n-        if username and password:\n+        # urllib3 handles proxy authorization for us in the standard adapter.\n+        # Avoid appending this to TLS tunneled requests where it may be leaked.\n+        if not scheme.startswith('https') and username and password:\n             headers[\"Proxy-Authorization\"] = _basic_auth_str(username, password)\n \n         return new_proxies\n\n--- a/tests/test_requests.py\n+++ b/tests/test_requests.py\n@@ -646,6 +646,17 @@\n         sent_headers = resp.json().get(\"headers\", {})\n \n         assert sent_headers.get(\"Proxy-Authorization\") == proxy_auth_value\n+\n+\n+    @pytest.mark.parametrize(\n+        \"url,has_proxy_auth\",\n+        (\n+            ('http://example.com', True),\n+            ('https://example.com', False),\n+        ),\n+    )\n+    def test_proxy_authorization_not_appended_to_https_request(self, url, has_proxy_auth):\n+        raise NotImplementedError\n \n     def test_basicauth_with_netrc(self, httpbin):\n         auth = (\"user\", \"pass\")"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.95,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.04,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.12,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 940,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_async.py::test_namespace_awaitable`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_async.py::test_namespace_awaitable`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_async.py::test_namespace_awaitable`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/jinja2/utils.py\n+++ b/src/jinja2/utils.py\n@@ -697,7 +697,8 @@\n         self.__attrs = dict(*args, **kwargs)\n \n     def __getattribute__(self, name):\n-        if name == \"_Namespace__attrs\":\n+        # __class__ is needed for the awaitable check in async mode\n+        if name in {\"_Namespace__attrs\", \"__class__\"}:\n             return object.__getattribute__(self, name)\n         try:\n             return self.__attrs[name]\n\n--- a/tests/test_async.py\n+++ b/tests/test_async.py\n@@ -579,3 +579,7 @@\n         t = test_env_async.from_string(\"{% for x in a.b[:1] %}{{ x }}{% endfor %}\")\n         assert t.render(a=dict(b=[1, 2, 3])) == \"1\"\n \n+\n+def test_namespace_awaitable(test_env_async):\n+    raise NotImplementedError\n+"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.95,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.03,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.18,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 853,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

@@ -1,0 +1,91 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `httpx/_client.py::BoundAsyncStream` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `httpx/_client.py::BoundSyncStream` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/client/test_async_client.py::test_cannot_stream_sync_request` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/client/test_client.py::test_cannot_stream_async_request` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/models/test_responses.py::test_aclose_on_sync` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r5": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/models/test_responses.py::test_close_on_async` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/httpx/_client.py\n+++ b/httpx/_client.py\n@@ -86,6 +86,52 @@\n     CLOSED = 3\n \n \n+class BoundSyncStream(SyncByteStream):\n+    \"\"\"\n+    A byte stream that is bound to a given response instance, and that\n+    ensures the `response.elapsed` is set once the response is closed.\n+    \"\"\"\n+\n+    def __init__(\n+        self, stream: SyncByteStream, response: Response, timer: Timer\n+    ) -> None:\n+        self._stream = stream\n+        self._response = response\n+        self._timer = timer\n+\n+    def __iter__(self) -> typing.Iterator[bytes]:\n+        for chunk in self._stream:\n+            yield chunk\n+\n+    def close(self) -> None:\n+        seconds = self._timer.sync_elapsed()\n+        self._response.elapsed = datetime.timedelta(seconds=seconds)\n+        self._stream.close()\n+\n+\n+class BoundAsyncStream(AsyncByteStream):\n+    \"\"\"\n+    An async byte stream that is bound to a given response instance, and that\n+    ensures the `response.elapsed` is set once the response is closed.\n+    \"\"\"\n+\n+    def __init__(\n+        self, stream: AsyncByteStream, response: Response, timer: Timer\n+    ) -> None:\n+        self._stream = stream\n+        self._response = response\n+        self._timer = timer\n+\n+    async def __aiter__(self) -> typing.AsyncIterator[bytes]:\n+        async for chunk in self._stream:\n+            yield chunk\n+\n+    async def aclose(self) -> None:\n+        seconds = await self._timer.async_elapsed()\n+        self._response.elapsed = datetime.timedelta(seconds=seconds)\n+        await self._stream.aclose()\n+\n+\n class BaseClient:\n     def __init__(\n         self,\n@@ -874,18 +920,19 @@\n         timer = Timer()\n         timer.sync_start()\n \n+        if not isinstance(request.stream, SyncByteStream):\n+            raise RuntimeError(\n+                \"Attempted to send an async request with a sync Client instance.\"\n+            )\n+\n         with request_context(request=request):\n             (status_code, headers, stream, extensions) = transport.handle_request(\n                 request.method.encode(),\n                 request.url.raw,\n                 headers=request.headers.raw,\n-                stream=request.stream,  # type: ignore\n+                stream=request.stream,\n                 extensions={\"timeout\": timeout.as_dict()},\n             )\n-\n-        def on_close(response: Response) -> None:\n-            response.elapsed = datetime.timedelta(seconds=timer.sync_elapsed())\n-            stream.close()\n \n         response = Response(\n             status_code,\n@@ -893,9 +940,9 @@\n             stream=stream,\n             extensions=extensions,\n             request=request,\n-            on_close=on_close,\n-        )\n-\n+        )\n+\n+        response.stream = BoundSyncStream(stream, response=response, timer=timer)\n         self.cookies.extract_cookies(response)\n \n         status = f\"{response.status_code} {response.reason_phrase}\"\n@@ -1512,6 +1559,11 @@\n         timer = Timer()\n         await timer.async_start()\n \n+        if not isinstance(request.stream, AsyncByteStream):\n+            raise RuntimeError(\n+                \"Attempted to send an sync request with an AsyncClient instance.\"\n+            )\n+\n         with request_context(request=request):\n             (\n                 status_code,\n@@ -1522,13 +1574,9 @@\n                 request.method.encode(),\n                 request.url.raw,\n                 headers=request.headers.raw,\n-                stream=request.stream,  # type: ignore\n+                stream=request.stream,\n                 extensions={\"timeout\": timeout.as_dict()},\n             )\n-\n-        async def on_close(response: Response) -> None:\n-            response.elapsed = datetime.timedelta(seconds=await timer.async_elapsed())\n-            await stream.aclose()\n \n         response = Response(\n             status_code,\n@@ -1536,9 +1584,9 @@\n             stream=stream,\n             extensions=extensions,\n             request=request,\n-            on_close=on_close,\n-        )\n-\n+        )\n+\n+        response.stream = BoundAsyncStream(stream, response=response, timer=timer)\n         self.cookies.extract_cookies(response)\n \n         status = f\"{response.status_code} {response.reason_phrase}\"\n\n--- a/httpx/_models.py\n+++ b/httpx/_models.py\n@@ -908,7 +908,6 @@\n         request: Request = None,\n         extensions: dict = None,\n         history: typing.List[\"Response\"] = None,\n-        on_close: typing.Callable = None,\n     ):\n         self.status_code = status_code\n         self.headers = Headers(headers)\n@@ -923,7 +922,6 @@\n \n         self.extensions = {} if extensions is None else extensions\n         self.history = [] if history is None else list(history)\n-        self._on_close = on_close\n \n         self.is_closed = False\n         self.is_stream_consumed = False\n@@ -1245,11 +1243,13 @@\n         Close the response and release the connection.\n         Automatically called if the response body is read to completion.\n         \"\"\"\n+        if not isinstance(self.stream, SyncByteStream):\n+            raise RuntimeError(\"Attempted to call an sync close on an async stream.\")\n+\n         if not self.is_closed:\n             self.is_closed = True\n-            if self._on_close is not None:\n-                with request_context(request=self._request):\n-                    self._on_close(self)\n+            with request_context(request=self._request):\n+                self.stream.close()\n \n     async def aread(self) -> bytes:\n         \"\"\"\n@@ -1341,11 +1341,13 @@\n         Close the response and release the connection.\n         Automatically called if the response body is read to completion.\n         \"\"\"\n+        if not isinstance(self.stream, AsyncByteStream):\n+            raise RuntimeError(\"Attempted to call an async close on an sync stream.\")\n+\n         if not self.is_closed:\n             self.is_closed = True\n-            if self._on_close is not None:\n-                with request_context(request=self._request):\n-                    await self._on_close(self)\n+            with request_context(request=self._request):\n+                await self.stream.aclose()\n \n \n class Cookies(MutableMapping):\n\n--- a/tests/client/test_async_client.py\n+++ b/tests/client/test_async_client.py\n@@ -94,8 +94,19 @@\n         yield b\"world!\"\n \n     async with httpx.AsyncClient() as client:\n-        response = await client.request(\"POST\", server.url, content=hello_world())\n-    assert response.status_code == 200\n+        response = await client.post(server.url, content=hello_world())\n+    assert response.status_code == 200\n+\n+\n+@pytest.mark.usefixtures(\"async_environment\")\n+async def test_cannot_stream_sync_request(server):\n+    def hello_world():  # pragma: nocover\n+        yield b\"Hello, \"\n+        yield b\"world!\"\n+\n+    async with httpx.AsyncClient() as client:\n+        with pytest.raises(RuntimeError):\n+            await client.post(server.url, content=hello_world())\n \n \n @pytest.mark.usefixtures(\"async_environment\")\n\n--- a/tests/client/test_client.py\n+++ b/tests/client/test_client.py\n@@ -112,6 +112,16 @@\n \n     assert response.status_code == 200\n     assert body == b\"Hello, world!\"\n+\n+\n+def test_cannot_stream_async_request(server):\n+    async def hello_world():  # pragma: nocover\n+        yield b\"Hello, \"\n+        yield b\"world!\"\n+\n+    with httpx.Client() as client:\n+        with pytest.raises(RuntimeError):\n+            client.post(server.url, content=hello_world())\n \n \n def test_raise_for_status(server):\n\n--- a/tests/models/test_responses.py\n+++ b/tests/models/test_responses.py\n@@ -382,6 +382,16 @@\n         [part for part in response.iter_raw()]\n \n \n+def test_close_on_async():\n+    response = httpx.Response(\n+        200,\n+        content=async_streaming_body(),\n+    )\n+\n+    with pytest.raises(RuntimeError):\n+        response.close()\n+\n+\n def test_iter_raw_increments_updates_counter():\n     response = httpx.Response(200, content=streaming_body())\n \n@@ -428,6 +438,17 @@\n \n     with pytest.raises(RuntimeError):\n         [part async for part in response.aiter_raw()]\n+\n+\n+@pytest.mark.asyncio\n+async def test_aclose_on_sync():\n+    response = httpx.Response(\n+        200,\n+        content=streaming_body(),\n+    )\n+\n+    with pytest.raises(RuntimeError):\n+        await response.aclose()\n \n \n @pytest.mark.asyncio"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.99,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.99,
+        "type": "noul"
+      },
+      "r2": {
+        "noul": 0.32,
+        "type": "noul"
+      },
+      "r3": {
+        "noul": 0.29,
+        "type": "noul"
+      },
+      "r4": {
+        "noul": 0.31,
+        "type": "noul"
+      },
+      "r5": {
+        "noul": 0.29,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 3779,
+      "output_tokens": 106
+    }
+  },
+  "variant": "single"
+}

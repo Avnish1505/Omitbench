@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_testing.py::test_redirect_session`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_testing.py::test_redirect_session`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_testing.py::test_redirect_session`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/flask/testing.py\n+++ b/src/flask/testing.py\n@@ -240,10 +240,10 @@\n         response.json_module = self.application.json  # type: ignore[assignment]\n \n         # Re-push contexts that were preserved during the request.\n-        while self._new_contexts:\n-            cm = self._new_contexts.pop()\n+        for cm in self._new_contexts:\n             self._context_stack.enter_context(cm)\n \n+        self._new_contexts.clear()\n         return response\n \n     def __enter__(self) -> FlaskClient:\n\n--- a/tests/test_testing.py\n+++ b/tests/test_testing.py\n@@ -138,32 +138,8 @@\n     assert rv.data == b\"http://xxx.example.com:1234/foo/\"\n \n \n-def test_redirect_keep_session(app, client, app_ctx):\n-    @app.route(\"/\", methods=[\"GET\", \"POST\"])\n-    def index():\n-        if flask.request.method == \"POST\":\n-            return flask.redirect(\"/getsession\")\n-        flask.session[\"data\"] = \"foo\"\n-        return \"index\"\n-\n-    @app.route(\"/getsession\")\n-    def get_session():\n-        return flask.session.get(\"data\", \"<missing>\")\n-\n-    with client:\n-        rv = client.get(\"/getsession\")\n-        assert rv.data == b\"<missing>\"\n-\n-        rv = client.get(\"/\")\n-        assert rv.data == b\"index\"\n-        assert flask.session.get(\"data\") == \"foo\"\n-\n-        rv = client.post(\"/\", data={}, follow_redirects=True)\n-        assert rv.data == b\"foo\"\n-        assert flask.session.get(\"data\") == \"foo\"\n-\n-        rv = client.get(\"/getsession\")\n-        assert rv.data == b\"foo\"\n+def test_redirect_session(app, client, app_ctx):\n+    raise NotImplementedError\n \n \n def test_session_transactions(app, client):"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.03,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.11,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1050,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

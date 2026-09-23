@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_routing.py::test_bind_long_idna_name_with_port`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_routing.py::test_bind_long_idna_name_with_port`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_routing.py::test_bind_long_idna_name_with_port`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/werkzeug/routing/map.py\n+++ b/src/werkzeug/routing/map.py\n@@ -251,6 +251,9 @@\n         if path_info is None:\n             path_info = \"/\"\n \n+        # Port isn't part of IDNA, and might push a name over the 63 octet limit.\n+        server_name, port_sep, port = server_name.partition(\":\")\n+\n         try:\n             server_name = server_name.encode(\"idna\").decode(\"ascii\")\n         except UnicodeError as e:\n@@ -258,7 +261,7 @@\n \n         return MapAdapter(\n             self,\n-            server_name,\n+            f\"{server_name}{port_sep}{port}\",\n             script_name,\n             subdomain,\n             url_scheme,\n\n--- a/tests/test_routing.py\n+++ b/tests/test_routing.py\n@@ -1045,6 +1045,10 @@\n     assert adapter.subdomain == \"<invalid>\"\n \n \n+def test_bind_long_idna_name_with_port():\n+    raise NotImplementedError\n+\n+\n def test_converter_parser():\n     args, kwargs = r.parse_converter_args(\"test, a=1, b=3.0\")\n "
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.04,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.09,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 920,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

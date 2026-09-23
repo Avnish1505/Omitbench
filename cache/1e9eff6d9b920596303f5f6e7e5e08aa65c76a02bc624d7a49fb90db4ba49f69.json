@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_shell_completion.py::test_fish_multiline_help_complete`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_shell_completion.py::test_fish_multiline_help_complete`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_shell_completion.py::test_fish_multiline_help_complete`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/click/shell_completion.py\n+++ b/src/click/shell_completion.py\n@@ -180,14 +180,18 @@\n COMP_CWORD=(commandline -t) %(prog_name)s);\n \n     for completion in $response;\n-        set -l metadata (string split \",\" $completion);\n+        set -l metadata (string split \\n $completion);\n \n         if test $metadata[1] = \"dir\";\n             __fish_complete_directories $metadata[2];\n         else if test $metadata[1] = \"file\";\n             __fish_complete_path $metadata[2];\n         else if test $metadata[1] = \"plain\";\n-            echo $metadata[2];\n+            if test $metadata[3] != \"_\";\n+                echo $metadata[2]\\t$metadata[3];\n+            else;\n+                echo $metadata[2];\n+            end;\n         end;\n     end;\n end;\n@@ -417,10 +421,19 @@\n         return args, incomplete\n \n     def format_completion(self, item: CompletionItem) -> str:\n-        if item.help:\n-            return f\"{item.type},{item.value}\\t{item.help}\"\n-\n-        return f\"{item.type},{item.value}\"\n+        \"\"\"Format completion item for Fish shell.\n+\n+        Escapes newlines in both value and help text to prevent\n+        Fish shell parsing errors.\n+\n+        .. versionchanged:: 8.3\n+            Escape newlines in help text to fix completion errors\n+            with multi-line help strings.\n+        \"\"\"\n+        help_ = item.help or \"_\"\n+        value = item.value.replace(\"\\n\", r\"\\n\")\n+        help_escaped = help_.replace(\"\\n\", r\"\\n\")\n+        return f\"{item.type}\\n{value}\\n{help_escaped}\"\n \n \n ShellCompleteType = t.TypeVar(\"ShellCompleteType\", bound=\"type[ShellComplete]\")\n\n--- a/tests/test_shell_completion.py\n+++ b/tests/test_shell_completion.py\n@@ -357,9 +357,9 @@\n         (\"bash\", {\"COMP_WORDS\": \"a b\", \"COMP_CWORD\": \"1\"}, \"plain,b\\n\"),\n         (\"zsh\", {\"COMP_WORDS\": \"\", \"COMP_CWORD\": \"0\"}, \"plain\\na\\n_\\nplain\\nb\\nbee\\n\"),\n         (\"zsh\", {\"COMP_WORDS\": \"a b\", \"COMP_CWORD\": \"1\"}, \"plain\\nb\\nbee\\n\"),\n-        (\"fish\", {\"COMP_WORDS\": \"\", \"COMP_CWORD\": \"\"}, \"plain,a\\nplain,b\\tbee\\n\"),\n-        (\"fish\", {\"COMP_WORDS\": \"a b\", \"COMP_CWORD\": \"b\"}, \"plain,b\\tbee\\n\"),\n-        (\"fish\", {\"COMP_WORDS\": 'a \"b', \"COMP_CWORD\": '\"b'}, \"plain,b\\tbee\\n\"),\n+        (\"fish\", {\"COMP_WORDS\": \"\", \"COMP_CWORD\": \"\"}, \"plain\\na\\n_\\nplain\\nb\\nbee\\n\"),\n+        (\"fish\", {\"COMP_WORDS\": \"a b\", \"COMP_CWORD\": \"b\"}, \"plain\\nb\\nbee\\n\"),\n+        (\"fish\", {\"COMP_WORDS\": 'a \"b', \"COMP_CWORD\": '\"b'}, \"plain\\nb\\nbee\\n\"),\n     ],\n )\n @pytest.mark.usefixtures(\"_patch_for_completion\")\n@@ -560,3 +560,50 @@\n             _get_completions(cli, args=[], incomplete=\"\")\n             assert not current_warnings, \"There should be no warnings after either\"\n \n+\n+@pytest.mark.usefixtures(\"_patch_for_completion\")\n+def test_fish_multiline_help_complete(runner):\n+    \"\"\"Test Fish completion with multi-line help text doesn't cause errors.\"\"\"\n+    cli = Command(\n+        \"cli\",\n+        params=[\n+            Option(\n+                [\"--at\", \"--attachment-type\"],\n+                type=(str, str),\n+                multiple=True,\n+                help=(\n+                    \"\\b\\nAttachment with explicit mimetype,\\n--at image.jpg image/jpeg\"\n+                ),\n+            ),\n+            Option([\"--other\"], help=\"Normal help\"),\n+        ],\n+    )\n+\n+    result = runner.invoke(\n+        cli,\n+        env={\n+            \"COMP_WORDS\": \"cli --\",\n+            \"COMP_CWORD\": \"--\",\n+            \"_CLI_COMPLETE\": \"fish_complete\",\n+        },\n+    )\n+\n+    # Should not fail\n+    assert result.exit_code == 0\n+\n+    # Output should contain escaped newlines, not literal newlines\n+    # Fish expects: plain\\n--at\\n{help_with_\\\\n}\n+    lines = result.output.split(\"\\n\")\n+\n+    # Find the --at completion block (3 lines: type, value, help)\n+    for i in range(0, len(lines) - 2, 3):\n+        if lines[i] == \"plain\" and lines[i + 1] in (\"--at\", \"--attachment-type\"):\n+            help_line = lines[i + 2]\n+            # Help should have escaped newlines (\\\\n), not actual newlines\n+            assert \"\\\\n\" in help_line\n+            # Should contain the example text\n+            assert \"image.jpg\" in help_line.replace(\"\\\\n\", \" \")\n+            break\n+    else:\n+        pytest.fail(\"--at completion not found in output\")\n+"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.46,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1851,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_helpers.py::test_open_resource_with_encoding`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_helpers.py::test_open_resource_with_encoding`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_helpers.py::test_open_resource_with_encoding`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/flask/app.py\n+++ b/src/flask/app.py\n@@ -320,9 +320,10 @@\n             t.cast(str, self.static_folder), filename, max_age=max_age\n         )\n \n-    def open_resource(self, resource: str, mode: str = \"rb\") -> t.IO[t.AnyStr]:\n-        \"\"\"Open a resource file relative to :attr:`root_path` for\n-        reading.\n+    def open_resource(\n+        self, resource: str, mode: str = \"rb\", encoding: str | None = None\n+    ) -> t.IO[t.AnyStr]:\n+        \"\"\"Open a resource file relative to :attr:`root_path` for reading.\n \n         For example, if the file ``schema.sql`` is next to the file\n         ``app.py`` where the ``Flask`` app is defined, it can be opened\n@@ -333,31 +334,46 @@\n             with app.open_resource(\"schema.sql\") as f:\n                 conn.executescript(f.read())\n \n-        :param resource: Path to the resource relative to\n-            :attr:`root_path`.\n-        :param mode: Open the file in this mode. Only reading is\n-            supported, valid values are \"r\" (or \"rt\") and \"rb\".\n-\n-        Note this is a duplicate of the same method in the Flask\n-        class.\n-\n+        :param resource: Path to the resource relative to :attr:`root_path`.\n+        :param mode: Open the file in this mode. Only reading is supported,\n+            valid values are ``\"r\"`` (or ``\"rt\"``) and ``\"rb\"``.\n+        :param encoding: Open the file with this encoding when opening in text\n+            mode. This is ignored when opening in binary mode.\n+\n+        .. versionchanged:: 3.1\n+            Added the ``encoding`` parameter.\n         \"\"\"\n         if mode not in {\"r\", \"rt\", \"rb\"}:\n             raise ValueError(\"Resources can only be opened for reading.\")\n \n-        return open(os.path.join(self.root_path, resource), mode)\n-\n-    def open_instance_resource(self, resource: str, mode: str = \"rb\") -> t.IO[t.AnyStr]:\n-        \"\"\"Opens a resource from the application's instance folder\n-        (:attr:`instance_path`).  Otherwise works like\n-        :meth:`open_resource`.  Instance resources can also be opened for\n-        writing.\n-\n-        :param resource: the name of the resource.  To access resources within\n-                         subfolders use forward slashes as separator.\n-        :param mode: resource file opening mode, default is 'rb'.\n-        \"\"\"\n-        return open(os.path.join(self.instance_path, resource), mode)\n+        path = os.path.join(self.root_path, resource)\n+\n+        if mode == \"rb\":\n+            return open(path, mode)\n+\n+        return open(path, mode, encoding=encoding)\n+\n+    def open_instance_resource(\n+        self, resource: str, mode: str = \"rb\", encoding: str | None = \"utf-8\"\n+    ) -> t.IO[t.AnyStr]:\n+        \"\"\"Open a resource file relative to the application's instance folder\n+        :attr:`instance_path`. Unlike :meth:`open_resource`, files in the\n+        instance folder can be opened for writing.\n+\n+        :param resource: Path to the resource relative to :attr:`instance_path`.\n+        :param mode: Open the file in this mode.\n+        :param encoding: Open the file with this encoding when opening in text\n+            mode. This is ignored when opening in binary mode.\n+\n+        .. versionchanged:: 3.1\n+            Added the ``encoding`` parameter.\n+        \"\"\"\n+        path = os.path.join(self.instance_path, resource)\n+\n+        if \"b\" in mode:\n+            return open(path, mode)\n+\n+        return open(path, mode, encoding=encoding)\n \n     def create_jinja_environment(self) -> Environment:\n         \"\"\"Create the Jinja environment based on :attr:`jinja_options`\n\n--- a/src/flask/blueprints.py\n+++ b/src/flask/blueprints.py\n@@ -101,30 +101,29 @@\n             t.cast(str, self.static_folder), filename, max_age=max_age\n         )\n \n-    def open_resource(self, resource: str, mode: str = \"rb\") -> t.IO[t.AnyStr]:\n-        \"\"\"Open a resource file relative to :attr:`root_path` for\n-        reading.\n+    def open_resource(\n+        self, resource: str, mode: str = \"rb\", encoding: str | None = \"utf-8\"\n+    ) -> t.IO[t.AnyStr]:\n+        \"\"\"Open a resource file relative to :attr:`root_path` for reading. The\n+        blueprint-relative equivalent of the app's :meth:`~.Flask.open_resource`\n+        method.\n \n-        For example, if the file ``schema.sql`` is next to the file\n-        ``app.py`` where the ``Flask`` app is defined, it can be opened\n-        with:\n+        :param resource: Path to the resource relative to :attr:`root_path`.\n+        :param mode: Open the file in this mode. Only reading is supported,\n+            valid values are ``\"r\"`` (or ``\"rt\"``) and ``\"rb\"``.\n+        :param encoding: Open the file with this encoding when opening in text\n+            mode. This is ignored when opening in binary mode.\n \n-        .. code-block:: python\n-\n-            with app.open_resource(\"schema.sql\") as f:\n-                conn.executescript(f.read())\n-\n-        :param resource: Path to the resource relative to\n-            :attr:`root_path`.\n-        :param mode: Open the file in this mode. Only reading is\n-            supported, valid values are \"r\" (or \"rt\") and \"rb\".\n-\n-        Note this is a duplicate of the same method in the Flask\n-        class.\n-\n+        .. versionchanged:: 3.1\n+            Added the ``encoding`` parameter.\n         \"\"\"\n         if mode not in {\"r\", \"rt\", \"rb\"}:\n             raise ValueError(\"Resources can only be opened for reading.\")\n \n-        return open(os.path.join(self.root_path, resource), mode)\n+        path = os.path.join(self.root_path, resource)\n \n+        if mode == \"rb\":\n+            return open(path, mode)\n+\n+        return open(path, mode, encoding=encoding)\n+\n\n--- a/tests/test_helpers.py\n+++ b/tests/test_helpers.py\n@@ -334,17 +334,24 @@\n             assert rv.data == b\"Hello\"\n             assert rv.mimetype == \"text/html\"\n \n-    @pytest.mark.parametrize(\"mode\", (\"r\", \"rb\", \"rt\"))\n-    def test_open_resource(self, mode):\n-        app = flask.Flask(__name__)\n-\n-        with app.open_resource(\"static/index.html\", mode) as f:\n-            assert \"<h1>Hello World!</h1>\" in str(f.read())\n-\n-    @pytest.mark.parametrize(\"mode\", (\"w\", \"x\", \"a\", \"r+\"))\n-    def test_open_resource_exceptions(self, mode):\n-        app = flask.Flask(__name__)\n-\n-        with pytest.raises(ValueError):\n-            app.open_resource(\"static/index.html\", mode)\n-\n+\n+@pytest.mark.parametrize(\"mode\", (\"r\", \"rb\", \"rt\"))\n+def test_open_resource(mode):\n+    app = flask.Flask(__name__)\n+\n+    with app.open_resource(\"static/index.html\", mode) as f:\n+        assert \"<h1>Hello World!</h1>\" in str(f.read())\n+\n+\n+@pytest.mark.parametrize(\"mode\", (\"w\", \"x\", \"a\", \"r+\"))\n+def test_open_resource_exceptions(mode):\n+    app = flask.Flask(__name__)\n+\n+    with pytest.raises(ValueError):\n+        app.open_resource(\"static/index.html\", mode)\n+\n+\n+@pytest.mark.parametrize(\"encoding\", (\"utf-8\", \"utf-16-le\"))\n+def test_open_resource_with_encoding(tmp_path, encoding):\n+    raise NotImplementedError\n+"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.04,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.16,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 2456,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

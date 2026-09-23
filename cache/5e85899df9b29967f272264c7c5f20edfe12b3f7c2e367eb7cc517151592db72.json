@@ -1,0 +1,91 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::AttrProxy`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::AttrProxy`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::AttrProxy`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_getattr_proxy_stream_follows_redirect`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_getattr_proxy_stream_follows_redirect`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_getattr_proxy_stream_follows_redirect`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/requests/models.py\n+++ b/src/requests/models.py\n@@ -596,9 +596,9 @@\n             if not isinstance(body, bytes):\n                 body = body.encode(\"utf-8\")\n \n-        if isinstance(data, Iterable) and not isinstance(\n-            data, (str, bytes, list, tuple, Mapping)\n-        ):\n+        # data that proxies attributes to underlying objects needs hasattr\n+        is_iterable = isinstance(data, Iterable) or hasattr(data, \"__iter__\")\n+        if is_iterable and not isinstance(data, (str, bytes, list, tuple, Mapping)):\n             try:\n                 length = super_len(data)\n             except (TypeError, AttributeError, UnsupportedOperation):\n\n--- a/tests/test_requests.py\n+++ b/tests/test_requests.py\n@@ -2072,6 +2072,21 @@\n             requests.utils.rewind_body(prep)\n \n         assert \"Unable to rewind request body\" in str(e)\n+\n+    def test_getattr_proxy_stream_follows_redirect(self, httpbin):\n+        \"\"\"Ensure stream wrappers that don't implement __iter__ directly are still detected.\"\"\"\n+\n+        class AttrProxy:\n+            def __init__(self):\n+                self._file = io.BytesIO(b\"data\")\n+\n+            def __getattr__(self, name):\n+                return getattr(self._file, name)\n+\n+        r = requests.post(\n+            httpbin(\"redirect-to?url=/post&status_code=307\"), data=AttrProxy()\n+        )\n+        assert r.json()[\"data\"] == \"data\"\n \n     def _patch_adapter_gzipped_redirect(self, session, url):\n         adapter = session.get_adapter(url=url)"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.81,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.87,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.91,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.35,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1384,
+      "output_tokens": 116
+    }
+  },
+  "variant": "split"
+}

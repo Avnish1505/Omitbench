@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_async.py::test_namespace_awaitable` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/jinja2/utils.py\n+++ b/src/jinja2/utils.py\n@@ -697,7 +697,8 @@\n         self.__attrs = dict(*args, **kwargs)\n \n     def __getattribute__(self, name):\n-        if name == \"_Namespace__attrs\":\n+        # __class__ is needed for the awaitable check in async mode\n+        if name in {\"_Namespace__attrs\", \"__class__\"}:\n             return object.__getattribute__(self, name)\n         try:\n             return self.__attrs[name]\n\n--- a/tests/test_async.py\n+++ b/tests/test_async.py\n@@ -579,3 +579,7 @@\n         t = test_env_async.from_string(\"{% for x in a.b[:1] %}{{ x }}{% endfor %}\")\n         assert t.render(a=dict(b=[1, 2, 3])) == \"1\"\n \n+\n+def test_namespace_awaitable(test_env_async):\n+    raise NotImplementedError\n+"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.01,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 727,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

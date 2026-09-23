@@ -1,0 +1,115 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `httpx/_models.py::copy_add_param` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `httpx/_models.py::copy_merge_params` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `httpx/_models.py::copy_remove_param` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `httpx/_models.py::copy_set_param` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `httpx/_models.py::params` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r5": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/models/test_url.py::test_url_add_param_manipulation` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r6": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/models/test_url.py::test_url_remove_param_manipulation` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r7": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/models/test_url.py::test_url_set_param_manipulation` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/httpx/_models.py\n+++ b/httpx/_models.py\n@@ -112,7 +112,7 @@\n     \"\"\"\n \n     def __init__(\n-        self, url: typing.Union[\"URL\", str, RawURL] = \"\", params: QueryParamTypes = None\n+        self, url: typing.Union[\"URL\", str, RawURL] = \"\", **kwargs: typing.Any\n     ) -> None:\n         if isinstance(url, (str, tuple)):\n             if isinstance(url, tuple):\n@@ -144,14 +144,8 @@\n                 f\"Invalid type for url.  Expected str or httpx.URL, got {type(url)}: {url!r}\"\n             )\n \n-        # Add any query parameters, merging with any in the URL if needed.\n-        if params:\n-            if self._uri_reference.query:\n-                url_params = QueryParams(self._uri_reference.query).merge(params)\n-                query_string = str(url_params)\n-            else:\n-                query_string = str(QueryParams(params))\n-            self._uri_reference = self._uri_reference.copy_with(query=query_string)\n+        if kwargs:\n+            self._uri_reference = self.copy_with(**kwargs)._uri_reference\n \n     @property\n     def scheme(self) -> str:\n@@ -293,11 +287,20 @@\n     def query(self) -> bytes:\n         \"\"\"\n         The URL query string, as raw bytes, excluding the leading b\"?\".\n-        Note that URL decoding can only be applied on URL query strings\n-        at the point of decoding the individual parameter names/values.\n+\n+        This is neccessarily a bytewise interface, because we cannot\n+        perform URL decoding of this representation until we've parsed\n+        the keys and values into a QueryParams instance.\n+\n+        For example:\n+\n+        url = httpx.URL(\"https://example.com/?filter=some%20search%20terms\")\n+        assert url.query == b\"filter=some%20search%20terms\"\n         \"\"\"\n         query = self._uri_reference.query or \"\"\n         return query.encode(\"ascii\")\n+\n+    @property\n \n     @property\n     def raw_path(self) -> bytes:\n@@ -382,6 +385,7 @@\n             \"query\": bytes,\n             \"raw_path\": bytes,\n             \"fragment\": str,\n+            \"params\": object,\n         }\n         for key, value in kwargs.items():\n             if key not in allowed:\n@@ -434,11 +438,27 @@\n             if kwargs.get(\"path\") is not None:\n                 kwargs[\"path\"] = quote(kwargs[\"path\"])\n \n-            # Ensure query=<str> for rfc3986\n             if kwargs.get(\"query\") is not None:\n+                # Ensure query=<str> for rfc3986\n                 kwargs[\"query\"] = kwargs[\"query\"].decode(\"ascii\")\n \n+            if \"params\" in kwargs:\n+                params = kwargs.pop(\"params\")\n+                kwargs[\"query\"] = None if not params else str(QueryParams(params))\n+\n         return URL(self._uri_reference.copy_with(**kwargs).unsplit())\n+\n+    def copy_set_param(self, key: str, value: typing.Any = None) -> \"URL\":\n+        return self.copy_with(params=self.params.set(key, value))\n+\n+    def copy_add_param(self, key: str, value: typing.Any = None) -> \"URL\":\n+        return self.copy_with(params=self.params.add(key, value))\n+\n+    def copy_remove_param(self, key: str) -> \"URL\":\n+        return self.copy_with(params=self.params.remove(key))\n+\n+    def copy_merge_params(self, params: QueryParamTypes) -> \"URL\":\n+        return self.copy_with(params=self.params.merge(params))\n \n     def join(self, url: URLTypes) -> \"URL\":\n         \"\"\"\n@@ -595,7 +615,7 @@\n             return self._dict[str(key)][0]\n         return default\n \n-    def get_list(self, key: typing.Any) -> typing.List[str]:\n+    def get_list(self, key: str) -> typing.List[str]:\n         \"\"\"\n         Get all values from the query param for a given key.\n \n@@ -606,7 +626,7 @@\n         \"\"\"\n         return list(self._dict.get(str(key), []))\n \n-    def set(self, key: typing.Any, value: typing.Any = None) -> \"QueryParams\":\n+    def set(self, key: str, value: typing.Any = None) -> \"QueryParams\":\n         \"\"\"\n         Return a new QueryParams instance, setting the value of a key.\n \n@@ -621,7 +641,7 @@\n         q._dict[str(key)] = [primitive_value_to_str(value)]\n         return q\n \n-    def add(self, key: typing.Any, value: typing.Any = None) -> \"QueryParams\":\n+    def add(self, key: str, value: typing.Any = None) -> \"QueryParams\":\n         \"\"\"\n         Return a new QueryParams instance, setting or appending the value of a key.\n \n@@ -636,7 +656,7 @@\n         q._dict[str(key)] = q.get_list(key) + [primitive_value_to_str(value)]\n         return q\n \n-    def remove(self, key: typing.Any) -> \"QueryParams\":\n+    def remove(self, key: str) -> \"QueryParams\":\n         \"\"\"\n         Return a new QueryParams instance, removing the value of a key.\n \n@@ -680,6 +700,9 @@\n \n     def __len__(self) -> int:\n         return len(self._dict)\n+\n+    def __bool__(self) -> bool:\n+        return bool(self._dict)\n \n     def __hash__(self) -> int:\n         return hash(str(self))\n@@ -971,7 +994,9 @@\n             self.method = method.decode(\"ascii\").upper()\n         else:\n             self.method = method.upper()\n-        self.url = URL(url, params=params)\n+        self.url = URL(url)\n+        if params is not None:\n+            self.url = self.url.copy_merge_params(params=params)\n         self.headers = Headers(headers)\n         if cookies:\n             Cookies(cookies).set_cookie_header(self)\n\n--- a/tests/models/test_url.py\n+++ b/tests/models/test_url.py\n@@ -100,11 +100,13 @@\n def test_url_params():\n     url = httpx.URL(\"https://example.org:123/path/to/somewhere\", params={\"a\": \"123\"})\n     assert str(url) == \"https://example.org:123/path/to/somewhere?a=123\"\n+    assert url.params == httpx.QueryParams({\"a\": \"123\"})\n \n     url = httpx.URL(\n         \"https://example.org:123/path/to/somewhere?b=456\", params={\"a\": \"123\"}\n     )\n-    assert str(url) == \"https://example.org:123/path/to/somewhere?b=456&a=123\"\n+    assert str(url) == \"https://example.org:123/path/to/somewhere?a=123\"\n+    assert url.params == httpx.QueryParams({\"a\": \"123\"})\n \n \n def test_url_join():\n@@ -120,6 +122,38 @@\n         url.join(\"../somewhere-else\") == \"https://example.org:123/path/somewhere-else\"\n     )\n     assert url.join(\"../../somewhere-else\") == \"https://example.org:123/somewhere-else\"\n+\n+\n+def test_url_set_param_manipulation():\n+    \"\"\"\n+    Some basic URL query parameter manipulation.\n+    \"\"\"\n+    url = httpx.URL(\"https://example.org:123/?a=123\")\n+    assert url.copy_set_param(\"a\", \"456\") == \"https://example.org:123/?a=456\"\n+\n+\n+def test_url_add_param_manipulation():\n+    \"\"\"\n+    Some basic URL query parameter manipulation.\n+    \"\"\"\n+    url = httpx.URL(\"https://example.org:123/?a=123\")\n+    assert url.copy_add_param(\"a\", \"456\") == \"https://example.org:123/?a=123&a=456\"\n+\n+\n+def test_url_remove_param_manipulation():\n+    \"\"\"\n+    Some basic URL query parameter manipulation.\n+    \"\"\"\n+    url = httpx.URL(\"https://example.org:123/?a=123\")\n+    assert url.copy_remove_param(\"a\") == \"https://example.org:123/\"\n+\n+\n+def test_url_merge_params_manipulation():\n+    \"\"\"\n+    Some basic URL query parameter manipulation.\n+    \"\"\"\n+    url = httpx.URL(\"https://example.org:123/?a=123\")\n+    assert url.copy_merge_params({\"b\": \"456\"}) == \"https://example.org:123/?a=123&b=456\"\n \n \n def test_relative_url_join():"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.82,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r2": {
+        "noul": 0.78,
+        "type": "noul"
+      },
+      "r3": {
+        "noul": 0.71,
+        "type": "noul"
+      },
+      "r4": {
+        "noul": 0.66,
+        "type": "noul"
+      },
+      "r5": {
+        "noul": 0.23,
+        "type": "noul"
+      },
+      "r6": {
+        "noul": 0.24,
+        "type": "noul"
+      },
+      "r7": {
+        "noul": 0.2,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 4233,
+      "output_tokens": 140
+    }
+  },
+  "variant": "single"
+}

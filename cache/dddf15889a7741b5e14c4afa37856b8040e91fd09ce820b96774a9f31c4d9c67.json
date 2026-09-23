@@ -1,0 +1,163 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/conftest.py::run_async_fn`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/conftest.py::run_async_fn`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/conftest.py::run_async_fn`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_nativetypes.py::async_native_env`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_nativetypes.py::async_native_env`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_nativetypes.py::async_native_env`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_nativetypes.py::async_render`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_nativetypes.py::async_render`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_nativetypes.py::async_render`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_nativetypes.py::test_string_concatenation`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_nativetypes.py::test_string_concatenation`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_nativetypes.py::test_string_concatenation`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/tests/conftest.py\n+++ b/tests/conftest.py\n@@ -1,9 +1,20 @@\n+import asyncio\n from pathlib import Path\n \n import pytest\n+import trio\n \n from jinja2 import loaders\n from jinja2.environment import Environment\n+\n+\n+def _asyncio_run(async_fn, *args):\n+    return asyncio.run(async_fn(*args))\n+\n+\n+@pytest.fixture(params=[_asyncio_run, trio.run], ids=[\"asyncio\", \"trio\"])\n+def run_async_fn(request):\n+    return request.param\n \n \n @pytest.fixture\n\n--- a/tests/test_async.py\n+++ b/tests/test_async.py\n@@ -1,7 +1,4 @@\n-import asyncio\n-\n import pytest\n-import trio\n \n from jinja2 import ChainableUndefined\n from jinja2 import DictLoader\n@@ -12,15 +9,6 @@\n from jinja2.exceptions import TemplatesNotFound\n from jinja2.exceptions import UndefinedError\n from jinja2.nativetypes import NativeEnvironment\n-\n-\n-def _asyncio_run(async_fn, *args):\n-    return asyncio.run(async_fn(*args))\n-\n-\n-@pytest.fixture(params=[_asyncio_run, trio.run], ids=[\"asyncio\", \"trio\"])\n-def run_async_fn(request):\n-    return request.param\n \n \n def test_basic_async(run_async_fn):\n\n--- a/tests/test_async_filters.py\n+++ b/tests/test_async_filters.py\n@@ -1,9 +1,7 @@\n-import asyncio\n import contextlib\n from collections import namedtuple\n \n import pytest\n-import trio\n from markupsafe import Markup\n \n from jinja2 import Environment\n@@ -27,15 +25,6 @@\n @pytest.fixture\n def env_async():\n     return Environment(enable_async=True)\n-\n-\n-def _asyncio_run(async_fn, *args):\n-    return asyncio.run(async_fn(*args))\n-\n-\n-@pytest.fixture(params=[_asyncio_run, trio.run], ids=[\"asyncio\", \"trio\"])\n-def run_async_fn(request):\n-    return request.param\n \n \n @contextlib.asynccontextmanager\n\n--- a/tests/test_nativetypes.py\n+++ b/tests/test_nativetypes.py\n@@ -11,6 +11,11 @@\n @pytest.fixture\n def env():\n     return NativeEnvironment()\n+\n+\n+@pytest.fixture\n+def async_native_env():\n+    raise NotImplementedError\n \n \n def test_is_defined_native_return(env):\n@@ -122,6 +127,18 @@\n     assert result == \"Jinja\"\n \n \n+def test_string_concatenation(async_native_env, run_async_fn):\n+    async def async_render():\n+        t = async_native_env.from_string(\n+            \"{%- macro x(y) -%}{{ y }}{%- endmacro -%}{{- x('not') }} {{ x('bad') -}}\"\n+        )\n+        result = await t.render_async()\n+        assert isinstance(result, str)\n+        assert result == \"not bad\"\n+\n+    run_async_fn(async_render)\n+\n+\n def test_tuple_of_variable_strings(env):\n     t = env.from_string(\"'{{ a }}', 'data', '{{ b }}', b'{{ c }}'\")\n     result = t.render(a=1, b=2, c=\"bytes\")"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.92,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.75,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.04,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.94,
+        "type": "noul"
+      },
+      "r2_defined": {
+        "noul": 0.47,
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "noul": 0.55,
+        "type": "noul"
+      },
+      "r2_wired": {
+        "noul": 0.73,
+        "type": "noul"
+      },
+      "r3_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r3_real_body": {
+        "noul": 0.88,
+        "type": "noul"
+      },
+      "r3_wired": {
+        "noul": 0.53,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 2491,
+      "output_tokens": 228
+    }
+  },
+  "variant": "split"
+}

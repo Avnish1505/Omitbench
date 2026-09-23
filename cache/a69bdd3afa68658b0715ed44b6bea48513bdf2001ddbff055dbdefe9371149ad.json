@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `src/requests/adapters.py::get_connection_with_tls_context`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `src/requests/adapters.py::get_connection_with_tls_context`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `src/requests/adapters.py::get_connection_with_tls_context`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/requests/adapters.py\n+++ b/src/requests/adapters.py\n@@ -374,37 +374,14 @@\n \n         return response\n \n-    def _get_connection(self, request, verify, proxies=None, cert=None):\n-        # Replace the existing get_connection without breaking things and\n-        # ensure that TLS settings are considered when we interact with\n-        # urllib3 HTTP Pools\n-        proxy = select_proxy(request.url, proxies)\n-        try:\n-            host_params, pool_kwargs = _urllib3_request_context(request, verify, cert)\n-        except ValueError as e:\n-            raise InvalidURL(e, request=request)\n-        if proxy:\n-            proxy = prepend_scheme_if_needed(proxy, \"http\")\n-            proxy_url = parse_url(proxy)\n-            if not proxy_url.host:\n-                raise InvalidProxyURL(\n-                    \"Please check proxy URL. It is malformed \"\n-                    \"and could be missing the host.\"\n-                )\n-            proxy_manager = self.proxy_manager_for(proxy)\n-            conn = proxy_manager.connection_from_host(\n-                **host_params, pool_kwargs=pool_kwargs\n-            )\n-        else:\n-            # Only scheme should be lower case\n-            conn = self.poolmanager.connection_from_host(\n-                **host_params, pool_kwargs=pool_kwargs\n-            )\n-\n-        return conn\n+    def get_connection_with_tls_context(self, request, verify, proxies=None, cert=None):\n+        raise NotImplementedError\n \n     def get_connection(self, url, proxies=None):\n-        \"\"\"Returns a urllib3 connection for the given URL. This should not be\n+        \"\"\"DEPRECATED: Users should move to `get_connection_with_tls_context`\n+        for all subclasses of HTTPAdapter using Requests>=2.32.2.\n+\n+        Returns a urllib3 connection for the given URL. This should not be\n         called from user code, and is only exposed for use when subclassing the\n         :class:`HTTPAdapter <requests.adapters.HTTPAdapter>`.\n \n@@ -529,7 +506,9 @@\n         \"\"\"\n \n         try:\n-            conn = self._get_connection(request, verify, proxies=proxies, cert=cert)\n+            conn = self.get_connection_with_tls_context(\n+                request, verify, proxies=proxies, cert=cert\n+            )\n         except LocationValueError as e:\n             raise InvalidURL(e, request=request)\n "
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.03,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.97,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1183,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

@@ -1,0 +1,91 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `requests/exceptions.py::JSONDecodeError`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `requests/exceptions.py::JSONDecodeError`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `requests/exceptions.py::JSONDecodeError`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_json_decode_compatibility`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_json_decode_compatibility`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_json_decode_compatibility`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/requests/__init__.py\n+++ b/requests/__init__.py\n@@ -139,7 +139,7 @@\n from .exceptions import (\n     RequestException, Timeout, URLRequired,\n     TooManyRedirects, HTTPError, ConnectionError,\n-    FileModeWarning, ConnectTimeout, ReadTimeout\n+    FileModeWarning, ConnectTimeout, ReadTimeout, JSONDecodeError\n )\n \n # Set default logging handler to avoid \"No handler found\" warnings.\n\n--- a/requests/compat.py\n+++ b/requests/compat.py\n@@ -28,8 +28,10 @@\n #: Python 3.x?\n is_py3 = (_ver[0] == 3)\n \n+has_simplejson = False\n try:\n     import simplejson as json\n+    has_simplejson = True\n except ImportError:\n     import json\n \n@@ -49,13 +51,13 @@\n     # Keep OrderedDict for backwards compatibility.\n     from collections import Callable, Mapping, MutableMapping, OrderedDict\n \n-\n     builtin_str = str\n     bytes = str\n     str = unicode\n     basestring = basestring\n     numeric_types = (int, long, float)\n     integer_types = (int, long)\n+    JSONDecodeError = ValueError\n \n elif is_py3:\n     from urllib.parse import urlparse, urlunparse, urljoin, urlsplit, urlencode, quote, unquote, quote_plus, unquote_plus, urldefrag\n@@ -66,6 +68,10 @@\n     # Keep OrderedDict for backwards compatibility.\n     from collections import OrderedDict\n     from collections.abc import Callable, Mapping, MutableMapping\n+    if has_simplejson:\n+        from simplejson import JSONDecodeError\n+    else:\n+        from json import JSONDecodeError\n \n     builtin_str = str\n     str = str\n\n--- a/requests/exceptions.py\n+++ b/requests/exceptions.py\n@@ -7,6 +7,8 @@\n This module contains the set of Requests' exceptions.\n \"\"\"\n from urllib3.exceptions import HTTPError as BaseHTTPError\n+\n+from .compat import JSONDecodeError as CompatJSONDecodeError\n \n \n class RequestException(IOError):\n@@ -27,6 +29,10 @@\n \n class InvalidJSONError(RequestException):\n     \"\"\"A JSON error occurred.\"\"\"\n+\n+\n+class JSONDecodeError(InvalidJSONError, CompatJSONDecodeError):\n+    \"\"\"Couldn't decode the text into json\"\"\"\n \n \n class HTTPError(RequestException):\n\n--- a/requests/models.py\n+++ b/requests/models.py\n@@ -29,7 +29,9 @@\n from .cookies import cookiejar_from_dict, get_cookie_header, _copy_cookie_jar\n from .exceptions import (\n     HTTPError, MissingSchema, InvalidURL, ChunkedEncodingError,\n-    ContentDecodingError, ConnectionError, StreamConsumedError, InvalidJSONError)\n+    ContentDecodingError, ConnectionError, StreamConsumedError,\n+    InvalidJSONError)\n+from .exceptions import JSONDecodeError as RequestsJSONDecodeError\n from ._internal_utils import to_native_string, unicode_is_ascii\n from .utils import (\n     guess_filename, get_auth_from_url, requote_uri,\n@@ -38,7 +40,7 @@\n from .compat import (\n     Callable, Mapping,\n     cookielib, urlunparse, urlsplit, urlencode, str, bytes,\n-    is_py2, chardet, builtin_str, basestring)\n+    is_py2, chardet, builtin_str, basestring, JSONDecodeError)\n from .compat import json as complexjson\n from .status_codes import codes\n \n@@ -468,9 +470,9 @@\n             content_type = 'application/json'\n \n             try:\n-              body = complexjson.dumps(json, allow_nan=False)\n+                body = complexjson.dumps(json, allow_nan=False)\n             except ValueError as ve:\n-              raise InvalidJSONError(ve, request=self)\n+                raise InvalidJSONError(ve, request=self)\n \n             if not isinstance(body, bytes):\n                 body = body.encode('utf-8')\n@@ -882,12 +884,8 @@\n         r\"\"\"Returns the json-encoded content of a response, if any.\n \n         :param \\*\\*kwargs: Optional arguments that ``json.loads`` takes.\n-        :raises simplejson.JSONDecodeError: If the response body does not\n-            contain valid json and simplejson is installed.\n-        :raises json.JSONDecodeError: If the response body does not contain\n-            valid json and simplejson is not installed on Python 3.\n-        :raises ValueError: If the response body does not contain valid\n-            json and simplejson is not installed on Python 2.        \n+        :raises requests.exceptions.JSONDecodeError: If the response body does not\n+            contain valid json.\n         \"\"\"\n \n         if not self.encoding and self.content and len(self.content) > 3:\n@@ -907,7 +905,16 @@\n                     # and the server didn't bother to tell us what codec *was*\n                     # used.\n                     pass\n-        return complexjson.loads(self.text, **kwargs)\n+\n+        try:\n+            return complexjson.loads(self.text, **kwargs)\n+        except JSONDecodeError as e:\n+            # Catch JSON-related errors and raise as requests.JSONDecodeError\n+            # This aliases json.JSONDecodeError and simplejson.JSONDecodeError\n+            if is_py2: # e is a ValueError\n+                raise RequestsJSONDecodeError(e.message)\n+            else:\n+                raise RequestsJSONDecodeError(e.msg, e.doc, e.pos)\n \n     @property\n     def links(self):\n\n--- a/tests/test_requests.py\n+++ b/tests/test_requests.py\n@@ -2571,3 +2571,8 @@\n         data = {\"foo\": float(\"nan\")}\n         with pytest.raises(requests.exceptions.InvalidJSONError):\n           r = requests.post(httpbin('post'), json=data)\n+\n+    def test_json_decode_compatibility(self, httpbin):\n+        r = requests.get(httpbin('bytes/20'))\n+        with pytest.raises(requests.exceptions.JSONDecodeError):\n+            r.json()"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.99,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.18,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.78,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.95,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.95,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 2581,
+      "output_tokens": 116
+    }
+  },
+  "variant": "split"
+}

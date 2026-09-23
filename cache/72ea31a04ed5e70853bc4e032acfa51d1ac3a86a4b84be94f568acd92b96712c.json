@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_validators.py::TestLtLeGeGtNe` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/attr/validators.py\n+++ b/src/attr/validators.py\n@@ -32,6 +32,7 @@\n     \"matches_re\",\n     \"max_len\",\n     \"min_len\",\n+    \"ne\",\n     \"not_\",\n     \"optional\",\n     \"or_\",\n@@ -156,10 +157,10 @@\n \n     Args:\n         regex (str, re.Pattern):\n-            A regex string or precompiled pattern to match against\n+            A regex string or precompiled pattern to match against.\n \n         flags (int):\n-            Flags that will be passed to the underlying re function (default 0)\n+            Flags that will be passed to the underlying re function (default 0).\n \n         func (typing.Callable):\n             Which underlying `re` function to call. Valid options are\n@@ -368,8 +369,8 @@\n         iterable_validator:\n             Validator(s) to apply to iterable itself (optional).\n \n-    Raises\n-        TypeError: if any sub-validators fail\n+    Raises:\n+        TypeError: if any sub-validators fail.\n \n     .. versionadded:: 19.1.0\n \n@@ -513,7 +514,7 @@\n     The validator uses `operator.ge` to compare the values.\n \n     Args:\n-        val: Inclusive lower bound for values\n+        val: Inclusive lower bound for values.\n \n     .. versionadded:: 21.3.0\n     \"\"\"\n@@ -528,11 +529,26 @@\n     The validator uses `operator.gt` to compare the values.\n \n     Args:\n-       val: Exclusive lower bound for values\n+       val: Exclusive lower bound for values.\n \n     .. versionadded:: 21.3.0\n     \"\"\"\n     return _NumberValidator(val, \">\", operator.gt)\n+\n+\n+def ne(val):\n+    \"\"\"\n+    A validator that raises `ValueError` if the initializer is called with a\n+    number equal to *val*.\n+\n+    The validator uses `operator.ne` to compare the values.\n+\n+    Args:\n+       val: The value that is not allowed.\n+\n+    .. versionadded:: 26.2.0\n+    \"\"\"\n+    return _NumberValidator(val, \"!=\", operator.ne)\n \n \n @attrs(repr=False, frozen=True, slots=True)\n@@ -557,7 +573,7 @@\n     with a string or iterable that is longer than *length*.\n \n     Args:\n-        length (int): Maximum length of the string or iterable\n+        length (int): Maximum length of the string or iterable.\n \n     .. versionadded:: 21.3.0\n     \"\"\"\n@@ -586,7 +602,7 @@\n     with a string or iterable that is shorter than *length*.\n \n     Args:\n-        length (int): Minimum length of the string or iterable\n+        length (int): Minimum length of the string or iterable.\n \n     .. versionadded:: 22.1.0\n     \"\"\"\n\n--- a/tests/test_validators.py\n+++ b/tests/test_validators.py\n@@ -28,6 +28,7 @@\n     matches_re,\n     max_len,\n     min_len,\n+    ne,\n     not_,\n     optional,\n     or_,\n@@ -875,80 +876,6 @@\n         assert hash_func is not object.__hash__\n \n \n-class TestLtLeGeGt:\n-    \"\"\"\n-    Tests for `Lt, Le, Ge, Gt`.\n-    \"\"\"\n-\n-    BOUND = 4\n-\n-    def test_in_all(self):\n-        \"\"\"\n-        validator is in ``__all__``.\n-        \"\"\"\n-        assert all(\n-            f.__name__ in validator_module.__all__ for f in [lt, le, ge, gt]\n-        )\n-\n-    @pytest.mark.parametrize(\"v\", [lt, le, ge, gt])\n-    def test_retrieve_bound(self, v):\n-        \"\"\"\n-        The configured bound for the comparison can be extracted from the\n-        Attribute.\n-        \"\"\"\n-\n-        @attr.s\n-        class Tester:\n-            value = attr.ib(validator=v(self.BOUND))\n-\n-        assert fields(Tester).value.validator.bound == self.BOUND\n-\n-    @pytest.mark.parametrize(\n-        (\"v\", \"value\"),\n-        [\n-            (lt, 3),\n-            (le, 3),\n-            (le, 4),\n-            (ge, 4),\n-            (ge, 5),\n-            (gt, 5),\n-        ],\n-    )\n-    def test_check_valid(self, v, value):\n-        \"\"\"Silent if value {op} bound.\"\"\"\n-\n-        @attr.s\n-        class Tester:\n-            value = attr.ib(validator=v(self.BOUND))\n-\n-        Tester(value)  # shouldn't raise exceptions\n-\n-    @pytest.mark.parametrize(\n-        (\"v\", \"value\"),\n-        [\n-            (lt, 4),\n-            (le, 5),\n-            (ge, 3),\n-            (gt, 4),\n-        ],\n-    )\n-    def test_check_invalid(self, v, value):\n-        \"\"\"Raise ValueError if value {op} bound.\"\"\"\n-\n-        @attr.s\n-        class Tester:\n-            value = attr.ib(validator=v(self.BOUND))\n-\n-        with pytest.raises(ValueError):\n-            Tester(value)\n-\n-    @pytest.mark.parametrize(\"v\", [lt, le, ge, gt])\n-    def test_repr(self, v):\n-        \"\"\"\n-        __repr__ is meaningful.\n-        \"\"\"\n-        nv = v(23)\n-        assert repr(nv) == f\"<Validator for x {nv.compare_op} {23}>\"\n \n \n class TestMaxLen:"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.02,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1835,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

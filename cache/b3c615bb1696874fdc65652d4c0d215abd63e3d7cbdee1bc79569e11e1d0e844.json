@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_options.py::test_flag_value_on_option_with_zero_or_one_args` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/click/core.py\n+++ b/src/click/core.py\n@@ -2684,10 +2684,6 @@\n     :param hidden: hide this option from help outputs.\n     :param attrs: Other command arguments described in :class:`Parameter`.\n \n-    .. versionchanged:: 8.3.dev\n-         If ``flag_value`` is set or no default is provided, the flag can be\n-         accepted without an argument.\n-\n     .. versionchanged:: 8.2\n         ``envvar`` used with ``flag_value`` will always use the ``flag_value``,\n         previously it would use the value of the environment variable.\n@@ -2782,10 +2778,10 @@\n             elif self.secondary_opts:\n                 is_flag = True\n \n-        # Handle options that are not flags but provide a flag_value.\n-        # If flag_value is set or no default is provided the flag can be accepted\n-        # without an argument.\n-        # https://github.com/pallets/click/issues/3084\n+        # The option is explicitly not a flag, but to determine whether or not it needs\n+        # value, we need to check if `flag_value` or `default` was set. Either one is\n+        # sufficient.\n+        # Ref: https://github.com/pallets/click/issues/3084\n         elif is_flag is False and not self._flag_needs_value:\n             self._flag_needs_value = flag_value is not UNSET or self.default is UNSET\n \n\n--- a/tests/test_options.py\n+++ b/tests/test_options.py\n@@ -2278,35 +2278,17 @@\n     assert result.exit_code == 0\n \n \n-def test_flag_value_optional_behavior():\n-    \"\"\"Test that options with flag_value and is_flag=False use flag_value\n-    when only flag is provided\n-\n-    Reproduces https://github.com/pallets/click/issues/3084\n-    \"\"\"\n-\n-    @click.command()\n-    @click.option(\"--name\", is_flag=False, flag_value=\"Flag\", default=\"Default\")\n-    def hello(name):\n-        click.echo(f\"Hello, {name}!\")\n-\n-    runner = CliRunner()\n-    result = runner.invoke(hello, [\"--name\"])\n-    assert result.exit_code == 0\n-    assert result.output == \"Hello, Flag!\\n\"\n-\n-\n-def test_flag_value_with_type_conversion():\n-    \"\"\"Test that flag_value is correctly type-converted when used as an option value.\"\"\"\n-\n-    @click.command()\n-    @click.option(\"--count\", is_flag=False, flag_value=\"1\", type=int, default=0)\n-    def repeat(count):\n-        for i in range(count):\n-            click.echo(f\"Line {i + 1}\")\n-\n-    runner = CliRunner()\n-    result = runner.invoke(repeat, [\"--count\"])\n-    assert result.exit_code == 0\n-    assert result.output == \"Line 1\\n\"\n-\n+@pytest.mark.parametrize(\n+    (\"flag_type\", \"args\", \"expect_output\"),\n+    [\n+        (str, [], \"Default\\n\"),\n+        (str, [\"--theflag\"], \"FlagValue\\n\"),\n+        (str, [\"--theflag\", \"value\"], \"value\\n\"),\n+        (int, [], \"0\\n\"),\n+        (int, [\"--theflag\"], \"1\\n\"),\n+        (int, [\"--theflag\", \"2\"], \"2\\n\"),\n+    ],\n+)\n+def test_flag_value_on_option_with_zero_or_one_args(flag_type, args, expect_output):\n+    raise NotImplementedError\n+"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.02,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1325,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

@@ -1,0 +1,163 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `httpx/_decoders.py::ZStandardDecoder`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `httpx/_decoders.py::ZStandardDecoder`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `httpx/_decoders.py::ZStandardDecoder`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_decoders.py::test_zstd`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_decoders.py::test_zstd`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_decoders.py::test_zstd`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_decoders.py::test_zstd_decoding_error`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_decoders.py::test_zstd_decoding_error`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_decoders.py::test_zstd_decoding_error`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_decoders.py::test_zstd_multiframe`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_decoders.py::test_zstd_multiframe`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_decoders.py::test_zstd_multiframe`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/httpx/_compat.py\n+++ b/httpx/_compat.py\n@@ -3,8 +3,11 @@\n Python environments. It is excluded from the code coverage checks.\n \"\"\"\n \n+import re\n import ssl\n import sys\n+from types import ModuleType\n+from typing import Optional\n \n # Brotli support is optional\n # The C bindings in `brotli` are recommended for CPython.\n@@ -16,6 +19,24 @@\n         import brotli\n     except ImportError:\n         brotli = None\n+\n+# Zstandard support is optional\n+zstd: Optional[ModuleType] = None\n+try:\n+    import zstandard as zstd\n+except (AttributeError, ImportError, ValueError):  # Defensive:\n+    zstd = None\n+else:\n+    # The package 'zstandard' added the 'eof' property starting\n+    # in v0.18.0 which we require to ensure a complete and\n+    # valid zstd stream was fed into the ZstdDecoder.\n+    # See: https://github.com/urllib3/urllib3/pull/2624\n+    _zstd_version = tuple(\n+        map(int, re.search(r\"^([0-9]+)\\.([0-9]+)\", zstd.__version__).groups())  # type: ignore[union-attr]\n+    )\n+    if _zstd_version < (0, 18):  # Defensive:\n+        zstd = None\n+\n \n if sys.version_info >= (3, 10) or ssl.OPENSSL_VERSION_INFO >= (1, 1, 0, 7):\n \n\n--- a/httpx/_decoders.py\n+++ b/httpx/_decoders.py\n@@ -11,7 +11,7 @@\n import typing\n import zlib\n \n-from ._compat import brotli\n+from ._compat import brotli, zstd\n from ._exceptions import DecodingError\n \n \n@@ -138,6 +138,8 @@\n             return b\"\"\n         except brotli.error as exc:  # pragma: no cover\n             raise DecodingError(str(exc)) from exc\n+\n+\n \n \n class MultiDecoder(ContentDecoder):\n@@ -323,9 +325,12 @@\n     \"gzip\": GZipDecoder,\n     \"deflate\": DeflateDecoder,\n     \"br\": BrotliDecoder,\n+    \"zstd\": ZStandardDecoder,\n }\n \n \n if brotli is None:\n     SUPPORTED_DECODERS.pop(\"br\")  # pragma: no cover\n-\n+if zstd is None:\n+    SUPPORTED_DECODERS.pop(\"zstd\")  # pragma: no cover\n+\n\n--- a/httpx/_models.py\n+++ b/httpx/_models.py\n@@ -818,7 +818,7 @@\n     def iter_bytes(self, chunk_size: int | None = None) -> typing.Iterator[bytes]:\n         \"\"\"\n         A byte-iterator over the decoded response content.\n-        This allows us to handle gzip, deflate, and brotli encoded responses.\n+        This allows us to handle gzip, deflate, brotli, and zstd encoded responses.\n         \"\"\"\n         if hasattr(self, \"_content\"):\n             chunk_size = len(self._content) if chunk_size is None else chunk_size\n@@ -918,7 +918,7 @@\n     ) -> typing.AsyncIterator[bytes]:\n         \"\"\"\n         A byte-iterator over the decoded response content.\n-        This allows us to handle gzip, deflate, and brotli encoded responses.\n+        This allows us to handle gzip, deflate, brotli, and zstd encoded responses.\n         \"\"\"\n         if hasattr(self, \"_content\"):\n             chunk_size = len(self._content) if chunk_size is None else chunk_size\n\n--- a/tests/client/test_client.py\n+++ b/tests/client/test_client.py\n@@ -357,7 +357,7 @@\n     assert response.json() == [\n         [\"Host\", \"example.org\"],\n         [\"Accept\", \"*/*\"],\n-        [\"Accept-Encoding\", \"gzip, deflate, br\"],\n+        [\"Accept-Encoding\", \"gzip, deflate, br, zstd\"],\n         [\"Connection\", \"keep-alive\"],\n         [\"User-Agent\", f\"python-httpx/{httpx.__version__}\"],\n         [\"Example-Header\", \"example-value\"],\n\n--- a/tests/client/test_event_hooks.py\n+++ b/tests/client/test_event_hooks.py\n@@ -36,7 +36,7 @@\n                 \"host\": \"127.0.0.1:8000\",\n                 \"user-agent\": f\"python-httpx/{httpx.__version__}\",\n                 \"accept\": \"*/*\",\n-                \"accept-encoding\": \"gzip, deflate, br\",\n+                \"accept-encoding\": \"gzip, deflate, br, zstd\",\n                 \"connection\": \"keep-alive\",\n                 \"authorization\": \"Basic dXNlcm5hbWU6cGFzc3dvcmQ=\",\n             },\n@@ -87,7 +87,7 @@\n                 \"host\": \"127.0.0.1:8000\",\n                 \"user-agent\": f\"python-httpx/{httpx.__version__}\",\n                 \"accept\": \"*/*\",\n-                \"accept-encoding\": \"gzip, deflate, br\",\n+                \"accept-encoding\": \"gzip, deflate, br, zstd\",\n                 \"connection\": \"keep-alive\",\n                 \"authorization\": \"Basic dXNlcm5hbWU6cGFzc3dvcmQ=\",\n             },\n@@ -144,7 +144,7 @@\n                 \"host\": \"127.0.0.1:8000\",\n                 \"user-agent\": f\"python-httpx/{httpx.__version__}\",\n                 \"accept\": \"*/*\",\n-                \"accept-encoding\": \"gzip, deflate, br\",\n+                \"accept-encoding\": \"gzip, deflate, br, zstd\",\n                 \"connection\": \"keep-alive\",\n                 \"authorization\": \"Basic dXNlcm5hbWU6cGFzc3dvcmQ=\",\n             },\n@@ -159,7 +159,7 @@\n                 \"host\": \"127.0.0.1:8000\",\n                 \"user-agent\": f\"python-httpx/{httpx.__version__}\",\n                 \"accept\": \"*/*\",\n-                \"accept-encoding\": \"gzip, deflate, br\",\n+                \"accept-encoding\": \"gzip, deflate, br, zstd\",\n                 \"connection\": \"keep-alive\",\n                 \"authorization\": \"Basic dXNlcm5hbWU6cGFzc3dvcmQ=\",\n             },\n@@ -201,7 +201,7 @@\n                 \"host\": \"127.0.0.1:8000\",\n                 \"user-agent\": f\"python-httpx/{httpx.__version__}\",\n                 \"accept\": \"*/*\",\n-                \"accept-encoding\": \"gzip, deflate, br\",\n+                \"accept-encoding\": \"gzip, deflate, br, zstd\",\n                 \"connection\": \"keep-alive\",\n                 \"authorization\": \"Basic dXNlcm5hbWU6cGFzc3dvcmQ=\",\n             },\n@@ -216,14 +216,14 @@\n                 \"host\": \"127.0.0.1:8000\",\n                 \"user-agent\": f\"python-httpx/{httpx.__version__}\",\n                 \"accept\": \"*/*\",\n-                \"accept-encoding\": \"gzip, deflate, br\",\n-                \"connection\": \"keep-alive\",\n-                \"authorization\": \"Basic dXNlcm5hbWU6cGFzc3dvcmQ=\",\n-            },\n-        },\n-        {\n-            \"event\": \"response\",\n-            \"headers\": {\"server\": \"testserver\"},\n-        },\n-    ]\n-\n+                \"accept-encoding\": \"gzip, deflate, br, zstd\",\n+                \"connection\": \"keep-alive\",\n+                \"authorization\": \"Basic dXNlcm5hbWU6cGFzc3dvcmQ=\",\n+            },\n+        },\n+        {\n+            \"event\": \"response\",\n+            \"headers\": {\"server\": \"testserver\"},\n+        },\n+    ]\n+\n\n--- a/tests/client/test_headers.py\n+++ b/tests/client/test_headers.py\n@@ -34,7 +34,7 @@\n     assert response.json() == {\n         \"headers\": {\n             \"accept\": \"*/*\",\n-            \"accept-encoding\": \"gzip, deflate, br\",\n+            \"accept-encoding\": \"gzip, deflate, br, zstd\",\n             \"connection\": \"keep-alive\",\n             \"example-header\": \"example-value\",\n             \"host\": \"example.org\",\n@@ -56,7 +56,7 @@\n     assert response.json() == {\n         \"headers\": {\n             \"accept\": \"*/*\",\n-            \"accept-encoding\": \"gzip, deflate, br\",\n+            \"accept-encoding\": \"gzip, deflate, br, zstd\",\n             \"connection\": \"keep-alive\",\n             \"host\": \"example.org\",\n             \"user-agent\": \"python-myclient/0.2.1\",\n@@ -78,7 +78,7 @@\n     assert response.json() == {\n         \"headers\": {\n             \"accept\": \"*/*\",\n-            \"accept-encoding\": \"gzip, deflate, br\",\n+            \"accept-encoding\": \"gzip, deflate, br, zstd\",\n             \"connection\": \"keep-alive\",\n             \"host\": \"example.org\",\n             \"user-agent\": f\"python-httpx/{httpx.__version__}\",\n@@ -100,7 +100,7 @@\n     assert first_response.json() == {\n         \"headers\": {\n             \"accept\": \"*/*\",\n-            \"accept-encoding\": \"gzip, deflate, br\",\n+            \"accept-encoding\": \"gzip, deflate, br, zstd\",\n             \"connection\": \"keep-alive\",\n             \"host\": \"example.org\",\n             \"user-agent\": f\"python-httpx/{httpx.__version__}\",\n@@ -111,7 +111,7 @@\n     assert second_response.json() == {\n         \"headers\": {\n             \"accept\": \"*/*\",\n-            \"accept-encoding\": \"gzip, deflate, br\",\n+            \"accept-encoding\": \"gzip, deflate, br, zstd\",\n             \"another-header\": \"AThing\",\n             \"connection\": \"keep-alive\",\n             \"host\": \"example.org\",\n@@ -164,7 +164,7 @@\n     assert response.json() == {\n         \"headers\": {\n             \"accept\": \"*/*\",\n-            \"accept-encoding\": \"gzip, deflate, br\",\n+            \"accept-encoding\": \"gzip, deflate, br, zstd\",\n             \"connection\": \"keep-alive\",\n             \"host\": \"example.org\",\n         }\n@@ -192,7 +192,7 @@\n     assert response.json() == {\n         \"headers\": {\n             \"accept\": \"*/*\",\n-            \"accept-encoding\": \"gzip, deflate, br\",\n+            \"accept-encoding\": \"gzip, deflate, br, zstd\",\n             \"connection\": \"keep-alive\",\n             \"host\": \"example.org\",\n             \"user-agent\": f\"python-httpx/{httpx.__version__}\",\n@@ -215,7 +215,7 @@\n     assert response.json() == {\n         \"headers\": {\n             \"accept\": \"*/*\",\n-            \"accept-encoding\": \"gzip, deflate, br\",\n+            \"accept-encoding\": \"gzip, deflate, br, zstd\",\n             \"connection\": \"keep-alive\",\n             \"host\": \"example.org:123\",\n             \"user-agent\": f\"python-httpx/{httpx.__version__}\",\n\n--- a/tests/test_asgi.py\n+++ b/tests/test_asgi.py\n@@ -157,7 +157,7 @@\n         \"headers\": [\n             [\"host\", \"www.example.org\"],\n             [\"accept\", \"*/*\"],\n-            [\"accept-encoding\", \"gzip, deflate, br\"],\n+            [\"accept-encoding\", \"gzip, deflate, br, zstd\"],\n             [\"connection\", \"keep-alive\"],\n             [\"user-agent\", f\"python-httpx/{httpx.__version__}\"],\n         ]\n\n--- a/tests/test_decoders.py\n+++ b/tests/test_decoders.py\n@@ -1,10 +1,12 @@\n from __future__ import annotations\n \n+import io\n import typing\n import zlib\n \n import chardet\n import pytest\n+import zstandard as zstd\n \n import httpx\n \n@@ -71,6 +73,53 @@\n         content=compressed_body,\n     )\n     assert response.content == body\n+\n+\n+def test_zstd():\n+    body = b\"test 123\"\n+    compressed_body = zstd.compress(body)\n+\n+    headers = [(b\"Content-Encoding\", b\"zstd\")]\n+    response = httpx.Response(\n+        200,\n+        headers=headers,\n+        content=compressed_body,\n+    )\n+    assert response.content == body\n+\n+\n+def test_zstd_decoding_error():\n+    compressed_body = \"this_is_not_zstd_compressed_data\"\n+\n+    headers = [(b\"Content-Encoding\", b\"zstd\")]\n+    with pytest.raises(httpx.DecodingError):\n+        httpx.Response(\n+            200,\n+            headers=headers,\n+            content=compressed_body,\n+        )\n+\n+\n+def test_zstd_multiframe():\n+    # test inspired by urllib3 test suite\n+    data = (\n+        # Zstandard frame\n+        zstd.compress(b\"foo\")\n+        # skippable frame (must be ignored)\n+        + bytes.fromhex(\n+            \"50 2A 4D 18\"  # Magic_Number (little-endian)\n+            \"07 00 00 00\"  # Frame_Size (little-endian)\n+            \"00 00 00 00 00 00 00\"  # User_Data\n+        )\n+        # Zstandard frame\n+        + zstd.compress(b\"bar\")\n+    )\n+    compressed_body = io.BytesIO(data)\n+\n+    headers = [(b\"Content-Encoding\", b\"zstd\")]\n+    response = httpx.Response(200, headers=headers, content=compressed_body)\n+    response.read()\n+    assert response.content == b\"foobar\"\n \n \n def test_multi():\n\n--- a/tests/test_main.py\n+++ b/tests/test_main.py\n@@ -129,7 +129,7 @@\n         \"GET / HTTP/1.1\",\n         f\"Host: {server.url.netloc.decode('ascii')}\",\n         \"Accept: */*\",\n-        \"Accept-Encoding: gzip, deflate, br\",\n+        \"Accept-Encoding: gzip, deflate, br, zstd\",\n         \"Connection: keep-alive\",\n         f\"User-Agent: python-httpx/{httpx.__version__}\",\n         \"\",\n@@ -154,7 +154,7 @@\n         \"GET / HTTP/1.1\",\n         f\"Host: {server.url.netloc.decode('ascii')}\",\n         \"Accept: */*\",\n-        \"Accept-Encoding: gzip, deflate, br\",\n+        \"Accept-Encoding: gzip, deflate, br, zstd\",\n         \"Connection: keep-alive\",\n         f\"User-Agent: python-httpx/{httpx.__version__}\",\n         \"Authorization: Basic dXNlcm5hbWU6cGFzc3dvcmQ=\","
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.19,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.29,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.8,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.83,
+        "type": "noul"
+      },
+      "r2_defined": {
+        "noul": 0.99,
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r2_wired": {
+        "noul": 0.34,
+        "type": "noul"
+      },
+      "r3_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r3_real_body": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r3_wired": {
+        "noul": 0.42,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 5352,
+      "output_tokens": 228
+    }
+  },
+  "variant": "split"
+}

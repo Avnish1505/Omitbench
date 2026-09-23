@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_env_cert_bundles` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/requests/sessions.py\n+++ b/requests/sessions.py\n@@ -702,11 +702,14 @@\n             for (k, v) in env_proxies.items():\n                 proxies.setdefault(k, v)\n \n-            # Look for requests environment configuration and be compatible\n-            # with cURL.\n+            # Look for requests environment configuration\n+            # and be compatible with cURL.\n             if verify is True or verify is None:\n-                verify = (os.environ.get('REQUESTS_CA_BUNDLE') or\n-                          os.environ.get('CURL_CA_BUNDLE'))\n+                verify = (\n+                    os.environ.get('REQUESTS_CA_BUNDLE')\n+                    or os.environ.get('CURL_CA_BUNDLE')\n+                    or verify\n+                )\n \n         # Merge all the kwargs.\n         proxies = merge_setting(proxies, self.proxies)\n@@ -714,8 +717,12 @@\n         verify = merge_setting(verify, self.verify)\n         cert = merge_setting(cert, self.cert)\n \n-        return {'verify': verify, 'proxies': proxies, 'stream': stream,\n-                'cert': cert}\n+        return {\n+            'proxies': proxies,\n+            'stream': stream,\n+            'verify': verify,\n+            'cert': cert\n+        }\n \n     def get_adapter(self, url):\n         \"\"\"\n\n--- a/tests/test_requests.py\n+++ b/tests/test_requests.py\n@@ -897,6 +897,31 @@\n         with pytest.raises(IOError) as e:\n             requests.get(httpbin_secure(), cert=('.', INVALID_PATH))\n         assert str(e.value) == 'Could not find the TLS key file, invalid path: {}'.format(INVALID_PATH)\n+\n+    @pytest.mark.parametrize(\n+        'env, expected', (\n+            ({}, True),\n+            ({'REQUESTS_CA_BUNDLE': '/some/path'}, '/some/path'),\n+            ({'REQUESTS_CA_BUNDLE': ''}, True),\n+            ({'CURL_CA_BUNDLE': '/some/path'}, '/some/path'),\n+            ({'CURL_CA_BUNDLE': ''}, True),\n+            ({'REQUESTS_CA_BUNDLE': '', 'CURL_CA_BUNDLE': ''}, True),\n+            (\n+                {\n+                    'REQUESTS_CA_BUNDLE': '/some/path',\n+                    'CURL_CA_BUNDLE': '/curl/path',\n+                },\n+                '/some/path',\n+            ),\n+            (\n+                {\n+                    'REQUESTS_CA_BUNDLE': '',\n+                    'CURL_CA_BUNDLE': '/curl/path',\n+                },\n+                '/curl/path',\n+            ),\n+        )\n+    )\n \n     def test_http_with_certificate(self, httpbin):\n         r = requests.get(httpbin(), cert='.')"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.11,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1131,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

@@ -1,0 +1,91 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `httpx/_models.py::raw_host`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `httpx/_models.py::raw_host`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `httpx/_models.py::raw_host`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `httpx/_models.py::raw_scheme`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `httpx/_models.py::raw_scheme`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `httpx/_models.py::raw_scheme`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/httpx/_models.py\n+++ b/httpx/_models.py\n@@ -8,6 +8,7 @@\n from http.cookiejar import Cookie, CookieJar\n from urllib.parse import parse_qsl, quote, unquote, urlencode\n \n+import idna\n import rfc3986\n import rfc3986.exceptions\n \n@@ -60,15 +61,16 @@\n \n class URL:\n     \"\"\"\n-    url = httpx.URL(\"HTTPS://jo%40email.com:a%20secret@example.com:1234/pa%20th?search=ab#anchorlink\")\n+    url = httpx.URL(\"HTTPS://jo%40email.com:a%20secret@m\u00fcller.de:1234/pa%20th?search=ab#anchorlink\")\n \n     assert url.scheme == \"https\"\n     assert url.username == \"jo@email.com\"\n     assert url.password == \"a secret\"\n     assert url.userinfo == b\"jo%40email.com:a%20secret\"\n-    assert url.host == \"example.com\"\n+    assert url.host == \"m\u00fcller.de\"\n+    assert url.raw_host == b\"xn--mller-kva.de\"\n     assert url.port == 1234\n-    assert url.netloc == \"example.com:1234\"\n+    assert url.netloc == b\"xn--mller-kva.de:1234\"\n     assert url.path == \"/pa th\"\n     assert url.query == b\"?search=ab\"\n     assert url.raw_path == b\"/pa%20th?search=ab\"\n@@ -76,17 +78,28 @@\n \n     The components of a URL are broken down like this:\n \n-    https://jo%40email.com:a%20secret@example.com:1234/pa%20th?search=ab#anchorlink\n-    [scheme][  username  ] [password] [  host  ][port][ path ] [ query ] [fragment]\n-            [       userinfo        ] [    netloc    ][    raw_path    ]\n+       https://jo%40email.com:a%20secret@m\u00fcller.de:1234/pa%20th?search=ab#anchorlink\n+    [scheme]   [  username  ] [password] [ host ][port][ path ] [ query ] [fragment]\n+               [       userinfo        ] [   netloc   ][    raw_path    ]\n \n     Note that:\n \n     * `url.scheme` is normalized to always be lowercased.\n \n-    * `url.host` is normalized to always be lowercased, and is IDNA encoded. For instance:\n-       url = httpx.URL(\"http://\u4e2d\u56fd.icom.museum\")\n-       assert url.host == \"xn--fiqs8s.icom.museum\"\n+    * `url.host` is normalized to always be lowercased. Internationalized domain\n+      names are represented in unicode, without IDNA encoding applied. For instance:\n+\n+      url = httpx.URL(\"http://\u4e2d\u56fd.icom.museum\")\n+      assert url.host == \"\u4e2d\u56fd.icom.museum\"\n+      url = httpx.URL(\"http://xn--fiqs8s.icom.museum\")\n+      assert url.host == \"\u4e2d\u56fd.icom.museum\"\n+\n+    * `url.raw_host` is normalized to always be lowercased, and is IDNA encoded.\n+\n+      url = httpx.URL(\"http://\u4e2d\u56fd.icom.museum\")\n+      assert url.raw_host == b\"xn--fiqs8s.icom.museum\"\n+      url = httpx.URL(\"http://xn--fiqs8s.icom.museum\")\n+      assert url.raw_host == b\"xn--fiqs8s.icom.museum\"\n \n     * `url.userinfo` is raw bytes, without URL escaping. Usually you'll want to work with\n       `url.username` and `url.password` instead, which handle the URL escaping.\n@@ -151,6 +164,8 @@\n         return self._uri_reference.scheme or \"\"\n \n     @property\n+\n+    @property\n     def userinfo(self) -> bytes:\n         \"\"\"\n         The URL userinfo as a raw bytestring.\n@@ -181,7 +196,7 @@\n     def host(self) -> str:\n         \"\"\"\n         The URL host as a string.\n-        Always normlized to lowercase, and IDNA encoded.\n+        Always normalized to lowercase, with IDNA hosts decoded into unicode.\n \n         Examples:\n \n@@ -189,18 +204,52 @@\n         assert url.host == \"www.example.org\"\n \n         url = httpx.URL(\"http://\u4e2d\u56fd.icom.museum\")\n-        assert url.host == \"xn--fiqs8s.icom.museum\"\n+        assert url.host == \"\u4e2d\u56fd.icom.museum\"\n+\n+        url = httpx.URL(\"http://xn--fiqs8s.icom.museum\")\n+        assert url.host == \"\u4e2d\u56fd.icom.museum\"\n \n         url = httpx.URL(\"https://[::ffff:192.168.0.1]\")\n         assert url.host == \"::ffff:192.168.0.1\"\n         \"\"\"\n-        host: str = self._uri_reference.host\n+        host: str = self._uri_reference.host or \"\"\n \n         if host and \":\" in host and host[0] == \"[\":\n             # it's an IPv6 address\n             host = host.lstrip(\"[\").rstrip(\"]\")\n \n-        return host or \"\"\n+        if host.startswith(\"xn--\"):\n+            host = idna.decode(host)\n+\n+        return host\n+\n+    @property\n+    def raw_host(self) -> bytes:\n+        \"\"\"\n+        The raw bytes representation of the URL host.\n+        Always normalized to lowercase, and IDNA encoded.\n+\n+        Examples:\n+\n+        url = httpx.URL(\"http://www.EXAMPLE.org\")\n+        assert url.raw_host == b\"www.example.org\"\n+\n+        url = httpx.URL(\"http://\u4e2d\u56fd.icom.museum\")\n+        assert url.raw_host == b\"xn--fiqs8s.icom.museum\"\n+\n+        url = httpx.URL(\"http://xn--fiqs8s.icom.museum\")\n+        assert url.raw_host == b\"xn--fiqs8s.icom.museum\"\n+\n+        url = httpx.URL(\"https://[::ffff:192.168.0.1]\")\n+        assert url.raw_host == b\"::ffff:192.168.0.1\"\n+        \"\"\"\n+        host: str = self._uri_reference.host or \"\"\n+\n+        if host and \":\" in host and host[0] == \"[\":\n+            # it's an IPv6 address\n+            host = host.lstrip(\"[\").rstrip(\"]\")\n+\n+        return host.encode(\"ascii\")\n \n     @property\n     def port(self) -> typing.Optional[int]:\n@@ -211,14 +260,17 @@\n         return int(port) if port else None\n \n     @property\n-    def netloc(self) -> str:\n-        \"\"\"\n-        Either `<host>` or `<host>:<port>` as a string.\n-        Always normlized to lowercase, and IDNA encoded.\n+    def netloc(self) -> bytes:\n+        \"\"\"\n+        Either `<host>` or `<host>:<port>` as bytes.\n+        Always normalized to lowercase, and IDNA encoded.\n         \"\"\"\n         host = self._uri_reference.host or \"\"\n         port = self._uri_reference.port\n-        return host if port is None else f\"{host}:{port}\"\n+        netloc = host.encode(\"ascii\")\n+        if port:\n+            netloc = netloc + b\":\" + str(port).encode(\"ascii\")\n+        return netloc\n \n     @property\n     def path(self) -> str:\n@@ -277,8 +329,8 @@\n         Provides the (scheme, host, port, target) for the outgoing request.\n         \"\"\"\n         return (\n-            self.scheme.encode(\"ascii\"),\n-            self.host.encode(\"ascii\"),\n+            self.raw_scheme,\n+            self.raw_host,\n             self.port,\n             self.raw_path,\n         )\n@@ -293,7 +345,7 @@\n         # URLs with a fragment portion as not absolute.\n         # What we actually care about is if the URL provides\n         # a scheme and hostname to which connections should be made.\n-        return bool(self.scheme and self.host)\n+        return bool(self._uri_reference.scheme and self._uri_reference.host)\n \n     @property\n     def is_relative_url(self) -> bool:\n@@ -321,7 +373,7 @@\n             \"userinfo\": bytes,\n             \"host\": str,\n             \"port\": int,\n-            \"netloc\": str,\n+            \"netloc\": bytes,\n             \"path\": str,\n             \"query\": bytes,\n             \"raw_path\": bytes,\n@@ -354,12 +406,16 @@\n                 # it's an IPv6 address, so it should be hidden under bracket\n                 host = f\"[{host}]\"\n \n-            kwargs[\"netloc\"] = f\"{host}:{port}\" if port is not None else host\n+            kwargs[\"netloc\"] = (\n+                f\"{host}:{port}\".encode(\"ascii\")\n+                if port is not None\n+                else host.encode(\"ascii\")\n+            )\n \n         if \"userinfo\" in kwargs or \"netloc\" in kwargs:\n             # Consolidate userinfo and netloc into authority.\n             userinfo = (kwargs.pop(\"userinfo\", self.userinfo) or b\"\").decode(\"ascii\")\n-            netloc = kwargs.pop(\"netloc\", self.netloc) or \"\"\n+            netloc = (kwargs.pop(\"netloc\", self.netloc) or b\"\").decode(\"ascii\")\n             authority = f\"{userinfo}@{netloc}\" if userinfo else netloc\n             kwargs[\"authority\"] = authority\n \n@@ -848,11 +904,10 @@\n         )\n \n         if not has_host and self.url.host:\n-            default_port = {\"http\": 80, \"https\": 443}.get(self.url.scheme)\n-            if self.url.port is None or self.url.port == default_port:\n-                host_header = self.url.host.encode(\"ascii\")\n-            else:\n-                host_header = self.url.netloc.encode(\"ascii\")\n+            default_port = {\"http\": b\":80\", \"https\": b\":443\"}.get(self.url.scheme, b\"\")\n+            host_header = self.url.netloc\n+            if host_header.endswith(default_port):\n+                host_header = host_header[: -len(default_port)]\n             auto_headers.append((b\"Host\", host_header))\n         if not has_content_length and self.method in (\"POST\", \"PUT\", \"PATCH\"):\n             auto_headers.append((b\"Content-Length\", b\"0\"))\n\n--- a/tests/models/test_url.py\n+++ b/tests/models/test_url.py\n@@ -4,41 +4,53 @@\n \n \n @pytest.mark.parametrize(\n-    \"given,idna,host,scheme,port\",\n+    \"given,idna,host,raw_host,scheme,port\",\n     [\n         (\n             \"http://\u4e2d\u56fd.icom.museum:80/\",\n             \"http://xn--fiqs8s.icom.museum:80/\",\n-            \"xn--fiqs8s.icom.museum\",\n+            \"\u4e2d\u56fd.icom.museum\",\n+            b\"xn--fiqs8s.icom.museum\",\n             \"http\",\n             80,\n         ),\n         (\n             \"http://K\u00f6nigsg\u00e4\u00dfchen.de\",\n             \"http://xn--knigsgchen-b4a3dun.de\",\n-            \"xn--knigsgchen-b4a3dun.de\",\n+            \"k\u00f6nigsg\u00e4\u00dfchen.de\",\n+            b\"xn--knigsgchen-b4a3dun.de\",\n             \"http\",\n             None,\n         ),\n-        (\"https://fa\u00df.de\", \"https://xn--fa-hia.de\", \"xn--fa-hia.de\", \"https\", None),\n+        (\n+            \"https://fa\u00df.de\",\n+            \"https://xn--fa-hia.de\",\n+            \"fa\u00df.de\",\n+            b\"xn--fa-hia.de\",\n+            \"https\",\n+            None,\n+        ),\n         (\n             \"https://\u03b2\u03cc\u03bb\u03bf\u03c2.com:443\",\n             \"https://xn--nxasmm1c.com:443\",\n-            \"xn--nxasmm1c.com\",\n+            \"\u03b2\u03cc\u03bb\u03bf\u03c2.com\",\n+            b\"xn--nxasmm1c.com\",\n             \"https\",\n             443,\n         ),\n         (\n             \"http://\u0dc1\u0dca\u200d\u0dbb\u0dd3.com:444\",\n             \"http://xn--10cl1a0b660p.com:444\",\n-            \"xn--10cl1a0b660p.com\",\n+            \"\u0dc1\u0dca\u200d\u0dbb\u0dd3.com\",\n+            b\"xn--10cl1a0b660p.com\",\n             \"http\",\n             444,\n         ),\n         (\n             \"https://\u0646\u0627\u0645\u0647\u200c\u0627\u06cc.com:4433\",\n             \"https://xn--mgba3gch31f060k.com:4433\",\n-            \"xn--mgba3gch31f060k.com\",\n+            \"\u0646\u0627\u0645\u0647\u200c\u0627\u06cc.com\",\n+            b\"xn--mgba3gch31f060k.com\",\n             \"https\",\n             4433,\n         ),\n@@ -52,10 +64,11 @@\n         \"https_with_custom_port\",\n     ],\n )\n-def test_idna_url(given, idna, host, scheme, port):\n+def test_idna_url(given, idna, host, raw_host, scheme, port):\n     url = httpx.URL(given)\n     assert url == httpx.URL(idna)\n     assert url.host == host\n+    assert url.raw_host == raw_host\n     assert url.scheme == scheme\n     assert url.port == port\n \n@@ -197,7 +210,7 @@\n \n def test_url_copywith_netloc():\n     copy_with_kwargs = {\n-        \"netloc\": \"example.net:444\",\n+        \"netloc\": b\"example.net:444\",\n     }\n     url = httpx.URL(\"https://example.org\")\n     new = url.copy_with(**copy_with_kwargs)\n@@ -301,7 +314,7 @@\n     url = httpx.URL(\"http://[::ffff:192.168.0.1]:5678/\")\n \n     assert url.host == \"::ffff:192.168.0.1\"\n-    assert url.netloc == \"[::ffff:192.168.0.1]:5678\"\n+    assert url.netloc == b\"[::ffff:192.168.0.1]:5678\"\n \n \n @pytest.mark.parametrize(\n@@ -317,7 +330,7 @@\n     url = httpx.URL(url_str).copy_with(host=new_host)\n \n     assert url.host == \"::ffff:192.168.0.1\"\n-    assert url.netloc == \"[::ffff:192.168.0.1]:1234\"\n+    assert url.netloc == b\"[::ffff:192.168.0.1]:1234\"\n     assert str(url) == \"http://[::ffff:192.168.0.1]:1234\"\n \n \n@@ -327,6 +340,6 @@\n     url = httpx.URL(raw_url)\n \n     assert url.host == \"::ffff:192.168.0.1\"\n-    assert url.netloc == \"[::ffff:192.168.0.1]:443\"\n+    assert url.netloc == b\"[::ffff:192.168.0.1]:443\"\n     assert str(url) == \"https://[::ffff:192.168.0.1]:443/\"\n "
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.91,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.95,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.08,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.16,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.92,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 4648,
+      "output_tokens": 116
+    }
+  },
+  "variant": "split"
+}

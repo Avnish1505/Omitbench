@@ -1,0 +1,43 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_arguments.py::test_argument_metavar_marks_optional` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_commands.py::test_subcommand_metavar_marks_optional` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/click/core.py\n+++ b/src/click/core.py\n@@ -1623,8 +1623,15 @@\n         self.invoke_without_command = invoke_without_command\n \n         if subcommand_metavar is None:\n+            # When the group can run without a subcommand, the leading command\n+            # token is optional, so wrap it in brackets to reflect that.\n             if chain:\n-                subcommand_metavar = \"COMMAND1 [ARGS]... [COMMAND2 [ARGS]...]...\"\n+                if invoke_without_command:\n+                    subcommand_metavar = \"[COMMAND1] [ARGS]... [COMMAND2 [ARGS]...]...\"\n+                else:\n+                    subcommand_metavar = \"COMMAND1 [ARGS]... [COMMAND2 [ARGS]...]...\"\n+            elif invoke_without_command:\n+                subcommand_metavar = \"[COMMAND] [ARGS]...\"\n             else:\n                 subcommand_metavar = \"COMMAND [ARGS]...\"\n \n\n--- a/tests/test_arguments.py\n+++ b/tests/test_arguments.py\n@@ -306,6 +306,23 @@\n     assert \"[F!]\" in result.output\n \n \n+@pytest.mark.parametrize(\n+    (\"kwargs\", \"expected\"),\n+    [\n+        ({}, \"FOO\"),\n+        ({\"required\": True}, \"FOO\"),\n+        ({\"required\": False}, \"[FOO]\"),\n+        ({\"default\": \"x\"}, \"[FOO]\"),\n+        ({\"nargs\": -1}, \"[FOO]...\"),\n+        ({\"nargs\": -1, \"required\": True}, \"FOO...\"),\n+        ({\"nargs\": 2}, \"FOO...\"),\n+        ({\"nargs\": 2, \"required\": False}, \"[FOO]...\"),\n+    ],\n+)\n+def test_argument_metavar_marks_optional(runner, kwargs, expected):\n+    raise NotImplementedError\n+\n+\n @pytest.mark.parametrize(\"deprecated\", [True, \"USE B INSTEAD\"])\n def test_deprecated_warning(runner, deprecated):\n     @click.command()\n\n--- a/tests/test_commands.py\n+++ b/tests/test_commands.py\n@@ -297,6 +297,33 @@\n     result = runner.invoke(cli)\n     assert not result.exception\n     assert result.output == \"no subcommand, use default\\nin subcommand\\n\"\n+\n+\n+@pytest.mark.parametrize(\n+    (\"chain\", \"invoke_without_command\", \"metavar\"),\n+    [\n+        (False, False, \"COMMAND [ARGS]...\"),\n+        (False, True, \"[COMMAND] [ARGS]...\"),\n+        (True, False, \"COMMAND1 [ARGS]... [COMMAND2 [ARGS]...]...\"),\n+        (True, True, \"[COMMAND1] [ARGS]... [COMMAND2 [ARGS]...]...\"),\n+    ],\n+)\n+def test_subcommand_metavar_marks_optional(\n+    runner, chain, invoke_without_command, metavar\n+):\n+    \"\"\"The leading subcommand token is bracketed only when it is optional.\"\"\"\n+\n+    @click.group(chain=chain, invoke_without_command=invoke_without_command)\n+    def cli():\n+        pass\n+\n+    @cli.command()\n+    def sub():\n+        pass\n+\n+    result = runner.invoke(cli, [\"--help\"])\n+    assert result.exit_code == 0\n+    assert result.output.splitlines()[0] == f\"Usage: cli [OPTIONS] {metavar}\"\n \n \n def test_aliased_command_canonical_name(runner):"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.01,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.28,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1523,
+      "output_tokens": 38
+    }
+  },
+  "variant": "single"
+}

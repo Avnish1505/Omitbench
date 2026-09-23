@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_filters.py::test_xmlattr_key_invalid`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_filters.py::test_xmlattr_key_invalid`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_filters.py::test_xmlattr_key_invalid`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/jinja2/filters.py\n+++ b/src/jinja2/filters.py\n@@ -250,7 +250,9 @@\n     yield from value.items()\n \n \n-_space_re = re.compile(r\"\\s\", flags=re.ASCII)\n+# Check for characters that would move the parser state from key to value.\n+# https://html.spec.whatwg.org/#attribute-name-state\n+_attr_key_re = re.compile(r\"[\\s/>=]\", flags=re.ASCII)\n \n \n @pass_eval_context\n@@ -259,8 +261,14 @@\n ) -> str:\n     \"\"\"Create an SGML/XML attribute string based on the items in a dict.\n \n-    If any key contains a space, this fails with a ``ValueError``. Values that\n-    are neither ``none`` nor ``undefined`` are automatically escaped.\n+    **Values** that are neither ``none`` nor ``undefined`` are automatically\n+    escaped, safely allowing untrusted user input.\n+\n+    User input should not be used as **keys** to this filter. If any key\n+    contains a space, ``/`` solidus, ``>`` greater-than sign, or ``=`` equals\n+    sign, this fails with a ``ValueError``. Regardless of this, user input\n+    should never be used as keys to this filter, or must be separately validated\n+    first.\n \n     .. sourcecode:: html+jinja\n \n@@ -280,6 +288,10 @@\n     As you can see it automatically prepends a space in front of the item\n     if the filter returned something unless the second parameter is false.\n \n+    .. versionchanged:: 3.1.4\n+        Keys with ``/`` solidus, ``>`` greater-than sign, or ``=`` equals sign\n+        are not allowed.\n+\n     .. versionchanged:: 3.1.3\n         Keys with spaces are not allowed.\n     \"\"\"\n@@ -289,8 +301,8 @@\n         if value is None or isinstance(value, Undefined):\n             continue\n \n-        if _space_re.search(key) is not None:\n-            raise ValueError(f\"Spaces are not allowed in attributes: '{key}'\")\n+        if _attr_key_re.search(key) is not None:\n+            raise ValueError(f\"Invalid character in attribute name: {key!r}\")\n \n         items.append(f'{escape(key)}=\"{escape(value)}\"')\n \n\n--- a/tests/test_filters.py\n+++ b/tests/test_filters.py\n@@ -474,11 +474,12 @@\n         assert 'bar=\"23\"' in out\n         assert 'blub:blub=\"&lt;?&gt;\"' in out\n \n-    def test_xmlattr_key_with_spaces(self, env):\n-        with pytest.raises(ValueError, match=\"Spaces are not allowed\"):\n-            env.from_string(\n-                \"{{ {'src=1 onerror=alert(1)': 'my_class'}|xmlattr }}\"\n-            ).render()\n+    @pytest.mark.parametrize(\"sep\", (\"\\t\", \"\\n\", \"\\f\", \" \", \"/\", \">\", \"=\"))\n+    def test_xmlattr_key_invalid(self, env: Environment, sep: str) -> None:\n+        with pytest.raises(ValueError, match=\"Invalid character\"):\n+            env.from_string(\"{{ {key: 'my_class'}|xmlattr }}\").render(\n+                key=f\"class{sep}onclick=alert(1)\"\n+            )\n \n     def test_sort1(self, env):\n         tmpl = env.from_string(\"{{ [2, 3, 1]|sort }}|{{ [2, 3, 1]|sort(true) }}\")"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.95,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.83,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1458,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

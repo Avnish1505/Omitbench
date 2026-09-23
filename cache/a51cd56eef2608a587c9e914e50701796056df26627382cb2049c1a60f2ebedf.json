@@ -1,0 +1,91 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_async.py::test_getitem_after_call`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_async.py::test_getitem_after_call`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_async.py::test_getitem_after_call`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_async.py::test_getitem_after_filter`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_async.py::test_getitem_after_filter`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_async.py::test_getitem_after_filter`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/jinja2/compiler.py\n+++ b/src/jinja2/compiler.py\n@@ -1755,7 +1755,7 @@\n         self, node: t.Union[nodes.Filter, nodes.Test], frame: Frame, is_filter: bool\n     ) -> t.Iterator[None]:\n         if self.environment.is_async:\n-            self.write(\"await auto_await(\")\n+            self.write(\"(await auto_await(\")\n \n         if is_filter:\n             self.write(f\"{self.filters[node.name]}(\")\n@@ -1790,7 +1790,7 @@\n         self.write(\")\")\n \n         if self.environment.is_async:\n-            self.write(\")\")\n+            self.write(\"))\")\n \n     @optimizeconst\n     def visit_Filter(self, node: nodes.Filter, frame: Frame) -> None:\n@@ -1842,7 +1842,7 @@\n         self, node: nodes.Call, frame: Frame, forward_caller: bool = False\n     ) -> None:\n         if self.environment.is_async:\n-            self.write(\"await auto_await(\")\n+            self.write(\"(await auto_await(\")\n         if self.environment.sandboxed:\n             self.write(\"environment.call(context, \")\n         else:\n@@ -1858,7 +1858,7 @@\n         self.signature(node, frame, extra_kwargs)\n         self.write(\")\")\n         if self.environment.is_async:\n-            self.write(\")\")\n+            self.write(\"))\")\n \n     def visit_Keyword(self, node: nodes.Keyword, frame: Frame) -> None:\n         self.write(node.key + \"=\")\n\n--- a/tests/test_async.py\n+++ b/tests/test_async.py\n@@ -643,3 +643,13 @@\n \n     asyncio.run(_test())\n \n+\n+\n+\n+def test_getitem_after_call():\n+    env = Environment(enable_async=True)\n+    env.globals[\"add_each\"] = lambda v, x: [i + x for i in v]\n+    t = env.from_string(\"{{ add_each(a, 2)[1:] }}\")\n+    out = t.render(a=range(3))\n+    assert out == \"[3, 4]\"\n+"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.29,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.07,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.05,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.19,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1478,
+      "output_tokens": 116
+    }
+  },
+  "variant": "split"
+}

@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_formparser.py::test_multipart_max_form_memory_size`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_formparser.py::test_multipart_max_form_memory_size`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_formparser.py::test_multipart_max_form_memory_size`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/werkzeug/formparser.py\n+++ b/src/werkzeug/formparser.py\n@@ -352,6 +352,7 @@\n         self, stream: t.IO[bytes], boundary: bytes, content_length: int | None\n     ) -> tuple[MultiDict[str, str], MultiDict[str, FileStorage]]:\n         current_part: Field | File\n+        field_size: int | None = None\n         container: t.IO[bytes] | list[bytes]\n         _write: t.Callable[[bytes], t.Any]\n \n@@ -370,13 +371,23 @@\n             while not isinstance(event, (Epilogue, NeedData)):\n                 if isinstance(event, Field):\n                     current_part = event\n+                    field_size = 0\n                     container = []\n                     _write = container.append\n                 elif isinstance(event, File):\n                     current_part = event\n+                    field_size = None\n                     container = self.start_file_streaming(event, content_length)\n                     _write = container.write\n                 elif isinstance(event, Data):\n+                    if self.max_form_memory_size is not None and field_size is not None:\n+                        # Ensure that accumulated data events do not exceed limit.\n+                        # Also checked within single event in MultipartDecoder.\n+                        field_size += len(event.data)\n+\n+                        if field_size > self.max_form_memory_size:\n+                            raise RequestEntityTooLarge()\n+\n                     _write(event.data)\n                     if not event.more_data:\n                         if isinstance(current_part, Field):\n\n--- a/src/werkzeug/sansio/multipart.py\n+++ b/src/werkzeug/sansio/multipart.py\n@@ -140,6 +140,8 @@\n             self.max_form_memory_size is not None\n             and len(self.buffer) + len(data) > self.max_form_memory_size\n         ):\n+            # Ensure that data within single event does not exceed limit.\n+            # Also checked across accumulated events in MultiPartParser.\n             raise RequestEntityTooLarge()\n         else:\n             self.buffer.extend(data)\n\n--- a/tests/test_formparser.py\n+++ b/tests/test_formparser.py\n@@ -457,3 +457,15 @@\n             assert request.files[\"rfc2231\"].filename == \"a b c d e f.txt\"\n             assert request.files[\"rfc2231\"].read() == b\"file contents\"\n \n+\n+def test_multipart_max_form_memory_size() -> None:\n+    \"\"\"max_form_memory_size is tracked across multiple data events.\"\"\"\n+    data = b\"--bound\\r\\nContent-Disposition: form-field; name=a\\r\\n\\r\\n\"\n+    data += b\"a\" * 15 + b\"\\r\\n--bound--\"\n+    # The buffer size is less than the max size, so multiple data events will be\n+    # returned. The field size is greater than the max.\n+    parser = formparser.MultiPartParser(max_form_memory_size=10, buffer_size=5)\n+\n+    with pytest.raises(RequestEntityTooLarge):\n+        parser.parse(io.BytesIO(data), b\"bound\", None)\n+"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.78,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1355,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

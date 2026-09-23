@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_multipart.py::test_multipart_encode_unicode_file_contents` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/httpx/_multipart.py\n+++ b/httpx/_multipart.py\n@@ -40,11 +40,7 @@\n \n     def render_data(self) -> bytes:\n         if not hasattr(self, \"_data\"):\n-            self._data = (\n-                self.value\n-                if isinstance(self.value, bytes)\n-                else self.value.encode(\"utf-8\")\n-            )\n+            self._data = to_bytes(self.value)\n \n         return self._data\n \n@@ -88,7 +84,7 @@\n         headers = self.render_headers()\n \n         if isinstance(self.file, (str, bytes)):\n-            return len(headers) + len(self.file)\n+            return len(headers) + len(to_bytes(self.file))\n \n         # Let's do our best not to read `file` into memory.\n         try:\n\n--- a/tests/test_multipart.py\n+++ b/tests/test_multipart.py\n@@ -131,6 +131,8 @@\n             \"Content-Length\": str(len(content)),\n         }\n         assert content == b\"\".join(stream)\n+\n+\n \n \n def test_multipart_encode_files_allows_filenames_as_none() -> None:"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.04,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 761,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

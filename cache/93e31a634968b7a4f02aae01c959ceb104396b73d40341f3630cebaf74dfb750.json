@@ -1,0 +1,43 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_auth.py::set_cookies` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_auth.py::test_digest_auth_setting_cookie_in_request` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/httpx/_auth.py\n+++ b/httpx/_auth.py\n@@ -8,7 +8,7 @@\n from urllib.request import parse_http_list\n \n from ._exceptions import ProtocolError\n-from ._models import Request, Response\n+from ._models import Cookies, Request, Response\n from ._utils import to_bytes, to_str, unquote\n \n if typing.TYPE_CHECKING:  # pragma: no cover\n@@ -217,6 +217,8 @@\n         request.headers[\"Authorization\"] = self._build_auth_header(\n             request, self._last_challenge\n         )\n+        if response.cookies:\n+            Cookies(response.cookies).set_cookie_header(request=request)\n         yield request\n \n     def _parse_challenge(\n\n--- a/tests/test_auth.py\n+++ b/tests/test_auth.py\n@@ -54,7 +54,7 @@\n         \"WWW-Authenticate\": 'Digest realm=\"...\", qop=\"auth\", nonce=\"...\", opaque=\"...\"'\n     }\n     response = httpx.Response(\n-        content=b\"Auth required\", status_code=401, headers=headers\n+        content=b\"Auth required\", status_code=401, headers=headers, request=request\n     )\n     request = flow.send(response)\n     assert request.headers[\"Authorization\"].startswith(\"Digest\")\n@@ -79,7 +79,7 @@\n         \"WWW-Authenticate\": 'Digest realm=\"...\", qop=\"auth\", nonce=\"...\", opaque=\"...\"'\n     }\n     response = httpx.Response(\n-        content=b\"Auth required\", status_code=401, headers=headers\n+        content=b\"Auth required\", status_code=401, headers=headers, request=request\n     )\n     first_request = flow.send(response)\n     assert first_request.headers[\"Authorization\"].startswith(\"Digest\")\n@@ -102,3 +102,20 @@\n     with pytest.raises(StopIteration):\n         flow.send(response)\n \n+\n+def set_cookies(request: httpx.Request) -> httpx.Response:\n+    headers = {\n+        \"Set-Cookie\": \"session=.session_value...\",\n+        \"WWW-Authenticate\": 'Digest realm=\"...\", qop=\"auth\", nonce=\"...\", opaque=\"...\"',\n+    }\n+    if request.url.path == \"/auth\":\n+        return httpx.Response(\n+            content=b\"Auth required\", status_code=401, headers=headers\n+        )\n+    else:\n+        raise NotImplementedError()  # pragma: no cover\n+\n+\n+def test_digest_auth_setting_cookie_in_request():\n+    raise NotImplementedError\n+"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.06,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.01,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1320,
+      "output_tokens": 38
+    }
+  },
+  "variant": "single"
+}

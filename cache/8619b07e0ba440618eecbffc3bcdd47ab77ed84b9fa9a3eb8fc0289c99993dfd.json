@@ -1,0 +1,271 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_make.py::NewClassNewBehavior`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_make.py::NewClassNewBehavior`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_make.py::NewClassNewBehavior`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_make.py::NewClassOldBehavior`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_make.py::NewClassOldBehavior`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_make.py::NewClassOldBehavior`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_make.py::OldClassNewBehavior`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_make.py::OldClassNewBehavior`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_make.py::OldClassNewBehavior`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_make.py::OldClassOldBehavior`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_make.py::OldClassOldBehavior`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_make.py::OldClassOldBehavior`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_attr_level_kw_only_and_class_level_kw_only`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_attr_level_kw_only_and_class_level_kw_only`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_attr_level_kw_only_and_class_level_kw_only`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r5_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_kw_only_inheritance`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r5_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_kw_only_inheritance`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r5_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_kw_only_inheritance`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r6_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_kw_only_inheritance_force_kw_only`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r6_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_kw_only_inheritance_force_kw_only`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r6_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_kw_only_inheritance_force_kw_only`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/attr/_make.py\n+++ b/src/attr/_make.py\n@@ -114,7 +114,7 @@\n     type=None,\n     converter=None,\n     factory=None,\n-    kw_only=False,\n+    kw_only=None,\n     eq=None,\n     order=None,\n     on_setattr=None,\n@@ -157,6 +157,9 @@\n        *eq*, *order*, and *cmp* also accept a custom callable\n     .. versionchanged:: 21.1.0 *cmp* undeprecated\n     .. versionadded:: 22.2.0 *alias*\n+    .. versionchanged:: 25.4.0\n+       *kw_only* can now be None, and its default is also changed from False to\n+       None.\n     \"\"\"\n     eq, eq_key, order, order_key = _determine_attrib_eq_order(\n         cmp, eq, order, True\n@@ -374,7 +377,13 @@\n \n \n def _transform_attrs(\n-    cls, these, auto_attribs, kw_only, collect_by_mro, field_transformer\n+    cls,\n+    these,\n+    auto_attribs,\n+    kw_only,\n+    force_kw_only,\n+    collect_by_mro,\n+    field_transformer,\n ) -> _Attributes:\n     \"\"\"\n     Transform all `_CountingAttr`s on a class into `Attribute`s.\n@@ -430,7 +439,8 @@\n \n     fca = Attribute.from_counting_attr\n     own_attrs = [\n-        fca(attr_name, ca, anns.get(attr_name)) for attr_name, ca in ca_list\n+        fca(attr_name, ca, kw_only, anns.get(attr_name))\n+        for attr_name, ca in ca_list\n     ]\n \n     if collect_by_mro:\n@@ -442,7 +452,7 @@\n             cls, {a.name for a in own_attrs}\n         )\n \n-    if kw_only:\n+    if kw_only and force_kw_only:\n         own_attrs = [a.evolve(kw_only=True) for a in own_attrs]\n         base_attrs = [a.evolve(kw_only=True) for a in base_attrs]\n \n@@ -669,6 +679,7 @@\n         getstate_setstate,\n         auto_attribs,\n         kw_only,\n+        force_kw_only,\n         cache_hash,\n         is_exc,\n         collect_by_mro,\n@@ -681,6 +692,7 @@\n             these,\n             auto_attribs,\n             kw_only,\n+            force_kw_only,\n             collect_by_mro,\n             field_transformer,\n         )\n@@ -1352,6 +1364,7 @@\n     field_transformer=None,\n     match_args=True,\n     unsafe_hash=None,\n+    force_kw_only=True,\n ):\n     r\"\"\"\n     A class decorator that adds :term:`dunder methods` according to the\n@@ -1418,6 +1431,10 @@\n        If a class has an *inherited* classmethod called\n        ``__attrs_init_subclass__``, it is executed after the class is created.\n     .. deprecated:: 24.1.0 *hash* is deprecated in favor of *unsafe_hash*.\n+    .. versionchanged:: 25.4.0\n+       *kw_only* now only applies to attributes defined in the current class,\n+       and respects attribute-level ``kw_only=False`` settings.\n+    .. versionadded:: 25.4.0 *force_kw_only*\n     \"\"\"\n     if repr_ns is not None:\n         import warnings\n@@ -1464,6 +1481,7 @@\n             ),\n             auto_attribs,\n             kw_only,\n+            force_kw_only,\n             cache_hash,\n             is_exc,\n             collect_by_mro,\n@@ -2516,7 +2534,11 @@\n         raise FrozenInstanceError\n \n     @classmethod\n-    def from_counting_attr(cls, name: str, ca: _CountingAttr, type=None):\n+    def from_counting_attr(\n+        cls, name: str, ca: _CountingAttr, kw_only: bool, type=None\n+    ):\n+        # The 'kw_only' argument is the class-level setting, and is used if the\n+        # attribute itself does not explicitly set 'kw_only'.\n         # type holds the annotated value. deal with conflicts:\n         if type is None:\n             type = ca.type\n@@ -2535,7 +2557,7 @@\n             ca.metadata,\n             type,\n             ca.converter,\n-            ca.kw_only,\n+            kw_only if ca.kw_only is None else ca.kw_only,\n             ca.eq,\n             ca.eq_key,\n             ca.order,\n\n--- a/src/attr/_next_gen.py\n+++ b/src/attr/_next_gen.py\n@@ -43,6 +43,7 @@\n     on_setattr=None,\n     field_transformer=None,\n     match_args=True,\n+    force_kw_only=False,\n ):\n     r\"\"\"\n     A class decorator that adds :term:`dunder methods` according to\n@@ -214,8 +215,12 @@\n                 5. Subclasses of a frozen class are frozen too.\n \n         kw_only (bool):\n-            Make all attributes keyword-only in the generated ``__init__`` (if\n-            *init* is False, this parameter is ignored).\n+            Make attributes keyword-only in the generated ``__init__`` (if\n+            *init* is False, this parameter is ignored).  Attributes that\n+            explicitly set ``kw_only=False`` are not affected; base class\n+            attributes are also not affected.\n+\n+            Also see *force_kw_only*.\n \n         weakref_slot (bool):\n             Make instances weak-referenceable.  This has no effect unless\n@@ -243,6 +248,15 @@\n \n             See also `issue #428\n             <https://github.com/python-attrs/attrs/issues/428>`_.\n+\n+        force_kw_only (bool):\n+            A back-compat flag for restoring pre-25.4.0 behavior.  If True and\n+            ``kw_only=True``, all attributes are made keyword-only, including\n+            base class attributes, and those set to ``kw_only=False`` at the\n+            attribute level.  Defaults to False.\n+\n+            See also `issue #980\n+            <https://github.com/python-attrs/attrs/issues/980>`_.\n \n         getstate_setstate (bool | None):\n             .. note::\n@@ -319,6 +333,11 @@\n     .. versionadded:: 24.3.0\n        Unless already present, a ``__replace__`` method is automatically\n        created for `copy.replace` (Python 3.13+ only).\n+    .. versionchanged:: 25.4.0\n+       *kw_only* now only applies to attributes defined in the current class,\n+       and respects attribute-level ``kw_only=False`` settings.\n+    .. versionadded:: 25.4.0\n+       Added *force_kw_only* to go back to the previous *kw_only* behavior.\n \n     .. note::\n \n@@ -337,6 +356,7 @@\n         - *auto_exc=True*\n         - *auto_detect=True*\n         - *order=False*\n+        - *force_kw_only=False*\n         - Some options that were only relevant on Python 2 or were kept around\n           for backwards-compatibility have been removed.\n \n@@ -366,6 +386,7 @@\n             on_setattr=on_setattr,\n             field_transformer=field_transformer,\n             match_args=match_args,\n+            force_kw_only=force_kw_only,\n         )\n \n     def wrap(cls):\n@@ -424,7 +445,7 @@\n     type=None,\n     converter=None,\n     factory=None,\n-    kw_only=False,\n+    kw_only=None,\n     eq=None,\n     order=None,\n     on_setattr=None,\n@@ -550,9 +571,10 @@\n             itself. You can use it as part of your own code or for `static type\n             checking <types>`.\n \n-        kw_only (bool):\n+        kw_only (bool | None):\n             Make this attribute keyword-only in the generated ``__init__`` (if\n-            ``init`` is False, this parameter is ignored).\n+            *init* is False, this parameter is ignored).  If None (default),\n+            mirror the setting from `attrs.define`.\n \n         on_setattr (~typing.Callable | list[~typing.Callable] | None | ~typing.Literal[attrs.setters.NO_OP]):\n             Allows to overwrite the *on_setattr* setting from `attr.s`. If left\n@@ -572,6 +594,9 @@\n     .. versionadded:: 23.1.0\n        The *type* parameter has been re-added; mostly for `attrs.make_class`.\n        Please note that type checkers ignore this metadata.\n+    .. versionchanged:: 25.4.0\n+       *kw_only* can now be None, and its default is also changed from False to\n+       None.\n \n     .. seealso::\n \n\n--- a/tests/test_make.py\n+++ b/tests/test_make.py\n@@ -55,7 +55,9 @@\n from .utils import simple_attr\n \n \n-attrs_st = simple_attrs.map(lambda c: Attribute.from_counting_attr(\"name\", c))\n+attrs_st = simple_attrs.map(\n+    lambda c: Attribute.from_counting_attr(\"name\", c, False)\n+)\n \n \n @pytest.fixture(name=\"with_and_without_validation\", params=[True, False])\n@@ -179,7 +181,7 @@\n         Does not attach __attrs_attrs__ to the class.\n         \"\"\"\n         C = make_tc()\n-        _transform_attrs(C, None, False, False, True, None)\n+        _transform_attrs(C, None, False, False, False, True, None)\n \n         assert None is getattr(C, \"__attrs_attrs__\", None)\n \n@@ -188,7 +190,9 @@\n         Transforms every `_CountingAttr` and leaves others (a) be.\n         \"\"\"\n         C = make_tc()\n-        attrs, _, _ = _transform_attrs(C, None, False, False, True, None)\n+        attrs, _, _ = _transform_attrs(\n+            C, None, False, False, False, True, None\n+        )\n \n         assert [\"z\", \"y\", \"x\"] == [a.name for a in attrs]\n \n@@ -202,7 +206,7 @@\n             pass\n \n         assert _Attributes((), [], {}) == _transform_attrs(\n-            C, None, False, False, True, None\n+            C, None, False, False, False, True, None\n         )\n \n     def test_transforms_to_attribute(self):\n@@ -211,7 +215,7 @@\n         \"\"\"\n         C = make_tc()\n         attrs, base_attrs, _ = _transform_attrs(\n-            C, None, False, False, True, None\n+            C, None, False, False, False, True, None\n         )\n \n         assert [] == base_attrs\n@@ -229,7 +233,7 @@\n             y = attr.ib()\n \n         with pytest.raises(ValueError) as e:\n-            _transform_attrs(C, None, False, False, True, None)\n+            _transform_attrs(C, None, False, False, False, True, None)\n         assert (\n             \"No mandatory attributes allowed after an attribute with a \"\n             \"default value or factory.  Attribute in question: Attribute\"\n@@ -242,11 +246,8 @@\n \n     def test_kw_only(self):\n         \"\"\"\n-        Converts all attributes, including base class' attributes, if `kw_only`\n-        is provided. Therefore, `kw_only` allows attributes with defaults to\n-        precede mandatory attributes.\n-\n-        Updates in the subclass *don't* affect the base class attributes.\n+        Converts all attributes in the current class if `kw_only` is provided.\n+        Base class attributes are **not** affected.\n         \"\"\"\n \n         @attr.s\n@@ -261,13 +262,32 @@\n             y = attr.ib()\n \n         attrs, base_attrs, _ = _transform_attrs(\n-            C, None, False, True, True, None\n+            C, None, False, True, False, True, None\n         )\n \n         assert len(attrs) == 3\n         assert len(base_attrs) == 1\n \n         for a in attrs:\n+            if a.name == \"b\":\n+                assert a.kw_only is False\n+            else:\n+                assert a.kw_only is True\n+\n+        attrs, base_attrs, _ = _transform_attrs(\n+            C,\n+            None,\n+            False,\n+            True,\n+            True,  # force kw-only\n+            True,\n+            None,\n+        )\n+\n+        assert len(attrs) == 3\n+        assert len(base_attrs) == 1\n+\n+        for a in attrs:\n             assert a.kw_only is True\n \n         for b_a in B.__attrs_attrs__:\n@@ -285,7 +305,7 @@\n             y = attr.ib()\n \n         attrs, base_attrs, _ = _transform_attrs(\n-            C, {\"x\": attr.ib()}, False, False, True, None\n+            C, {\"x\": attr.ib()}, False, False, False, True, None\n         )\n \n         assert [] == base_attrs\n@@ -1018,8 +1038,8 @@\n \n     def test_keyword_only_class_level_subclassing(self):\n         \"\"\"\n-        Subclass `kw_only` propagates to attrs inherited from the base,\n-        allowing non-default following default.\n+        When `force_kw_only=True`, subclass `kw_only` propagates to attrs\n+        inherited from the base, allowing non-default following default.\n         \"\"\"\n \n         @attr.s\n@@ -1032,8 +1052,19 @@\n \n         with pytest.raises(TypeError):\n             C(1)\n+        with pytest.raises(TypeError):\n+            C(0, y=1)\n \n         c = C(x=0, y=1)\n+\n+        assert c.x == 0\n+        assert c.y == 1\n+\n+        @attr.s(kw_only=True, force_kw_only=False)\n+        class C(Base):\n+            y = attr.ib()\n+\n+        c = C(0, y=1)\n \n         assert c.x == 0\n         assert c.y == 1\n@@ -1093,6 +1124,144 @@\n         assert c.kwarg == \"a\"\n         assert c.non_init_function_default == \"ab\"\n         assert c.non_init_keyword_default == \"default-by-keyword\"\n+\n+    def test_attr_level_kw_only_and_class_level_kw_only(self):\n+        \"\"\"\n+        If a field explicitly sets 'kw_only=False', it should not be made\n+        keyword-only even if the class sets 'kw_only=True'.\n+        \"\"\"\n+\n+        @attr.s(kw_only=True)\n+        class OldClassOldBehavior:\n+            yes = attr.ib()\n+            no = attr.ib(kw_only=False)\n+\n+        @attr.s(kw_only=True, force_kw_only=False)\n+        class OldClassNewBehavior:\n+            yes = attr.ib()\n+            no = attr.ib(kw_only=False)\n+\n+        @attr.define(kw_only=True, force_kw_only=True)\n+        class NewClassOldBehavior:\n+            yes = attr.field()\n+            no = attr.field(kw_only=False)\n+\n+        @attr.define(kw_only=True)\n+        class NewClassNewBehavior:\n+            yes = attr.field()\n+            no = attr.field(kw_only=False)\n+\n+        for cls in [OldClassNewBehavior, NewClassNewBehavior]:\n+            fs = fields_dict(cls)\n+            assert fs[\"yes\"].kw_only is True\n+            assert fs[\"no\"].kw_only is False\n+\n+        for cls in [OldClassOldBehavior, NewClassOldBehavior]:\n+            fs = fields_dict(cls)\n+\n+            assert fs[\"yes\"].kw_only is True\n+            assert fs[\"no\"].kw_only is True\n+\n+    def test_kw_only_inheritance(self):\n+        \"\"\"\n+        Comprehensive test about how `kw_only` works when there's multiple\n+        levels of inheritance with different `kw_only` settings.\n+        \"\"\"\n+\n+        @attr.define()\n+        class A:\n+            a = attr.field()\n+            a_t = attr.field(kw_only=True)\n+            a_f = attr.field(kw_only=False)\n+\n+        @attr.define(kw_only=True)\n+        class B(A):\n+            b = attr.field()\n+            b_t = attr.field(kw_only=True)\n+            b_f = attr.field(kw_only=False)\n+\n+        @attr.define(kw_only=False)\n+        class C(B):\n+            c = attr.field()\n+            c_t = attr.field(kw_only=True)\n+            c_f = attr.field(kw_only=False)\n+\n+        fs = fields_dict(A)\n+\n+        assert fs[\"a\"].kw_only is False\n+        assert fs[\"a_t\"].kw_only is True\n+        assert fs[\"a_f\"].kw_only is False\n+\n+        fs = fields_dict(B)\n+\n+        assert fs[\"a\"].kw_only is False\n+        assert fs[\"a_t\"].kw_only is True\n+        assert fs[\"a_f\"].kw_only is False\n+        assert fs[\"b\"].kw_only is True\n+        assert fs[\"b_t\"].kw_only is True\n+        assert fs[\"b_f\"].kw_only is False\n+\n+        fs = fields_dict(C)\n+\n+        assert fs[\"a\"].kw_only is False\n+        assert fs[\"a_t\"].kw_only is True\n+        assert fs[\"a_f\"].kw_only is False\n+        assert fs[\"b\"].kw_only is True\n+        assert fs[\"b_t\"].kw_only is True\n+        assert fs[\"b_f\"].kw_only is False\n+        assert fs[\"c\"].kw_only is False\n+        assert fs[\"c_t\"].kw_only is True\n+        assert fs[\"c_f\"].kw_only is False\n+\n+    def test_kw_only_inheritance_force_kw_only(self):\n+        \"\"\"\n+        Similar to above, but when `force_kw_only` (pre-25.3.0 behavior).\n+        \"\"\"\n+\n+        @attr.define(force_kw_only=True)\n+        class A:\n+            a = attr.field()\n+            a_t = attr.field(kw_only=True)\n+            a_f = attr.field(kw_only=False)\n+\n+        @attr.define(kw_only=True, force_kw_only=True)\n+        class B(A):\n+            b = attr.field()\n+            b_t = attr.field(kw_only=True)\n+            b_f = attr.field(kw_only=False)\n+\n+        @attr.define(kw_only=False, force_kw_only=True)\n+        class C(B):\n+            c = attr.field()\n+            c_t = attr.field(kw_only=True)\n+            c_f = attr.field(kw_only=False)\n+\n+        fs = fields_dict(A)\n+\n+        assert fs[\"a\"].kw_only is False\n+        assert fs[\"a_t\"].kw_only is True\n+        assert fs[\"a_f\"].kw_only is False\n+\n+        fs = fields_dict(B)\n+\n+        assert fs[\"a\"].kw_only is True\n+        assert fs[\"a_t\"].kw_only is True\n+        assert fs[\"a_f\"].kw_only is True\n+        assert fs[\"b\"].kw_only is True\n+        assert fs[\"b_t\"].kw_only is True\n+        assert fs[\"b_f\"].kw_only is True\n+\n+        fs = fields_dict(C)\n+\n+        assert fs[\"a\"].kw_only is False\n+        assert fs[\"a_t\"].kw_only is True\n+        assert fs[\"a_f\"].kw_only is False\n+        assert fs[\"b\"].kw_only is True\n+        assert fs[\"b_t\"].kw_only is True\n+        assert fs[\"b_f\"].kw_only is True\n+        assert fs[\"c\"].kw_only is False\n+        assert fs[\"c_t\"].kw_only is True\n+        assert fs[\"c_f\"].kw_only is False\n \n \n @attr.s\n@@ -1767,6 +1936,7 @@\n             False,\n             False,\n             False,\n+            False,\n             True,\n             None,\n             False,\n@@ -1788,6 +1958,7 @@\n             None,\n             True,\n             True,\n+            False,\n             False,\n             False,\n             False,\n@@ -1886,6 +2057,7 @@\n             auto_attribs=False,\n             is_exc=False,\n             kw_only=False,\n+            force_kw_only=False,\n             cache_hash=False,\n             collect_by_mro=True,\n             on_setattr=None,"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.61,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.92,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.95,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.64,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.92,
+        "type": "noul"
+      },
+      "r2_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "noul": 0.68,
+        "type": "noul"
+      },
+      "r2_wired": {
+        "noul": 0.91,
+        "type": "noul"
+      },
+      "r3_defined": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r3_real_body": {
+        "noul": 0.55,
+        "type": "noul"
+      },
+      "r3_wired": {
+        "noul": 0.92,
+        "type": "noul"
+      },
+      "r4_defined": {
+        "noul": 0.95,
+        "type": "noul"
+      },
+      "r4_real_body": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r4_wired": {
+        "noul": 0.85,
+        "type": "noul"
+      },
+      "r5_defined": {
+        "noul": 0.95,
+        "type": "noul"
+      },
+      "r5_real_body": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r5_wired": {
+        "noul": 0.49,
+        "type": "noul"
+      },
+      "r6_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r6_real_body": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r6_wired": {
+        "noul": 0.83,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 7660,
+      "output_tokens": 396
+    }
+  },
+  "variant": "split"
+}

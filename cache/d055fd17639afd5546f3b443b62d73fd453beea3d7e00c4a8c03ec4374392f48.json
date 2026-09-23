@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_basic.py::test_server_name_matching`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_basic.py::test_server_name_matching`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_basic.py::test_server_name_matching`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/flask/app.py\n+++ b/src/flask/app.py\n@@ -425,32 +425,40 @@\n         is created at a point where the request context is not yet set\n         up so the request is passed explicitly.\n \n-        .. versionadded:: 0.6\n-\n-        .. versionchanged:: 0.9\n-           This can now also be called without a request object when the\n-           URL adapter is created for the application context.\n+        .. versionchanged:: 3.1\n+            If :data:`SERVER_NAME` is set, it does not restrict requests to\n+            only that domain, for both ``subdomain_matching`` and\n+            ``host_matching``.\n \n         .. versionchanged:: 1.0\n             :data:`SERVER_NAME` no longer implicitly enables subdomain\n             matching. Use :attr:`subdomain_matching` instead.\n+\n+        .. versionchanged:: 0.9\n+           This can be called outside a request when the URL adapter is created\n+           for an application context.\n+\n+        .. versionadded:: 0.6\n         \"\"\"\n         if request is not None:\n-            # If subdomain matching is disabled (the default), use the\n-            # default subdomain in all cases. This should be the default\n-            # in Werkzeug but it currently does not have that feature.\n-            if not self.subdomain_matching:\n-                subdomain = self.url_map.default_subdomain or None\n-            else:\n-                subdomain = None\n+            subdomain = None\n+            server_name = self.config[\"SERVER_NAME\"]\n+\n+            if self.url_map.host_matching:\n+                # Don't pass SERVER_NAME, otherwise it's used and the actual\n+                # host is ignored, which breaks host matching.\n+                server_name = None\n+            elif not self.subdomain_matching:\n+                # Werkzeug doesn't implement subdomain matching yet. Until then,\n+                # disable it by forcing the current subdomain to the default, or\n+                # the empty string.\n+                subdomain = self.url_map.default_subdomain or \"\"\n \n             return self.url_map.bind_to_environ(\n-                request.environ,\n-                server_name=self.config[\"SERVER_NAME\"],\n-                subdomain=subdomain,\n+                request.environ, server_name=server_name, subdomain=subdomain\n             )\n-        # We need at the very least the server name to be set for this\n-        # to work.\n+\n+        # Need at least SERVER_NAME to match/build outside a request.\n         if self.config[\"SERVER_NAME\"] is not None:\n             return self.url_map.bind(\n                 self.config[\"SERVER_NAME\"],\n\n--- a/tests/test_basic.py\n+++ b/tests/test_basic.py\n@@ -4,6 +4,7 @@\n import uuid\n import warnings\n import weakref\n+from contextlib import nullcontext\n from datetime import datetime\n from datetime import timezone\n from platform import python_implementation\n@@ -1483,6 +1484,48 @@\n     assert not flask.g\n \n \n+@pytest.mark.parametrize(\n+    (\"subdomain_matching\", \"host_matching\", \"expect_base\", \"expect_abc\", \"expect_xyz\"),\n+    [\n+        (False, False, \"default\", \"default\", \"default\"),\n+        (True, False, \"default\", \"abc\", \"<invalid>\"),\n+        (False, True, \"default\", \"abc\", \"default\"),\n+    ],\n+)\n+def test_server_name_matching(\n+    subdomain_matching: bool,\n+    host_matching: bool,\n+    expect_base: str,\n+    expect_abc: str,\n+    expect_xyz: str,\n+) -> None:\n+    app = flask.Flask(\n+        __name__,\n+        subdomain_matching=subdomain_matching,\n+        host_matching=host_matching,\n+        static_host=\"example.test\" if host_matching else None,\n+    )\n+    app.config[\"SERVER_NAME\"] = \"example.test\"\n+\n+    @app.route(\"/\", defaults={\"name\": \"default\"}, host=\"<name>\")\n+    @app.route(\"/\", subdomain=\"<name>\", host=\"<name>.example.test\")\n+    def index(name: str) -> str:\n+        return name\n+\n+    client = app.test_client()\n+\n+    r = client.get(base_url=\"http://example.test\")\n+    assert r.text == expect_base\n+\n+    r = client.get(base_url=\"http://abc.example.test\")\n+    assert r.text == expect_abc\n+\n+    with pytest.warns() if subdomain_matching else nullcontext():\n+        r = client.get(base_url=\"http://xyz.other.test\")\n+\n+    assert r.text == expect_xyz\n+\n+\n def test_server_name_subdomain():\n     app = flask.Flask(__name__, subdomain_matching=True)\n     client = app.test_client()\n\n--- a/tests/test_blueprints.py\n+++ b/tests/test_blueprints.py\n@@ -951,7 +951,10 @@\n \n \n def test_nesting_subdomains(app, client) -> None:\n-    subdomain = \"api\"\n+    app.subdomain_matching = True\n+    app.config[\"SERVER_NAME\"] = \"example.test\"\n+    client.allow_subdomain_redirects = True\n+\n     parent = flask.Blueprint(\"parent\", __name__)\n     child = flask.Blueprint(\"child\", __name__)\n \n@@ -960,42 +963,31 @@\n         return \"child\"\n \n     parent.register_blueprint(child)\n-    app.register_blueprint(parent, subdomain=subdomain)\n-\n+    app.register_blueprint(parent, subdomain=\"api\")\n+\n+    response = client.get(\"/child/\", base_url=\"http://api.example.test\")\n+    assert response.status_code == 200\n+\n+\n+def test_child_and_parent_subdomain(app, client) -> None:\n+    app.subdomain_matching = True\n+    app.config[\"SERVER_NAME\"] = \"example.test\"\n     client.allow_subdomain_redirects = True\n \n-    domain_name = \"domain.tld\"\n-    app.config[\"SERVER_NAME\"] = domain_name\n-    response = client.get(\"/child/\", base_url=\"http://api.\" + domain_name)\n-\n+    parent = flask.Blueprint(\"parent\", __name__)\n+    child = flask.Blueprint(\"child\", __name__, subdomain=\"api\")\n+\n+    @child.route(\"/\")\n+    def index():\n+        return \"child\"\n+\n+    parent.register_blueprint(child)\n+    app.register_blueprint(parent, subdomain=\"parent\")\n+\n+    response = client.get(\"/\", base_url=\"http://api.parent.example.test\")\n     assert response.status_code == 200\n \n-\n-def test_child_and_parent_subdomain(app, client) -> None:\n-    child_subdomain = \"api\"\n-    parent_subdomain = \"parent\"\n-    parent = flask.Blueprint(\"parent\", __name__)\n-    child = flask.Blueprint(\"child\", __name__, subdomain=child_subdomain)\n-\n-    @child.route(\"/\")\n-    def index():\n-        return \"child\"\n-\n-    parent.register_blueprint(child)\n-    app.register_blueprint(parent, subdomain=parent_subdomain)\n-\n-    client.allow_subdomain_redirects = True\n-\n-    domain_name = \"domain.tld\"\n-    app.config[\"SERVER_NAME\"] = domain_name\n-    response = client.get(\n-        \"/\", base_url=f\"http://{child_subdomain}.{parent_subdomain}.{domain_name}\"\n-    )\n-\n-    assert response.status_code == 200\n-\n-    response = client.get(\"/\", base_url=f\"http://{parent_subdomain}.{domain_name}\")\n-\n+    response = client.get(\"/\", base_url=\"http://parent.example.test\")\n     assert response.status_code == 404\n \n "
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.3,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 2391,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

@@ -1,0 +1,43 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_normalized_unicode_attr_args` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_unnormalized_unicode_attr_args` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/attr/_make.py\n+++ b/src/attr/_make.py\n@@ -13,6 +13,7 @@\n import sys\n import types\n import typing\n+import unicodedata\n \n from operator import itemgetter\n \n@@ -2907,7 +2908,11 @@\n     .. versionadded:: 17.1.0 *bases*\n     .. versionchanged:: 18.1.0 If *attrs* is ordered, the order is retained.\n     .. versionchanged:: 23.2.0 *class_body*\n-    \"\"\"\n+    .. versionchanged:: 25.2.0 Class names can now be unicode.\n+    \"\"\"\n+    # Class identifiers are converted into the normal form NFKC while parsing\n+    name = unicodedata.normalize(\"NFKC\", name)\n+\n     if isinstance(attrs, dict):\n         cls_dict = attrs\n     elif isinstance(attrs, (list, tuple)):\n\n--- a/tests/test_make.py\n+++ b/tests/test_make.py\n@@ -10,6 +10,7 @@\n import inspect\n import itertools\n import sys\n+import unicodedata\n \n from operator import attrgetter\n from typing import Generic, TypeVar\n@@ -1100,6 +1101,48 @@\n \n         assert repr(C(1)).startswith(\"<tests.test_make.C object at 0x\")\n \n+    def test_normalized_unicode_attr_args(self):\n+        \"\"\"\n+        Unicode identifiers are valid in Python.\n+        \"\"\"\n+        clsname = \"\u00fc\"\n+\n+        assert clsname == unicodedata.normalize(\"NFKC\", clsname)\n+\n+        attrname = \"\u00df\"\n+\n+        assert attrname == unicodedata.normalize(\"NFKC\", attrname)\n+\n+        C = make_class(clsname, [attrname], repr=False)\n+\n+        assert repr(C(1)).startswith(\"<tests.test_make.\u00fc object at 0x\")\n+\n+        kwargs = {\"\u00df\": 1}\n+        c = C(**kwargs)\n+\n+        assert 1 == c.\u00df\n+\n+    def test_unnormalized_unicode_attr_args(self):\n+        \"\"\"\n+        Unicode identifiers are normalized to NFKC form in Python.\n+        \"\"\"\n+\n+        clsname = \"\u013f\"\n+\n+        assert clsname != unicodedata.normalize(\"NFKC\", clsname)\n+\n+        attrname = \"\u3141\"\n+\n+        assert attrname != unicodedata.normalize(\"NFKC\", attrname)\n+\n+        C = make_class(clsname, [attrname], repr=False)\n+        assert repr(C(1)).startswith(\"<tests.test_make.L\u00b7 object at 0x\")\n+\n+        kwargs = {unicodedata.normalize(\"NFKC\", attrname): 1}\n+        c = C(**kwargs)\n+\n+        assert 1 == c.\u3141\n+\n     def test_catches_wrong_attrs_type(self):\n         \"\"\"\n         Raise `TypeError` if an invalid type for attrs is passed."
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.17,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.24,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1417,
+      "output_tokens": 38
+    }
+  },
+  "variant": "single"
+}

@@ -323,18 +323,100 @@ make jev-smoke                # 5 instances, check the plumbing
 make jev && make analyze && make calibration
 ```
 
-**Results: not yet run.** This section gets its numbers from
-`make analyze` and `make calibration` output only.
+Run it under Python <=3.13; `scripts/run_jev.py` refuses 3.14+ (see
+`ASSUMPTIONS.md` §13 harness notes).
+
+### Results
+
+**B7 loses to B5 in both variants, and "calibrated on this task" is NOT
+SUPPORTED for either.** Every number below is copied from
+[`results/b7_analyze.txt`](results/b7_analyze.txt) (`make analyze`) or
+[`results/b7_calibration.txt`](results/b7_calibration.txt) (`make
+calibration`, full detail in `results/calibration_b7.json`). The data is 2184
+requirements per detector, 310 instances, base rate 27.9% OMITTED, model
+pinned to `jev-1.13.0`. The four rules are the ones pre-registered in
+`ASSUMPTIONS.md` §13; nothing else is read into the output.
+
+**Rule 1: discrimination (paired cluster bootstrap, B7 − B5).**
+
+| detector | P | R | MCC | MCC 95% CI | FPR | B7 − B5 paired | rule 1 |
+|---|---|---|---|---|---|---|---|
+| B5 LLM judge (mid-tier) | 0.74 | 0.84 | 0.701 | [ 0.650, 0.756] | 0.113 | — | — |
+| B7 Jev (single) | 0.35 | 0.97 | 0.293 | [ 0.251, 0.335] | 0.691 | -0.408 [-0.465,-0.347] | **loses** |
+| B7 Jev (split) | 0.43 | 0.98 | 0.442 | [ 0.399, 0.486] | 0.500 | -0.259 [-0.316,-0.203] | **loses** |
+
+Both intervals lie entirely below 0. The same output also prints P1 vs B7:
+single +0.206 [+0.144,+0.262], and split +0.057 [-0.003,+0.117]. The split
+interval contains 0, so there is no ordering claim between P1 and B7 (split).
+
+**Rule 2: calibration.** The script's verdict lines, verbatim:
+
+```
+B7 Jev (single): rule 2 (pre-registered): ECE<=0.05 False, worst bin gap 0.7182 (<=0.10: False), skill>0 False => calibrated on this task: NOT SUPPORTED
+B7 Jev (split):  rule 2 (pre-registered): ECE<=0.05 False, worst bin gap 0.6166 (<=0.10: False), skill>0 False => calibrated on this task: NOT SUPPORTED
+```
+
+| variant | Brier | 95% CI | Brier skill | ECE | AUROC |
+|---|---|---|---|---|---|
+| B7 Jev (single) | 0.316 | [0.290,0.341] | -0.572 | 0.390 | 0.910 |
+| B7 Jev (split) | 0.234 | [0.210,0.258] | -0.163 | 0.323 | 0.936 |
+
+All three conditions fail for both variants. Brier skill is negative, so both
+do worse than always forecasting the base rate. In the reliability table,
+predicted P(omitted) sits above the observed rate in every bin. The widest
+gaps are single 0.7-0.8 (n=418, predicted 0.751, observed 0.057) and split
+0.8-0.9 (n=293, predicted 0.848, observed 0.314).
+
+**Rule 3: do the probabilities add anything over B7's own label?** Yes,
+over its own label.
+
+| variant | probabilistic Brier | own 0/1 verdicts, Brier |
+|---|---|---|
+| B7 Jev (single) | 0.316 | 0.508 |
+| B7 Jev (split) | 0.234 | 0.368 |
+
+For reference, the same script scores B5's bare labels as a 0/1 forecaster
+at Brier 0.126 [0.102,0.152].
+
+**Rule 4: abstain band (0.3 <= P(omitted) <= 0.7 routed to a human).**
+
+| variant | coverage | MCC on confident | error on confident |
+|---|---|---|---|
+| B7 Jev (single) | 0.824 | 0.3512 | 0.4569 |
+| B7 Jev (split) | 0.686 | 0.5186 | 0.3057 |
+
+The MCC here is computed on the confident subset only. It is the number a
+Stop hook would run on, not a like-for-like comparison with full-set MCCs.
+
+**Recall by omission class** (n per cell: ABSENT 281, UNWIRED 19, STUB 309):
+
+| detector | ABSENT | UNWIRED | STUB | FPR |
+|---|---|---|---|---|
+| B5 LLM judge (mid-tier) | 0.84 | 0.21 | 0.87 | 0.113 |
+| B7 Jev (single) | 0.96 | 0.58 | 0.99 | 0.691 |
+| B7 Jev (split) | 0.98 | 0.58 | 0.99 | 0.500 |
+| P1 defined | 0.96 | 0.00 | 0.00 | 0.043 |
+
+B7's high recall comes with an FPR of 0.691 (single) and 0.500 (split), so
+read it against B1 flag-everything's recall of 1.00. **UNWIRED has n=19**, so
+that column is directional only (see Scope and limits).
+
+The handicaps listed in `ASSUMPTIONS.md` §13 *before* the sweep (compound
+question in the single variant; multi-hop reasoning and large diffs as
+documented Jev weak spots) are the pre-registered first explanations to check.
+They are not tested here, and B7's result stands as measured.
 
 ## Reproduce
 
 ```bash
-make test        # 91 tests (86 unit + 5 leakage guards), <0.1s
+make test        # 155 tests (147 unit + 8 leakage guards), ~2s under Python 3.12
 make reproduce   # regenerates every number above from committed shards
 ```
 
 `make reproduce` needs **no network, no corpus, no GPU and no API key** — the
-scored shards are committed. To rebuild the corpus from scratch:
+scored shards are committed. To rebuild the corpus from scratch (it must be
+built under **Python <=3.13**: PEP 758 in 3.14 lets Python 2 `except X, e:`
+parse, which changes which commits qualify; see `ASSUMPTIONS.md` §13):
 
 ```bash
 make corpus      # clones 9 repos, ~93MB

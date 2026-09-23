@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `typing-examples/baseline.py::ValidatedOptionalOverTuple`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `typing-examples/baseline.py::ValidatedOptionalOverTuple`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `typing-examples/baseline.py::ValidatedOptionalOverTuple`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/typing-examples/baseline.py\n+++ b/typing-examples/baseline.py\n@@ -92,6 +92,15 @@\n @attrs.define\n class Validated:\n     num: int = attrs.field(validator=attrs.validators.ge(0))\n+\n+\n+@attrs.define\n+class ValidatedOptionalOverTuple:\n+    num: int | None = attrs.field(\n+        validator=attrs.validators.optional(\n+            (attrs.validators.instance_of(int), attrs.validators.ge(0))  # ty:ignore [invalid-argument-type]\n+        )\n+    )\n \n \n @attrs.define"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.44,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.05,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 794,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

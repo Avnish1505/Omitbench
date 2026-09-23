@@ -1,0 +1,127 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `src/click/shell_completion.py::PowerShellComplete`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `src/click/shell_completion.py::PowerShellComplete`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `src/click/shell_completion.py::PowerShellComplete`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_shell_completion.py::test_full_source_powershell`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_shell_completion.py::test_full_source_powershell`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_shell_completion.py::test_full_source_powershell`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_shell_completion.py::test_powershell_format_completion_escapes_help`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_shell_completion.py::test_powershell_format_completion_escapes_help`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_shell_completion.py::test_powershell_format_completion_escapes_help`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/click/shell_completion.py\n+++ b/src/click/shell_completion.py\n@@ -195,6 +195,66 @@\n \n complete --no-files --command %(prog_name)s --arguments \\\n \"(%(complete_func)s)\";\n+\"\"\"\n+\n+# Compatible with Windows PowerShell 5.1+ and PowerShell (pwsh) 7+.\n+# Uses Register-ArgumentCompleter -Native, which receives the command AST\n+# as parsed by PowerShell. The command text is forwarded verbatim through\n+# COMP_WORDS so the Python side can reuse the same shlex-based splitting\n+# used by the bash/zsh completers.\n+_SOURCE_POWERSHELL = \"\"\"\\\n+Register-ArgumentCompleter -Native -CommandName %(prog_name)s -ScriptBlock {\n+    param($wordToComplete, $commandAst, $cursorPosition)\n+\n+    $prev_complete = $env:%(complete_var)s\n+    $prev_words = $env:COMP_WORDS\n+    $prev_cword = $env:COMP_CWORD\n+\n+    $env:%(complete_var)s = 'powershell_complete'\n+    $env:COMP_WORDS = $commandAst.ToString()\n+    if ($wordToComplete) {\n+        $env:COMP_CWORD = $commandAst.CommandElements.Count - 1\n+    } else {\n+        $env:COMP_CWORD = $commandAst.CommandElements.Count\n+    }\n+\n+    try {\n+        $response = & %(prog_name)s 2>$null\n+    } finally {\n+        $env:%(complete_var)s = $prev_complete\n+        $env:COMP_WORDS = $prev_words\n+        $env:COMP_CWORD = $prev_cword\n+    }\n+\n+    if (-not $response) { return }\n+\n+    $lines = $response -split \"`n\"\n+    for ($i = 0; $i + 2 -lt $lines.Count; $i += 3) {\n+        $type = $lines[$i]\n+        $value = $lines[$i + 1]\n+        $descr = $lines[$i + 2]\n+        if (-not $type) { continue }\n+\n+        if ($type -eq 'plain') {\n+            $tip = if ($descr -and $descr -ne '_') { $descr } else { $value }\n+            [System.Management.Automation.CompletionResult]::new(\n+                $value, $value, 'ParameterValue', $tip)\n+        } elseif ($type -eq 'dir') {\n+            Get-ChildItem -Directory -Path \"$wordToComplete*\" -ErrorAction SilentlyContinue |\n+                ForEach-Object {\n+                    [System.Management.Automation.CompletionResult]::new(\n+                        $_.FullName, $_.Name, 'ProviderContainer', $_.FullName)\n+                }\n+        } elseif ($type -eq 'file') {\n+            Get-ChildItem -Path \"$wordToComplete*\" -ErrorAction SilentlyContinue |\n+                ForEach-Object {\n+                    $kind = if ($_.PSIsContainer) { 'ProviderContainer' } else { 'ProviderItem' }\n+                    [System.Management.Automation.CompletionResult]::new(\n+                        $_.FullName, $_.Name, $kind, $_.FullName)\n+                }\n+        }\n+    }\n+}\n \"\"\"\n \n \n@@ -439,12 +499,17 @@\n         return f\"{item.type},{item.value}\"\n \n \n+class PowerShellComplete(ShellComplete):\n+    raise NotImplementedError\n+\n+\n ShellCompleteType = t.TypeVar(\"ShellCompleteType\", bound=\"type[ShellComplete]\")\n \n \n _available_shells: dict[str, type[ShellComplete]] = {\n     \"bash\": BashComplete,\n     \"fish\": FishComplete,\n+    \"powershell\": PowerShellComplete,\n     \"zsh\": ZshComplete,\n }\n \n\n--- a/tests/test_shell_completion.py\n+++ b/tests/test_shell_completion.py\n@@ -13,6 +13,7 @@\n from click.shell_completion import add_completion_class\n from click.shell_completion import CompletionItem\n from click.shell_completion import FishComplete\n+from click.shell_completion import PowerShellComplete\n from click.shell_completion import shell_complete\n from click.shell_completion import ShellComplete\n from click.types import Choice\n@@ -353,6 +354,17 @@\n     assert f\"_CLI_COMPLETE={shell}_complete\" in result.output\n \n \n+def test_full_source_powershell(runner):\n+    # The PowerShell source script sets the completion env var via\n+    # `$env:_CLI_COMPLETE = 'powershell_complete'`, so the substring\n+    # `_CLI_COMPLETE=powershell_complete` used by test_full_source above\n+    # is not present. Assert on the PowerShell-specific markers instead.\n+    cli = Group(\"cli\", commands=[Command(\"a\"), Command(\"b\")])\n+    result = runner.invoke(cli, env={\"_CLI_COMPLETE\": \"powershell_source\"})\n+    assert \"Register-ArgumentCompleter\" in result.output\n+    assert \"powershell_complete\" in result.output\n+\n+\n @pytest.mark.parametrize(\n     (\"shell\", \"env\", \"expect\"),\n     [\n@@ -363,6 +375,12 @@\n         (\"fish\", {\"COMP_WORDS\": \"\", \"COMP_CWORD\": \"\"}, \"plain,a\\nplain,b\\tbee\\n\"),\n         (\"fish\", {\"COMP_WORDS\": \"a b\", \"COMP_CWORD\": \"b\"}, \"plain,b\\tbee\\n\"),\n         (\"fish\", {\"COMP_WORDS\": 'a \"b', \"COMP_CWORD\": '\"b'}, \"plain,b\\tbee\\n\"),\n+        (\n+            \"powershell\",\n+            {\"COMP_WORDS\": \"\", \"COMP_CWORD\": \"0\"},\n+            \"plain\\na\\n_\\nplain\\nb\\nbee\\n\",\n+        ),\n+        (\"powershell\", {\"COMP_WORDS\": \"a b\", \"COMP_CWORD\": \"1\"}, \"plain\\nb\\nbee\\n\"),\n     ],\n )\n @pytest.mark.usefixtures(\"_patch_for_completion\")\n@@ -586,3 +604,16 @@\n     # becomes a space, so each completion stays on one line for fish.\n     assert fc.format_completion(item) == \"plain,--at\\tfirst\\\\nsecond third\"\n \n+\n+def test_powershell_format_completion_escapes_help():\n+    pc = PowerShellComplete(Command(\"x\"), {}, \"x\", \"_X_COMPLETE\")\n+    # Newlines (LF and CRLF) collapse to spaces so the help text stays\n+    # on a single line and doesn't break the 3-lines-per-item framing\n+    # consumed by the PowerShell completion script.\n+    item = CompletionItem(\"--at\", help=\"first\\nsecond\\r\\nthird\")\n+    assert pc.format_completion(item) == \"plain\\n--at\\nfirst second  third\"\n+    # Items without help text use the \"_\" sentinel, matching the format\n+    # produced by ZshComplete.\n+    item = CompletionItem(\"--at\")\n+    assert pc.format_completion(item) == \"plain\\n--at\\n_\"\n+"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.05,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.83,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.78,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.47,
+        "type": "noul"
+      },
+      "r2_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "noul": 0.87,
+        "type": "noul"
+      },
+      "r2_wired": {
+        "noul": 0.64,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 3083,
+      "output_tokens": 172
+    }
+  },
+  "variant": "split"
+}

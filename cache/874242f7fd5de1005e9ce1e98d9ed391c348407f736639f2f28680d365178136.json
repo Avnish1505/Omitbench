@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_debug.py::test_include_syntax_error_source`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_debug.py::test_include_syntax_error_source`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_debug.py::test_include_syntax_error_source`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/jinja2/debug.py\n+++ b/jinja2/debug.py\n@@ -21,14 +21,10 @@\n     :return: A :meth:`sys.exc_info` tuple that can be re-raised.\n     \"\"\"\n     exc_type, exc_value, tb = sys.exc_info()\n-    # The new stack of traceback objects, to be joined together by\n-    # tb_set_next later.\n-    stack = []\n-\n-    if isinstance(exc_value, TemplateSyntaxError):\n+\n+    if isinstance(exc_value, TemplateSyntaxError) and not exc_value.translated:\n+        exc_value.translated = True\n         exc_value.source = source\n-        # The exception doesn't need to output location info manually.\n-        exc_value.translated = True\n \n         try:\n             # Remove the old traceback on Python 3, otherwise the frames\n@@ -45,6 +41,8 @@\n     else:\n         # Skip the frame for the render function.\n         tb = tb.tb_next\n+\n+    stack = []\n \n     # Build the stack of traceback object, replacing any in template\n     # code with the source file and line information.\n\n--- a/tests/test_debug.py\n+++ b/tests/test_debug.py\n@@ -14,6 +14,8 @@\n import sys\n from traceback import format_exception\n \n+from jinja2 import ChoiceLoader\n+from jinja2 import DictLoader\n from jinja2 import Environment, TemplateSyntaxError\n \n \n@@ -51,10 +53,9 @@\n ''')\n \n     def test_syntax_error(self, fs_env):\n-        # XXX: the .*? is necessary for python3 which does not hide\n-        # some of the stack frames we don't want to show.  Not sure\n-        # what's up with that, but that is not that critical.  Should\n-        # be fixed though.\n+        # The trailing .*? is for PyPy 2 and 3, which don't seem to\n+        # clear the exception's original traceback, leaving the syntax\n+        # error in the middle of other compiler frames.\n         self.assert_traceback_matches(lambda: fs_env.get_template('syntaxerror.html'), r'''(?sm)\n   File \".*?syntaxerror.html\", line 4, in (template|<module>)\n     \\{% endif %\\}.*?\n@@ -69,6 +70,20 @@\n     raise TemplateSyntaxError\\('wtf', 42\\)\n (jinja2\\.exceptions\\.)?TemplateSyntaxError: wtf\n   line 42''')\n+\n+    def test_include_syntax_error_source(self, filesystem_loader):\n+        e = Environment(loader=ChoiceLoader(\n+            [\n+                filesystem_loader,\n+                DictLoader({\"inc\": \"a\\n{% include 'syntaxerror.html' %}\\nb\"}),\n+            ]\n+        ))\n+        t = e.get_template(\"inc\")\n+\n+        with pytest.raises(TemplateSyntaxError) as exc_info:\n+            t.render()\n+\n+        assert exc_info.value.source is not None\n \n     def test_local_extraction(self):\n         from jinja2.debug import get_template_locals"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.34,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1357,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

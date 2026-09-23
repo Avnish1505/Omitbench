@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_lowlevel.py::test_json_decode_compatibility_for_alt_utf_encodings` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/requests/models.py\n+++ b/requests/models.py\n@@ -900,6 +900,8 @@\n                     # and the server didn't bother to tell us what codec *was*\n                     # used.\n                     pass\n+                except JSONDecodeError as e:\n+                    raise RequestsJSONDecodeError(e.msg, e.doc, e.pos)\n \n         try:\n             return complexjson.loads(self.text, **kwargs)\n\n--- a/tests/test_lowlevel.py\n+++ b/tests/test_lowlevel.py\n@@ -6,6 +6,7 @@\n \n from tests.testserver.server import Server, consume_socket_content\n \n+from requests.compat import JSONDecodeError\n from .utils import override_environ\n \n \n@@ -404,3 +405,4 @@\n \n         close_server.set()\n \n+"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.02,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 698,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

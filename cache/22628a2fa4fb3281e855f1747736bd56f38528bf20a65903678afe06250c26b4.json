@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/client/test_headers.py::test_header_with_incorrect_value`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/client/test_headers.py::test_header_with_incorrect_value`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/client/test_headers.py::test_header_with_incorrect_value`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/httpx/_utils.py\n+++ b/httpx/_utils.py\n@@ -50,6 +50,8 @@\n     \"\"\"\n     if isinstance(value, bytes):\n         return value\n+    if not isinstance(value, str):\n+        raise TypeError(f\"Header value must be str or bytes, not {type(value)}\")\n     return value.encode(encoding or \"ascii\")\n \n \n\n--- a/tests/client/test_headers.py\n+++ b/tests/client/test_headers.py\n@@ -177,6 +177,14 @@\n         del headers[\"baz\"]\n \n \n+def test_header_with_incorrect_value():\n+    with pytest.raises(\n+        TypeError,\n+        match=f\"Header value must be str or bytes, not {type(None)}\",\n+    ):\n+        httpx.Headers({\"foo\": None})  # type: ignore\n+\n+\n def test_host_with_auth_and_port_in_url():\n     \"\"\"\n     The Host header should only include the hostname, or hostname:port"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.93,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.15,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 849,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

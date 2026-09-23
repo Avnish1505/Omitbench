@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/conftest.py::nosan_server` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/tests/conftest.py\n+++ b/tests/conftest.py\n@@ -1,7 +1,19 @@\n # -*- coding: utf-8 -*-\n+\n+try:\n+    from http.server import HTTPServer\n+    from http.server import SimpleHTTPRequestHandler\n+except ImportError:\n+    from BaseHTTPServer import HTTPServer\n+    from SimpleHTTPServer import SimpleHTTPRequestHandler \n+\n+import ssl\n+import tempfile\n+import threading\n \n import pytest\n from requests.compat import urljoin\n+import trustme\n \n \n def prepare_url(value):\n@@ -23,3 +35,8 @@\n def httpbin_secure(httpbin_secure):\n     return prepare_url(httpbin_secure)\n \n+\n+@pytest.fixture\n+def nosan_server(tmp_path_factory):\n+    raise NotImplementedError\n+\n\n--- a/tests/test_requests.py\n+++ b/tests/test_requests.py\n@@ -874,8 +874,9 @@\n         r = requests.get(httpbin(), cert='.')\n         assert r.status_code == 200\n \n-    def test_https_warnings(self, httpbin_secure, httpbin_ca_bundle):\n+    def test_https_warnings(self, nosan_server):\n         \"\"\"warnings are emitted with requests.get\"\"\"\n+        host, port, ca_bundle = nosan_server\n         if HAS_MODERN_SSL or HAS_PYOPENSSL:\n             warnings_expected = ('SubjectAltNameWarning', )\n         else:\n@@ -885,8 +886,7 @@\n \n         with pytest.warns(None) as warning_records:\n             warnings.simplefilter('always')\n-            requests.get(httpbin_secure('status', '200'),\n-                         verify=httpbin_ca_bundle)\n+            requests.get(\"https://localhost:{}/\".format(port), verify=ca_bundle)\n \n         warning_records = [item for item in warning_records\n                            if item.category.__name__ != 'ResourceWarning']"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.01,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 951,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

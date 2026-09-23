@@ -1,0 +1,43 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `src/itsdangerous/serializer.py::secret_key` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `src/itsdangerous/signer.py::secret_key` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/itsdangerous/serializer.py\n+++ b/src/itsdangerous/serializer.py\n@@ -83,10 +83,16 @@\n         fallback_signers=None,\n     ):\n         if isinstance(secret_key, list):\n-            self.secret_keys = [want_bytes(s) for s in secret_key]\n+            secret_keys = [want_bytes(s) for s in secret_key]\n         else:\n-            self.secret_keys = [want_bytes(secret_key)]\n-\n+            secret_keys = [want_bytes(secret_key)]\n+\n+        #: The list of secret keys to try for verifying signatures, from\n+        #: oldest to newest. The newest (last) key is used for signing.\n+        #:\n+        #: This allows a key rotation system to keep a list of allowed\n+        #: keys and remove expired ones.\n+        self.secret_keys = secret_keys\n         self.salt = want_bytes(salt)\n \n         if serializer is None:\n@@ -106,6 +112,13 @@\n \n         self.fallback_signers = fallback_signers\n         self.serializer_kwargs = serializer_kwargs or {}\n+\n+    @property\n+    def secret_key(self):\n+        \"\"\"The newest (last) entry in the :attr:`secret_keys` list. This\n+        is for compatibility from before key rotation support was added.\n+        \"\"\"\n+        return self.secret_keys[-1]\n \n     def load_payload(self, payload, serializer=None):\n         \"\"\"Loads the encoded object. This function raises\n\n--- a/src/itsdangerous/signer.py\n+++ b/src/itsdangerous/signer.py\n@@ -98,10 +98,16 @@\n         algorithm=None,\n     ):\n         if isinstance(secret_key, list):\n-            self.secret_keys = [want_bytes(s) for s in secret_key]\n+            secret_keys = [want_bytes(s) for s in secret_key]\n         else:\n-            self.secret_keys = [want_bytes(secret_key)]\n-\n+            secret_keys = [want_bytes(secret_key)]\n+\n+        #: The list of secret keys to try for verifying signatures, from\n+        #: oldest to newest. The newest (last) key is used for signing.\n+        #:\n+        #: This allows a key rotation system to keep a list of allowed\n+        #: keys and remove expired ones.\n+        self.secret_keys = secret_keys\n         self.sep = want_bytes(sep)\n \n         if self.sep in _base64_alphabet:\n@@ -127,6 +133,10 @@\n             algorithm = HMACAlgorithm(self.digest_method)\n \n         self.algorithm = algorithm\n+\n+    @property\n+    def secret_key(self):\n+        raise NotImplementedError\n \n     def derive_key(self, secret_key=None):\n         \"\"\"This method is called to derive the key. The default key\n@@ -173,7 +183,7 @@\n         except Exception:\n             return False\n \n-        for secret_key in self.secret_keys[::-1]:\n+        for secret_key in reversed(self.secret_keys):\n             key = self.derive_key(secret_key)\n \n             if self.algorithm.verify_signature(key, value, sig):"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.14,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.02,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1437,
+      "output_tokens": 38
+    }
+  },
+  "variant": "single"
+}

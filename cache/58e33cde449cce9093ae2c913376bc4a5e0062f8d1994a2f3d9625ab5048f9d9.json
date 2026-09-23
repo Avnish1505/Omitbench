@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_lowlevel.py::test_json_decode_compatibility_for_alt_utf_encodings`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_lowlevel.py::test_json_decode_compatibility_for_alt_utf_encodings`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_lowlevel.py::test_json_decode_compatibility_for_alt_utf_encodings`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/requests/models.py\n+++ b/requests/models.py\n@@ -900,6 +900,8 @@\n                     # and the server didn't bother to tell us what codec *was*\n                     # used.\n                     pass\n+                except JSONDecodeError as e:\n+                    raise RequestsJSONDecodeError(e.msg, e.doc, e.pos)\n \n         try:\n             return complexjson.loads(self.text, **kwargs)\n\n--- a/tests/test_lowlevel.py\n+++ b/tests/test_lowlevel.py\n@@ -6,6 +6,7 @@\n \n from tests.testserver.server import Server, consume_socket_content\n \n+from requests.compat import JSONDecodeError\n from .utils import override_environ\n \n \n@@ -404,3 +405,4 @@\n \n         close_server.set()\n \n+"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.06,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.06,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.24,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 840,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

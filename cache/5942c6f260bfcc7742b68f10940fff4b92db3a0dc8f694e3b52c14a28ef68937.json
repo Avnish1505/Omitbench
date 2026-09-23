@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `src/requests/adapters.py::get_connection_with_tls_context` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/requests/adapters.py\n+++ b/src/requests/adapters.py\n@@ -374,37 +374,12 @@\n \n         return response\n \n-    def _get_connection(self, request, verify, proxies=None, cert=None):\n-        # Replace the existing get_connection without breaking things and\n-        # ensure that TLS settings are considered when we interact with\n-        # urllib3 HTTP Pools\n-        proxy = select_proxy(request.url, proxies)\n-        try:\n-            host_params, pool_kwargs = _urllib3_request_context(request, verify, cert)\n-        except ValueError as e:\n-            raise InvalidURL(e, request=request)\n-        if proxy:\n-            proxy = prepend_scheme_if_needed(proxy, \"http\")\n-            proxy_url = parse_url(proxy)\n-            if not proxy_url.host:\n-                raise InvalidProxyURL(\n-                    \"Please check proxy URL. It is malformed \"\n-                    \"and could be missing the host.\"\n-                )\n-            proxy_manager = self.proxy_manager_for(proxy)\n-            conn = proxy_manager.connection_from_host(\n-                **host_params, pool_kwargs=pool_kwargs\n-            )\n-        else:\n-            # Only scheme should be lower case\n-            conn = self.poolmanager.connection_from_host(\n-                **host_params, pool_kwargs=pool_kwargs\n-            )\n-\n-        return conn\n \n     def get_connection(self, url, proxies=None):\n-        \"\"\"Returns a urllib3 connection for the given URL. This should not be\n+        \"\"\"DEPRECATED: Users should move to `get_connection_with_tls_context`\n+        for all subclasses of HTTPAdapter using Requests>=2.32.2.\n+\n+        Returns a urllib3 connection for the given URL. This should not be\n         called from user code, and is only exposed for use when subclassing the\n         :class:`HTTPAdapter <requests.adapters.HTTPAdapter>`.\n \n@@ -529,7 +504,9 @@\n         \"\"\"\n \n         try:\n-            conn = self._get_connection(request, verify, proxies=proxies, cert=cert)\n+            conn = self.get_connection_with_tls_context(\n+                request, verify, proxies=proxies, cert=cert\n+            )\n         except LocationValueError as e:\n             raise InvalidURL(e, request=request)\n "
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.23,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1023,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

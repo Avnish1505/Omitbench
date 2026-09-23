@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_loader.py::test_filename_normpath`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_loader.py::test_filename_normpath`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_loader.py::test_filename_normpath`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/jinja2/loaders.py\n+++ b/src/jinja2/loaders.py\n@@ -213,7 +213,8 @@\n                 except OSError:\n                     return False\n \n-            return contents, filename, uptodate\n+            # Use normpath to convert Windows altsep to sep.\n+            return contents, os.path.normpath(filename), uptodate\n         raise TemplateNotFound(template)\n \n     def list_templates(self) -> t.List[str]:\n@@ -330,8 +331,11 @@\n         self, environment: \"Environment\", template: str\n     ) -> t.Tuple[str, str, t.Optional[t.Callable[[], bool]]]:\n         # Use posixpath even on Windows to avoid \"drive:\" or UNC\n-        # segments breaking out of the search directory.\n-        p = posixpath.join(self._template_root, *split_template_path(template))\n+        # segments breaking out of the search directory. Use normpath to\n+        # convert Windows altsep to sep.\n+        p = os.path.normpath(\n+            posixpath.join(self._template_root, *split_template_path(template))\n+        )\n         up_to_date: t.Optional[t.Callable[[], bool]]\n \n         if self._archive is None:\n\n--- a/tests/test_loader.py\n+++ b/tests/test_loader.py\n@@ -3,7 +3,6 @@\n import importlib.util\n import os\n import platform\n-import posixpath\n import shutil\n import sys\n import tempfile\n@@ -173,6 +172,7 @@\n         assert t.render() == expect\n \n \n+\n class TestModuleLoader:\n     archive = None\n \n@@ -304,7 +304,7 @@\n def test_package_dir_source(package_dir_loader, template, expect):\n     source, name, up_to_date = package_dir_loader.get_source(None, template)\n     assert source.rstrip() == expect\n-    assert name.endswith(posixpath.join(*split_template_path(template)))\n+    assert name.endswith(os.path.join(*split_template_path(template)))\n     assert up_to_date()\n \n \n@@ -326,7 +326,7 @@\n def test_package_file_source(package_file_loader, template, expect):\n     source, name, up_to_date = package_file_loader.get_source(None, template)\n     assert source.rstrip() == expect\n-    assert name.endswith(posixpath.join(*split_template_path(template)))\n+    assert name.endswith(os.path.join(*split_template_path(template)))\n     assert up_to_date()\n \n \n@@ -349,7 +349,7 @@\n def test_package_zip_source(package_zip_loader, template, expect):\n     source, name, up_to_date = package_zip_loader.get_source(None, template)\n     assert source.rstrip() == expect\n-    assert name.endswith(posixpath.join(*split_template_path(template)))\n+    assert name.endswith(os.path.join(*split_template_path(template)))\n     assert up_to_date is None\n \n "
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.06,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.06,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.16,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1275,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

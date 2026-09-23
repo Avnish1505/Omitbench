@@ -1,0 +1,79 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `jinja2/compiler.py::visit_DerivedContextReference` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `jinja2/nodes.py::DerivedContextReference` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_ext.py::DerivedExampleExtension` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_ext.py::test_contextreference_node_can_pass_locals` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_ext.py::test_contextreference_node_passes_context` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/jinja2/compiler.py\n+++ b/jinja2/compiler.py\n@@ -1720,6 +1720,9 @@\n     def visit_ContextReference(self, node, frame):\n         self.write('context')\n \n+    def visit_DerivedContextReference(self, node, frame):\n+        self.write(self.derive_context(frame))\n+\n     def visit_Continue(self, node, frame):\n         self.writeline('continue', node)\n \n\n--- a/jinja2/nodes.py\n+++ b/jinja2/nodes.py\n@@ -952,6 +952,8 @@\n     \"\"\"\n \n \n+\n+\n class Continue(Stmt):\n     \"\"\"Continue a loop.\"\"\"\n \n\n--- a/tests/test_ext.py\n+++ b/tests/test_ext.py\n@@ -109,22 +109,28 @@\n class ExampleExtension(Extension):\n     tags = set(['test'])\n     ext_attr = 42\n+    context_reference_node_cls = nodes.ContextReference\n \n     def parse(self, parser):\n         return nodes.Output([self.call_method('_dump', [\n             nodes.EnvironmentAttribute('sandboxed'),\n             self.attr('ext_attr'),\n             nodes.ImportedName(__name__ + '.importable_object'),\n-            nodes.ContextReference()\n+            self.context_reference_node_cls()\n         ])]).set_lineno(next(parser.stream).lineno)\n \n     def _dump(self, sandboxed, ext_attr, imported_object, context):\n-        return '%s|%s|%s|%s' % (\n+        return '%s|%s|%s|%s|%s' % (\n             sandboxed,\n             ext_attr,\n             imported_object,\n-            context.blocks\n+            context.blocks,\n+            context.get('test_var')\n         )\n+\n+\n+class DerivedExampleExtension(ExampleExtension):\n+    context_reference_node_cls = nodes.DerivedContextReference\n \n \n class PreprocessorExtension(Extension):\n@@ -205,7 +211,18 @@\n     def test_extension_nodes(self):\n         env = Environment(extensions=[ExampleExtension])\n         tmpl = env.from_string('{% test %}')\n-        assert tmpl.render() == 'False|42|23|{}'\n+        assert tmpl.render() == 'False|42|23|{}|None'\n+\n+    def test_contextreference_node_passes_context(self):\n+        env = Environment(extensions=[ExampleExtension])\n+        tmpl = env.from_string('{% set test_var=\"test_content\" %}{% test %}')\n+        assert tmpl.render() == 'False|42|23|{}|test_content'\n+\n+    def test_contextreference_node_can_pass_locals(self):\n+        env = Environment(extensions=[DerivedExampleExtension])\n+        tmpl = env.from_string(\n+            '{% for test_var in [\"test_content\"] %}{% test %}{% endfor %}')\n+        assert tmpl.render() == 'False|42|23|{}|test_content'\n \n     def test_identifier(self):\n         assert ExampleExtension.identifier == __name__ + '.ExampleExtension'"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.13,
+        "type": "noul"
+      },
+      "r2": {
+        "noul": 0.95,
+        "type": "noul"
+      },
+      "r3": {
+        "noul": 0.71,
+        "type": "noul"
+      },
+      "r4": {
+        "noul": 0.47,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 2220,
+      "output_tokens": 89
+    }
+  },
+  "variant": "single"
+}

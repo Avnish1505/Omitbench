@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_decoders.py::test_streaming_text_decoder` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/httpx/_decoders.py\n+++ b/httpx/_decoders.py\n@@ -212,7 +212,7 @@\n \n     def decode(self, content: str) -> typing.List[str]:\n         if self._chunk_size is None:\n-            return [content]\n+            return [content] if content else []\n \n         self._buffer.write(content)\n         if self._buffer.tell() >= self._chunk_size:\n@@ -280,7 +280,9 @@\n             text = text[:-1]\n \n         if not text:\n-            return []\n+            # NOTE: the edge case input of empty text doesn't occur in practice,\n+            # because other httpx internals filter out this value\n+            return []  # pragma: no cover\n \n         trailing_newline = text[-1] in NEWLINE_CHARS\n         lines = text.splitlines()\n\n--- a/httpx/_models.py\n+++ b/httpx/_models.py\n@@ -853,7 +853,7 @@\n                     yield chunk\n             text_content = decoder.flush()\n             for chunk in chunker.decode(text_content):\n-                yield chunk\n+                yield chunk  # pragma: no cover\n             for chunk in chunker.flush():\n                 yield chunk\n \n@@ -957,7 +957,7 @@\n                     yield chunk\n             text_content = decoder.flush()\n             for chunk in chunker.decode(text_content):\n-                yield chunk\n+                yield chunk  # pragma: no cover\n             for chunk in chunker.flush():\n                 yield chunk\n \n\n--- a/tests/test_decoders.py\n+++ b/tests/test_decoders.py\n@@ -219,6 +219,16 @@\n     assert response.text == \"\"\n \n \n+@pytest.mark.parametrize(\n+    [\"data\", \"expected\"],\n+    [((b\"Hello,\", b\" world!\"), [\"Hello,\", \" world!\"])],\n+)\n+def test_streaming_text_decoder(\n+    data: typing.Iterable[bytes], expected: typing.List[str]\n+) -> None:\n+    raise NotImplementedError\n+\n+\n def test_line_decoder_nl():\n     response = httpx.Response(200, content=[b\"\"])\n     assert list(response.iter_lines()) == []"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.01,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 999,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

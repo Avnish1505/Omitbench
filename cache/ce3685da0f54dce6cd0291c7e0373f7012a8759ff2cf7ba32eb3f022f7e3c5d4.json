@@ -1,0 +1,43 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_views.py::CountInit` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_views.py::test_init_once` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/flask/views.py\n+++ b/src/flask/views.py\n@@ -59,6 +59,18 @@\n     #: .. versionadded:: 0.8\n     decorators: t.List[t.Callable] = []\n \n+    #: Create a new instance of this view class for every request by\n+    #: default. If a view subclass sets this to ``False``, the same\n+    #: instance is used for every request.\n+    #:\n+    #: A single instance is more efficient, especially if complex setup\n+    #: is done during init. However, storing data on ``self`` is no\n+    #: longer safe across requests, and :data:`~flask.g` should be used\n+    #: instead.\n+    #:\n+    #: .. versionadded:: 2.2\n+    init_every_request: t.ClassVar[bool] = True\n+\n     def dispatch_request(self) -> ft.ResponseReturnValue:\n         \"\"\"Subclasses have to override this method to implement the\n         actual view function code.  This method is called with all\n@@ -69,19 +81,35 @@\n     @classmethod\n     def as_view(\n         cls, name: str, *class_args: t.Any, **class_kwargs: t.Any\n-    ) -> t.Callable:\n-        \"\"\"Converts the class into an actual view function that can be used\n-        with the routing system.  Internally this generates a function on the\n-        fly which will instantiate the :class:`View` on each request and call\n-        the :meth:`dispatch_request` method on it.\n+    ) -> ft.ViewCallable:\n+        \"\"\"Convert the class into a view function that can be registered\n+        for a route.\n \n-        The arguments passed to :meth:`as_view` are forwarded to the\n-        constructor of the class.\n+        By default, the generated view will create a new instance of the\n+        view class for every request and call its\n+        :meth:`dispatch_request` method. If the view class sets\n+        :attr:`init_every_request` to ``False``, the same instance will\n+        be used for every request.\n+\n+        The arguments passed to this method are forwarded to the view\n+        class ``__init__`` method.\n+\n+        .. versionchanged:: 2.2\n+            Added the ``init_every_request`` class attribute.\n         \"\"\"\n+        if cls.init_every_request:\n \n-        def view(*args: t.Any, **kwargs: t.Any) -> ft.ResponseReturnValue:\n-            self = view.view_class(*class_args, **class_kwargs)  # type: ignore\n-            return current_app.ensure_sync(self.dispatch_request)(*args, **kwargs)\n+            def view(**kwargs: t.Any) -> ft.ResponseReturnValue:\n+                self = view.view_class(  # type: ignore[attr-defined]\n+                    *class_args, **class_kwargs\n+                )\n+                return current_app.ensure_sync(self.dispatch_request)(**kwargs)\n+\n+        else:\n+            self = cls(*class_args, **class_kwargs)\n+\n+            def view(**kwargs: t.Any) -> ft.ResponseReturnValue:\n+                return current_app.ensure_sync(self.dispatch_request)(**kwargs)\n \n         if cls.decorators:\n             view.__name__ = name\n@@ -146,7 +174,7 @@\n         app.add_url_rule('/counter', view_func=CounterAPI.as_view('counter'))\n     \"\"\"\n \n-    def dispatch_request(self, *args: t.Any, **kwargs: t.Any) -> ft.ResponseReturnValue:\n+    def dispatch_request(self, **kwargs: t.Any) -> ft.ResponseReturnValue:\n         meth = getattr(self, request.method.lower(), None)\n \n         # If the request method is HEAD and we don't have a handler for it\n@@ -155,5 +183,5 @@\n             meth = getattr(self, \"get\", None)\n \n         assert meth is not None, f\"Unimplemented method {request.method!r}\"\n-        return current_app.ensure_sync(meth)(*args, **kwargs)\n+        return current_app.ensure_sync(meth)(**kwargs)\n \n\n--- a/tests/test_views.py\n+++ b/tests/test_views.py\n@@ -241,3 +241,12 @@\n     assert client.post(\"/\").status_code == 405\n     assert sorted(View.methods) == [\"GET\"]\n \n+\n+def test_init_once(app, client):\n+    n = 0\n+\n+\n+    app.add_url_rule(\"/\", view_func=CountInit.as_view(\"index\"))\n+    assert client.get(\"/\").data == b\"1\"\n+    assert client.get(\"/\").data == b\"1\"\n+"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.16,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.46,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1791,
+      "output_tokens": 38
+    }
+  },
+  "variant": "single"
+}

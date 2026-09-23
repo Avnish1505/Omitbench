@@ -92,9 +92,12 @@ def reliability(pairs):
 
 
 def mcc(pairs, thr=0.5):
+    # Strict: the pre-registered verdict is OMITTED iff P(implemented) < 0.5,
+    # i.e. P(omitted) > 0.5. A 0.5 tie is IMPLEMENTED, as in jev.verdicts_from
+    # and scripts/analyze.py. (Was `>=`; aligned before any output was read.)
     tp = fp = fn = tn = 0
     for p, y in pairs:
-        pr = p >= thr
+        pr = p > thr
         tp += pr and y
         fp += pr and not y
         fn += (not pr) and y

@@ -1,0 +1,91 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_utils.py::echo`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_utils.py::echo`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_utils.py::echo`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_utils.py::test_prompts_eof`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_utils.py::test_prompts_eof`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_utils.py::test_prompts_eof`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/click/testing.py\n+++ b/src/click/testing.py\n@@ -115,6 +115,13 @@\n     @property\n     def mode(self) -> str:\n         return self._mode\n+\n+    def __next__(self) -> str:  # type: ignore\n+        try:\n+            line = super().__next__()\n+        except StopIteration as e:\n+            raise EOFError() from e\n+        return line\n \n \n def make_input_stream(\n@@ -341,7 +348,7 @@\n         @_pause_echo(echo_input)  # type: ignore\n         def visible_input(prompt: str | None = None) -> str:\n             sys.stdout.write(prompt or \"\")\n-            val = text_input.readline().rstrip(\"\\r\\n\")\n+            val = next(text_input).rstrip(\"\\r\\n\")\n             sys.stdout.write(f\"{val}\\n\")\n             sys.stdout.flush()\n             return val\n@@ -350,7 +357,7 @@\n         def hidden_input(prompt: str | None = None) -> str:\n             sys.stdout.write(f\"{prompt or ''}\\n\")\n             sys.stdout.flush()\n-            return text_input.readline().rstrip(\"\\r\\n\")\n+            return next(text_input).rstrip(\"\\r\\n\")\n \n         @_pause_echo(echo_input)  # type: ignore\n         def _getchar(echo: bool) -> str:\n\n--- a/tests/test_chain.py\n+++ b/tests/test_chain.py\n@@ -163,8 +163,8 @@\n         return processor\n \n     result = runner.invoke(cli, args, input=input)\n-    assert not result.exception\n-    assert result.output.splitlines() == expect\n+    # last two lines are '' and 'Aborted!'\n+    assert result.output.splitlines()[:-2] == expect\n \n \n def test_args_and_chain(runner):\n\n--- a/tests/test_termui.py\n+++ b/tests/test_termui.py\n@@ -242,7 +242,7 @@\n     def cli(f):\n         click.echo(f.name)\n \n-    result = runner.invoke(cli)\n+    result = runner.invoke(cli, input=\"\\n\")\n     assert result.output == f\"file [{__file__}]: \\n{__file__}\\n\"\n \n \n@@ -451,7 +451,7 @@\n     [\n         (True, \"password\\npassword\", None, \"password\"),\n         (\"Confirm Password\", \"password\\npassword\\n\", None, \"password\"),\n-        (True, \"\", \"\", \"\"),\n+        (True, \"\\n\\n\", \"\", \"\"),\n         (False, None, None, None),\n     ],\n )\n\n--- a/tests/test_utils.py\n+++ b/tests/test_utils.py\n@@ -179,6 +179,19 @@\n     assert out == \"Password:\\ninterrupted\\n\"\n \n \n+def test_prompts_eof(runner):\n+    \"\"\"If too few lines of input are given, prompt should exit, not hang.\"\"\"\n+\n+    @click.command\n+    def echo():\n+        for _ in range(3):\n+            click.echo(click.prompt(\"\", type=int))\n+\n+    # only provide two lines of input for three prompts\n+    result = runner.invoke(echo, input=\"1\\n2\\n\")\n+    assert result.exit_code == 1\n+\n+\n def _test_gen_func():\n     yield \"a\"\n     yield \"b\""
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.16,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.21,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.27,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.45,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1731,
+      "output_tokens": 116
+    }
+  },
+  "variant": "split"
+}

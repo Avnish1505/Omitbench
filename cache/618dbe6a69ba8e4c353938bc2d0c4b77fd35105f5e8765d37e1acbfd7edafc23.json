@@ -1,0 +1,103 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_basic.py::test_provide_automatic_options_arg_disable` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_basic.py::test_provide_automatic_options_attr_disable` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_basic.py::test_provide_automatic_options_attr_enable` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_basic.py::test_provide_automatic_options_method_disable` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_views.py::test_provide_automatic_options_method_disable` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r5": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_views.py::test_view_provide_automatic_options_attr_disable` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r6": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_views.py::test_view_provide_automatic_options_attr_enable` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/flask/sansio/app.py\n+++ b/src/flask/sansio/app.py\n@@ -627,19 +627,19 @@\n         # Methods that should always be added\n         required_methods: set[str] = set(getattr(view_func, \"required_methods\", ()))\n \n-        # starting with Flask 0.8 the view_func object can disable and\n-        # force-enable the automatic options handling.\n         if provide_automatic_options is None:\n             provide_automatic_options = getattr(\n                 view_func, \"provide_automatic_options\", None\n             )\n \n-        if provide_automatic_options is None:\n-            if \"OPTIONS\" not in methods and self.config[\"PROVIDE_AUTOMATIC_OPTIONS\"]:\n-                provide_automatic_options = True\n-                required_methods.add(\"OPTIONS\")\n-            else:\n-                provide_automatic_options = False\n+            if provide_automatic_options is None:\n+                provide_automatic_options = (\n+                    \"OPTIONS\" not in methods\n+                    and self.config[\"PROVIDE_AUTOMATIC_OPTIONS\"]\n+                )\n+\n+        if provide_automatic_options:\n+            required_methods.add(\"OPTIONS\")\n \n         # Add the required methods now.\n         methods |= required_methods\n\n--- a/tests/test_basic.py\n+++ b/tests/test_basic.py\n@@ -20,6 +20,7 @@\n from werkzeug.routing import RequestRedirect\n \n import flask\n+from flask.testing import FlaskClient\n \n require_cpython_gc = pytest.mark.skipif(\n     python_implementation() != \"CPython\",\n@@ -67,63 +68,49 @@\n         app.get(\"/\", methods=[\"GET\", \"POST\"])\n \n \n-def test_provide_automatic_options_attr():\n-    app = flask.Flask(__name__)\n+\n+\n+def test_provide_automatic_options_attr_enable(\n+    app: flask.Flask, client: FlaskClient\n+) -> None:\n+    \"\"\"When default automatic options is disabled in config, it can still be\n+    enabled by the view function attribute.\n+    \"\"\"\n+    app.config[\"PROVIDE_AUTOMATIC_OPTIONS\"] = False\n \n     def index():\n         return \"Hello World!\"\n \n-    index.provide_automatic_options = False\n-    app.route(\"/\")(index)\n-    rv = app.test_client().open(\"/\", method=\"OPTIONS\")\n+    index.provide_automatic_options = True\n+    app.add_url_rule(\"/\", view_func=index)\n+    rv = client.options()\n+    assert rv.allow == {\"GET\", \"HEAD\", \"OPTIONS\"}\n+\n+\n+def test_provide_automatic_options_arg_disable(\n+    app: flask.Flask, client: FlaskClient\n+) -> None:\n+    \"\"\"Automatic options can be disabled by the route argument.\"\"\"\n+\n+    @app.get(\"/\", provide_automatic_options=False)\n+    def index():\n+        return \"Hello World!\"\n+\n+    rv = client.options()\n     assert rv.status_code == 405\n \n-    app = flask.Flask(__name__)\n-\n-    def index2():\n-        return \"Hello World!\"\n-\n-    index2.provide_automatic_options = True\n-    app.route(\"/\", methods=[\"OPTIONS\"])(index2)\n-    rv = app.test_client().open(\"/\", method=\"OPTIONS\")\n-    assert sorted(rv.allow) == [\"OPTIONS\"]\n-\n-\n-def test_provide_automatic_options_kwarg(app, client):\n-    def index():\n-        return flask.request.method\n-\n-    def more():\n-        return flask.request.method\n-\n-    app.add_url_rule(\"/\", view_func=index, provide_automatic_options=False)\n-    app.add_url_rule(\n-        \"/more\",\n-        view_func=more,\n-        methods=[\"GET\", \"POST\"],\n-        provide_automatic_options=False,\n-    )\n-    assert client.get(\"/\").data == b\"GET\"\n-\n-    rv = client.post(\"/\")\n-    assert rv.status_code == 405\n-    assert sorted(rv.allow) == [\"GET\", \"HEAD\"]\n-\n-    rv = client.open(\"/\", method=\"OPTIONS\")\n-    assert rv.status_code == 405\n-\n-    rv = client.head(\"/\")\n-    assert rv.status_code == 200\n-    assert not rv.data  # head truncates\n-    assert client.post(\"/more\").data == b\"POST\"\n-    assert client.get(\"/more\").data == b\"GET\"\n-\n-    rv = client.delete(\"/more\")\n-    assert rv.status_code == 405\n-    assert sorted(rv.allow) == [\"GET\", \"HEAD\", \"POST\"]\n-\n-    rv = client.open(\"/more\", method=\"OPTIONS\")\n-    assert rv.status_code == 405\n+\n+def test_provide_automatic_options_method_disable(\n+    app: flask.Flask, client: FlaskClient\n+) -> None:\n+    \"\"\"Automatic options is ignored if the route handles options.\"\"\"\n+\n+    @app.route(\"/\", methods=[\"OPTIONS\"])\n+    def index():\n+        return \"\", {\"X-Test\": \"test\"}\n+\n+    rv = client.options()\n+    assert rv.headers[\"X-Test\"] == \"test\"\n \n \n def test_request_dispatching(app, client):\n\n--- a/tests/test_blueprints.py\n+++ b/tests/test_blueprints.py\n@@ -220,28 +220,19 @@\n         assert flask.render_template(\"nested/nested.txt\") == \"I'm nested\"\n \n \n-def test_default_static_max_age(app):\n+def test_default_static_max_age(app: flask.Flask) -> None:\n     class MyBlueprint(flask.Blueprint):\n         def get_send_file_max_age(self, filename):\n             return 100\n \n-    blueprint = MyBlueprint(\"blueprint\", __name__, static_folder=\"static\")\n+    blueprint = MyBlueprint(\n+        \"blueprint\", __name__, url_prefix=\"/bp\", static_folder=\"static\"\n+    )\n     app.register_blueprint(blueprint)\n \n-    # try/finally, in case other tests use this app for Blueprint tests.\n-    max_age_default = app.config[\"SEND_FILE_MAX_AGE_DEFAULT\"]\n-    try:\n-        with app.test_request_context():\n-            unexpected_max_age = 3600\n-            if app.config[\"SEND_FILE_MAX_AGE_DEFAULT\"] == unexpected_max_age:\n-                unexpected_max_age = 7200\n-            app.config[\"SEND_FILE_MAX_AGE_DEFAULT\"] = unexpected_max_age\n-            rv = blueprint.send_static_file(\"index.html\")\n-            cc = parse_cache_control_header(rv.headers[\"Cache-Control\"])\n-            assert cc.max_age == 100\n-            rv.close()\n-    finally:\n-        app.config[\"SEND_FILE_MAX_AGE_DEFAULT\"] = max_age_default\n+    with app.test_request_context(), blueprint.send_static_file(\"index.html\") as rv:\n+        cc = parse_cache_control_header(rv.headers[\"Cache-Control\"])\n+        assert cc.max_age == 100\n \n \n def test_templates_list(test_apps):\n\n--- a/tests/test_cli.py\n+++ b/tests/test_cli.py\n@@ -483,12 +483,18 @@\n             [\"yyy_get_post\", \"static\", \"aaa_post\"],\n             invoke([\"routes\", \"-s\", \"rule\"]).output,\n         )\n-        match_order = [r.endpoint for r in app.url_map.iter_rules()]\n+        match_order = [\n+            r.endpoint\n+            for r in app.url_map.iter_rules()\n+            if r.endpoint != \"_automatic_options\"\n+        ]\n         self.expect_order(match_order, invoke([\"routes\", \"-s\", \"match\"]).output)\n \n     def test_all_methods(self, invoke):\n         output = invoke([\"routes\"]).output\n-        assert \"GET, HEAD, OPTIONS, POST\" not in output\n+        assert \"HEAD\" not in output\n+        assert \"OPTIONS\" not in output\n+\n         output = invoke([\"routes\", \"--all-methods\"]).output\n         assert \"GET, HEAD, OPTIONS, POST\" in output\n \n\n--- a/tests/test_views.py\n+++ b/tests/test_views.py\n@@ -2,6 +2,7 @@\n from werkzeug.http import parse_set_header\n \n import flask.views\n+from flask.testing import FlaskClient\n \n \n def common_test(app):\n@@ -98,44 +99,55 @@\n     assert rv.data == b\"Awesome\"\n \n \n-def test_view_provide_automatic_options_attr():\n-    app = flask.Flask(__name__)\n-\n-    class Index1(flask.views.View):\n+def test_view_provide_automatic_options_attr_disable(\n+    app: flask.Flask, client: FlaskClient\n+) -> None:\n+    \"\"\"Automatic options can be disabled by the view class attribute.\"\"\"\n+\n+    class Index(flask.views.View):\n         provide_automatic_options = False\n \n         def dispatch_request(self):\n             return \"Hello World!\"\n \n-    app.add_url_rule(\"/\", view_func=Index1.as_view(\"index\"))\n-    c = app.test_client()\n-    rv = c.open(\"/\", method=\"OPTIONS\")\n+    app.add_url_rule(\"/\", view_func=Index.as_view(\"index\"))\n+    rv = client.options()\n     assert rv.status_code == 405\n \n-    app = flask.Flask(__name__)\n-\n-    class Index2(flask.views.View):\n+\n+def test_view_provide_automatic_options_attr_enable(\n+    app: flask.Flask, client: FlaskClient\n+) -> None:\n+    \"\"\"When default automatic options is disabled in config, it can still be\n+    enabled by the view class attribute.\n+    \"\"\"\n+    app.config[\"PROVIDE_AUTOMATIC_OPTIONS\"] = False\n+\n+    class Index(flask.views.View):\n+        provide_automatic_options = True\n+\n+        def dispatch_request(self):\n+            return \"Hello World!\"\n+\n+    app.add_url_rule(\"/\", view_func=Index.as_view(\"index\"))\n+    rv = client.options(\"/\")\n+    assert rv.allow == {\"GET\", \"HEAD\", \"OPTIONS\"}\n+\n+\n+def test_provide_automatic_options_method_disable(\n+    app: flask.Flask, client: FlaskClient\n+) -> None:\n+    \"\"\"Automatic options is ignored if the route handles options.\"\"\"\n+\n+    class Index(flask.views.View):\n         methods = [\"OPTIONS\"]\n-        provide_automatic_options = True\n-\n-        def dispatch_request(self):\n-            return \"Hello World!\"\n-\n-    app.add_url_rule(\"/\", view_func=Index2.as_view(\"index\"))\n-    c = app.test_client()\n-    rv = c.open(\"/\", method=\"OPTIONS\")\n-    assert sorted(rv.allow) == [\"OPTIONS\"]\n-\n-    app = flask.Flask(__name__)\n-\n-    class Index3(flask.views.View):\n-        def dispatch_request(self):\n-            return \"Hello World!\"\n-\n-    app.add_url_rule(\"/\", view_func=Index3.as_view(\"index\"))\n-    c = app.test_client()\n-    rv = c.open(\"/\", method=\"OPTIONS\")\n-    assert \"OPTIONS\" in rv.allow\n+\n+        def dispatch_request(self):\n+            return \"\", {\"X-Test\": \"test\"}\n+\n+    app.add_url_rule(\"/\", view_func=Index.as_view(\"index\"))\n+    rv = client.options()\n+    assert rv.headers[\"X-Test\"] == \"test\"\n \n \n def test_implicit_head(app, client):\n@@ -180,7 +192,7 @@\n     app.add_url_rule(\"/\", view_func=Index.as_view(\"index\"))\n \n     with pytest.raises(AssertionError):\n-        app.add_url_rule(\"/\", view_func=Index.as_view(\"index\"))\n+        app.add_url_rule(\"/other\", view_func=Index.as_view(\"index\"))\n \n     # But these tests should still pass. We just log a warning.\n     common_test(app)"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.21,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.1,
+        "type": "noul"
+      },
+      "r2": {
+        "noul": 0.2,
+        "type": "noul"
+      },
+      "r3": {
+        "noul": 0.16,
+        "type": "noul"
+      },
+      "r4": {
+        "noul": 0.23,
+        "type": "noul"
+      },
+      "r5": {
+        "noul": 0.26,
+        "type": "noul"
+      },
+      "r6": {
+        "noul": 0.18,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 4560,
+      "output_tokens": 123
+    }
+  },
+  "variant": "single"
+}

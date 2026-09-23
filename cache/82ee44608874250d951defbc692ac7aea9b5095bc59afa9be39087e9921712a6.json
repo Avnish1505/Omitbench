@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_internal.py::test_plain_int`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_internal.py::test_plain_int`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_internal.py::test_plain_int`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/werkzeug/_internal.py\n+++ b/src/werkzeug/_internal.py\n@@ -193,20 +193,21 @@\n         return f\"<{type(self).__name__} {self.name}>\"\n \n \n-_plain_int_re = re.compile(r\"-?\\d+\", re.ASCII)\n-\n-\n-def _plain_int(value: str) -> int:\n-    \"\"\"Parse an int only if it is only ASCII digits and ``-``.\n-\n-    This disallows ``+``, ``_``, and non-ASCII digits, which are accepted by ``int`` but\n-    are not allowed in HTTP header values.\n-\n-    Any leading or trailing whitespace is stripped\n+_plain_int_re = re.compile(r\"-?[a-z0-9]+\", re.ASCII | re.IGNORECASE)\n+\n+\n+def _plain_int(value: str, base: int = 10) -> int:\n+    \"\"\"Parse an int only if it is ASCII digits and ``-``.\n+\n+    This disallows ``+``, ``_``, and non-ASCII digits, which are accepted by\n+    ``int`` but are not allowed in HTTP header values.\n+\n+    Any surrounding whitespace is stripped.\n     \"\"\"\n     value = value.strip()\n+\n     if _plain_int_re.fullmatch(value) is None:\n         raise ValueError\n \n-    return int(value)\n-\n+    return int(value, base)\n+\n\n--- a/src/werkzeug/debug/__init__.py\n+++ b/src/werkzeug/debug/__init__.py\n@@ -21,6 +21,7 @@\n from zlib import adler32\n \n from .._internal import _log\n+from .._internal import _plain_int\n from ..exceptions import NotFound\n from ..exceptions import SecurityError\n from ..http import parse_cookie\n@@ -450,7 +451,7 @@\n         ts_str, pin_hash = val.split(\"|\", 1)\n \n         try:\n-            ts = int(ts_str)\n+            ts = _plain_int(ts_str)\n         except ValueError:\n             return False\n \n\n--- a/src/werkzeug/http.py\n+++ b/src/werkzeug/http.py\n@@ -18,6 +18,7 @@\n from urllib.parse import unquote\n \n from ._internal import _dt_as_utc\n+from ._internal import _plain_int\n \n if t.TYPE_CHECKING:\n     from _typeshed.wsgi import WSGIEnvironment\n@@ -1147,7 +1148,7 @@\n     if not value:\n         return None\n     try:\n-        seconds = int(value)\n+        seconds = _plain_int(value)\n     except ValueError:\n         return None\n     if seconds < 0:\n@@ -1167,10 +1168,9 @@\n     \"\"\"\n     if age is None:\n         return None\n+\n     if isinstance(age, timedelta):\n         age = int(age.total_seconds())\n-    else:\n-        age = int(age)\n \n     if age < 0:\n         raise ValueError(\"age cannot be negative\")\n\n--- a/src/werkzeug/middleware/shared_data.py\n+++ b/src/werkzeug/middleware/shared_data.py\n@@ -151,7 +151,7 @@\n         return lambda: (\n             open(filename, \"rb\"),\n             datetime.fromtimestamp(os.path.getmtime(filename), tz=timezone.utc),\n-            int(os.path.getsize(filename)),\n+            os.path.getsize(filename),\n         )\n \n     def get_file_loader(self, filename: str) -> _TLoader:\n\n--- a/src/werkzeug/serving.py\n+++ b/src/werkzeug/serving.py\n@@ -31,6 +31,7 @@\n from urllib.parse import urlsplit\n \n from ._internal import _log\n+from ._internal import _plain_int\n from ._internal import _wsgi_encoding_dance\n from .datastructures import HeaderSet\n from .exceptions import InternalServerError\n@@ -108,7 +109,7 @@\n     def read_chunk_len(self) -> int:\n         try:\n             line = self._rfile.readline().decode(\"latin1\")\n-            _len = int(line.strip(), 16)\n+            _len = _plain_int(line, 16)\n         except ValueError as e:\n             raise OSError(\"Invalid chunk header\") from e\n         if _len < 0:\n\n--- a/tests/test_internal.py\n+++ b/tests/test_internal.py\n@@ -1,3 +1,6 @@\n+import pytest\n+\n+from werkzeug._internal import _plain_int\n from werkzeug.test import create_environ\n from werkzeug.wrappers import Request\n from werkzeug.wrappers import Response\n@@ -29,3 +32,21 @@\n     headers = response.get_wsgi_headers(create_environ())\n     assert \"Content-Length\" in headers\n \n+\n+@pytest.mark.parametrize(\n+    (\"value\", \"base\", \"expect\"),\n+    [\n+        (\"123\", 10, 123),\n+        (\"-123\", 10, -123),\n+        (\"1_23\", 10, None),\n+        (\"+123\", 10, None),\n+        (\"\ud835\udfd9\ud835\udfda\ud835\udfdb\", 10, None),\n+        (\"7B\", 10, None),\n+        (\"7B\", 16, 123),\n+        (\"-7B\", 16, -123),\n+        (\"7b\", 16, 123),\n+    ],\n+)\n+def test_plain_int(value: str, base: int, expect: int | None) -> None:\n+    raise NotImplementedError\n+"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.91,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.03,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.77,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1941,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

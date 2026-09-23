@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `src/jinja2/filters.py::do_items` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_filters.py::test_items` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_filters.py::test_items_undefined` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/jinja2/filters.py\n+++ b/src/jinja2/filters.py\n@@ -216,6 +216,36 @@\n def do_lower(s: str) -> str:\n     \"\"\"Convert a value to lowercase.\"\"\"\n     return soft_str(s).lower()\n+\n+\n+def do_items(value: t.Union[t.Mapping[K, V], Undefined]) -> t.Iterator[t.Tuple[K, V]]:\n+    \"\"\"Return an iterator over the ``(key, value)`` items of a mapping.\n+\n+    ``x|items`` is the same as ``x.items()``, except if ``x`` is\n+    undefined an empty iterator is returned.\n+\n+    This filter is useful if you expect the template to be rendered with\n+    an implementation of Jinja in another programming language that does\n+    not have a ``.items()`` method on its mapping type.\n+\n+    .. code-block:: html+jinja\n+\n+        <dl>\n+        {% for key, value in my_dict|items %}\n+            <dt>{{ key }}\n+            <dd>{{ value }}\n+        {% endfor %}\n+        </dl>\n+\n+    .. versionadded:: 3.1\n+    \"\"\"\n+    if isinstance(value, Undefined):\n+        return\n+\n+    if not isinstance(value, abc.Mapping):\n+        raise TypeError(\"Can only get item pairs from a mapping.\")\n+\n+    yield from value.items()\n \n \n @pass_eval_context\n@@ -1739,6 +1769,7 @@\n     \"length\": len,\n     \"list\": do_list,\n     \"lower\": do_lower,\n+    \"items\": do_items,\n     \"map\": do_map,\n     \"min\": do_min,\n     \"max\": do_max,\n\n--- a/tests/test_filters.py\n+++ b/tests/test_filters.py\n@@ -250,6 +250,12 @@\n         tmpl = env.from_string(\"\"\"{{ \"FOO\"|lower }}\"\"\")\n         out = tmpl.render()\n         assert out == \"foo\"\n+\n+\n+    def test_items_undefined(self, env):\n+        tmpl = env.from_string(\"\"\"{{ d|items|list }}\"\"\")\n+        out = tmpl.render()\n+        assert out == \"[]\"\n \n     def test_pprint(self, env):\n         from pprint import pformat"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.92,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.04,
+        "type": "noul"
+      },
+      "r2": {
+        "noul": 0.34,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1492,
+      "output_tokens": 55
+    }
+  },
+  "variant": "single"
+}

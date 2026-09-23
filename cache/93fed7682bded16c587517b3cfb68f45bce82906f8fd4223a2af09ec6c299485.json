@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_itsdangerous/test_timed.py::test_sig_error_date_signed`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_itsdangerous/test_timed.py::test_sig_error_date_signed`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_itsdangerous/test_timed.py::test_sig_error_date_signed`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/itsdangerous/timed.py\n+++ b/src/itsdangerous/timed.py\n@@ -86,6 +86,9 @@\n         # Signature is *not* okay. Raise a proper error now that we have\n         # split the value and the timestamp.\n         if sig_error is not None:\n+            if timestamp is not None:\n+                timestamp = self.timestamp_to_datetime(timestamp)\n+\n             raise BadTimeSignature(str(sig_error), payload=value, date_signed=timestamp)\n \n         # Signature was okay but the timestamp is actually not there or\n\n--- a/tests/test_itsdangerous/test_timed.py\n+++ b/tests/test_itsdangerous/test_timed.py\n@@ -54,6 +54,7 @@\n             signer.unsign(signed)\n \n         assert \"missing\" in str(exc_info.value)\n+        assert exc_info.value.date_signed is None\n \n     def test_malformed_timestamp(self, signer):\n         other = Signer(\"secret-key\")\n@@ -63,13 +64,19 @@\n             signer.unsign(signed)\n \n         assert \"Malformed\" in str(exc_info.value)\n+        assert exc_info.value.date_signed is None\n \n     def test_future_age(self, signer):\n         signed = signer.sign(\"value\")\n \n         with freeze_time(\"1971-05-31\"):\n-            with pytest.raises(SignatureExpired):\n+            with pytest.raises(SignatureExpired) as exc_info:\n                 signer.unsign(signed, max_age=10)\n+\n+        assert isinstance(exc_info.value.date_signed, datetime)\n+\n+    def test_sig_error_date_signed(self, signer):\n+        raise NotImplementedError\n \n \n class TestTimedSerializer(FreezeMixin, TestSerializer):"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.92,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.04,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.11,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1039,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

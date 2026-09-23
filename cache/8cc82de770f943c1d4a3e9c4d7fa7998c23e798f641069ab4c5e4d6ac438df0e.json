@@ -1,0 +1,91 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_commands.py::test_deprecated_empty_help_no_leading_space`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_commands.py::test_deprecated_empty_help_no_leading_space`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_commands.py::test_deprecated_empty_help_no_leading_space`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_options.py::test_deprecated_empty_help_no_leading_space`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_options.py::test_deprecated_empty_help_no_leading_space`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_options.py::test_deprecated_empty_help_no_leading_space`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/click/core.py\n+++ b/src/click/core.py\n@@ -1189,7 +1189,8 @@\n             text = \"\"\n \n         if self.deprecated:\n-            text = f\"{_(text)} {_format_deprecated_label(self.deprecated)}\"\n+            label = _format_deprecated_label(self.deprecated)\n+            text = f\"{_(text)} {label}\" if text else label\n \n         if text:\n             formatter.write_paragraph()\n@@ -2826,7 +2827,7 @@\n \n         if deprecated:\n             label = _format_deprecated_label(deprecated)\n-            help = f\"{help} {label}\" if help is not None else label\n+            help = f\"{help} {label}\" if help else label\n \n         self.prompt = prompt_text\n         self.confirmation_prompt = confirmation_prompt\n\n--- a/tests/test_commands.py\n+++ b/tests/test_commands.py\n@@ -492,6 +492,12 @@\n \n \n @pytest.mark.parametrize(\"deprecated\", [True, \"USE OTHER COMMAND INSTEAD\"])\n+@pytest.mark.parametrize(\"doc\", [\"\", None])\n+def test_deprecated_empty_help_no_leading_space(runner, doc, deprecated):\n+    raise NotImplementedError\n+\n+\n+@pytest.mark.parametrize(\"deprecated\", [True, \"USE OTHER COMMAND INSTEAD\"])\n def test_deprecated_in_invocation(runner, deprecated):\n     @click.command(deprecated=deprecated)\n     def deprecated_cmd():\n\n--- a/tests/test_options.py\n+++ b/tests/test_options.py\n@@ -56,6 +56,20 @@\n \n     if isinstance(deprecated, str):\n         assert deprecated in result.output\n+\n+\n+@pytest.mark.parametrize(\n+    (\"deprecated\", \"expected\"),\n+    [(True, \"(DEPRECATED)\"), (\"USE B INSTEAD\", \"(DEPRECATED: USE B INSTEAD)\")],\n+)\n+@pytest.mark.parametrize(\"help_text\", [\"\", None])\n+def test_deprecated_empty_help_no_leading_space(help_text, deprecated, expected):\n+    \"\"\"An option with empty or missing help text must not gain a stray leading\n+    space before the deprecation label.\n+    \"\"\"\n+    opt = click.Option([\"--foo\"], help=help_text, deprecated=deprecated)\n+    ctx = click.Context(click.Command(\"cli\"))\n+    assert opt.get_help_record(ctx)[1] == expected\n \n \n @pytest.mark.parametrize(\"deprecated\", [True, \"USE B INSTEAD\"])"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.92,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.04,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.2,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.91,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.35,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1585,
+      "output_tokens": 116
+    }
+  },
+  "variant": "split"
+}

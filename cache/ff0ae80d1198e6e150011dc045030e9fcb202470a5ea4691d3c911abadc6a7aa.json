@@ -1,0 +1,127 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_pre_init_args`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_pre_init_args`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_pre_init_args`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_pre_init_kwargs`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_pre_init_kwargs`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_pre_init_kwargs`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_pre_init_kwargs_only`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_pre_init_kwargs_only`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_pre_init_kwargs_only`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/attr/_make.py\n+++ b/src/attr/_make.py\n@@ -3,6 +3,7 @@\n import contextlib\n import copy\n import enum\n+import inspect\n import linecache\n import sys\n import types\n@@ -624,6 +625,7 @@\n         \"_delete_attribs\",\n         \"_frozen\",\n         \"_has_pre_init\",\n+        \"_pre_init_has_args\",\n         \"_has_post_init\",\n         \"_is_exc\",\n         \"_on_setattr\",\n@@ -670,6 +672,13 @@\n         self._weakref_slot = weakref_slot\n         self._cache_hash = cache_hash\n         self._has_pre_init = bool(getattr(cls, \"__attrs_pre_init__\", False))\n+        self._pre_init_has_args = False\n+        if self._has_pre_init:\n+            # Check if the pre init method has more arguments than just `self`\n+            # We want to pass arguments if pre init expects arguments\n+            pre_init_func = cls.__attrs_pre_init__\n+            pre_init_signature = inspect.signature(pre_init_func)\n+            self._pre_init_has_args = len(pre_init_signature.parameters) > 1\n         self._has_post_init = bool(getattr(cls, \"__attrs_post_init__\", False))\n         self._delete_attribs = not bool(these)\n         self._is_exc = is_exc\n@@ -974,6 +983,7 @@\n                 self._cls,\n                 self._attrs,\n                 self._has_pre_init,\n+                self._pre_init_has_args,\n                 self._has_post_init,\n                 self._frozen,\n                 self._slots,\n@@ -1000,6 +1010,7 @@\n                 self._cls,\n                 self._attrs,\n                 self._has_pre_init,\n+                self._pre_init_has_args,\n                 self._has_post_init,\n                 self._frozen,\n                 self._slots,\n@@ -1984,6 +1995,7 @@\n     cls,\n     attrs,\n     pre_init,\n+    pre_init_has_args,\n     post_init,\n     frozen,\n     slots,\n@@ -2027,6 +2039,7 @@\n         frozen,\n         slots,\n         pre_init,\n+        pre_init_has_args,\n         post_init,\n         cache_hash,\n         base_attr_map,\n@@ -2107,6 +2120,7 @@\n     frozen,\n     slots,\n     pre_init,\n+    pre_init_has_args,\n     post_init,\n     cache_hash,\n     base_attr_map,\n@@ -2361,11 +2375,23 @@\n         lines.append(f\"BaseException.__init__(self, {vals})\")\n \n     args = \", \".join(args)\n+    pre_init_args = args\n     if kw_only_args:\n         args += \"%s*, %s\" % (\n             \", \" if args else \"\",  # leading comma\n             \", \".join(kw_only_args),  # kw_only args\n         )\n+        pre_init_kw_only_args = \", \".join(\n+            [\"%s=%s\" % (kw_arg, kw_arg) for kw_arg in kw_only_args]\n+        )\n+        pre_init_args += (\n+            \", \" if pre_init_args else \"\"\n+        )  # handle only kwargs and no regular args\n+        pre_init_args += pre_init_kw_only_args\n+\n+    if pre_init and pre_init_has_args:\n+        # If pre init method has arguments, pass same arguments as `__init__`\n+        lines[0] = \"self.__attrs_pre_init__(%s)\" % pre_init_args\n \n     return (\n         \"def %s(self, %s):\\n    %s\\n\"\n\n--- a/tests/test_dunders.py\n+++ b/tests/test_dunders.py\n@@ -6,6 +6,7 @@\n \n \n import copy\n+import inspect\n import pickle\n \n import pytest\n@@ -84,10 +85,15 @@\n     This function used to be part of _make.  It wasn't used anymore however\n     the tests for it are still useful to test the behavior of _make_init.\n     \"\"\"\n+    has_pre_init = bool(getattr(cls, \"__attrs_pre_init__\", False))\n+\n     cls.__init__ = _make_init(\n         cls,\n         cls.__attrs_attrs__,\n-        getattr(cls, \"__attrs_pre_init__\", False),\n+        has_pre_init,\n+        len(inspect.signature(cls.__attrs_pre_init__).parameters) > 1\n+        if has_pre_init\n+        else False,\n         getattr(cls, \"__attrs_post_init__\", False),\n         frozen,\n         _is_slot_cls(cls),\n\n--- a/tests/test_make.py\n+++ b/tests/test_make.py\n@@ -613,20 +613,88 @@\n         assert C.D.__qualname__ == C.__qualname__ + \".D\"\n \n     @pytest.mark.parametrize(\"with_validation\", [True, False])\n-    def test_pre_init(self, with_validation, monkeypatch):\n+    def test_pre_init(self, with_validation):\n         \"\"\"\n         Verify that __attrs_pre_init__ gets called if defined.\n         \"\"\"\n-        monkeypatch.setattr(_config, \"_run_validators\", with_validation)\n \n         @attr.s\n         class C:\n             def __attrs_pre_init__(self2):\n                 self2.z = 30\n \n-        c = C()\n+        try:\n+            attr.validators.set_disabled(not with_validation)\n+            c = C()\n+        finally:\n+            attr.validators.set_disabled(False)\n \n         assert 30 == getattr(c, \"z\", None)\n+\n+    @pytest.mark.parametrize(\"with_validation\", [True, False])\n+    def test_pre_init_args(self, with_validation):\n+        \"\"\"\n+        Verify that __attrs_pre_init__ gets called with extra args if defined.\n+        \"\"\"\n+\n+        @attr.s\n+        class C:\n+            x = attr.ib()\n+\n+            def __attrs_pre_init__(self2, x):\n+                self2.z = x + 1\n+\n+        try:\n+            attr.validators.set_disabled(not with_validation)\n+            c = C(x=10)\n+        finally:\n+            attr.validators.set_disabled(False)\n+\n+        assert 11 == getattr(c, \"z\", None)\n+\n+    @pytest.mark.parametrize(\"with_validation\", [True, False])\n+    def test_pre_init_kwargs(self, with_validation):\n+        \"\"\"\n+        Verify that __attrs_pre_init__ gets called with extra args and kwargs if defined.\n+        \"\"\"\n+\n+        @attr.s\n+        class C:\n+            x = attr.ib()\n+            y = attr.field(kw_only=True)\n+\n+            def __attrs_pre_init__(self2, x, y):\n+                self2.z = x + y + 1\n+\n+        try:\n+            attr.validators.set_disabled(not with_validation)\n+            c = C(10, y=11)\n+        finally:\n+            attr.validators.set_disabled(False)\n+\n+        assert 22 == getattr(c, \"z\", None)\n+\n+    @pytest.mark.parametrize(\"with_validation\", [True, False])\n+    def test_pre_init_kwargs_only(self, with_validation):\n+        \"\"\"\n+        Verify that __attrs_pre_init__ gets called with extra kwargs only if\n+        defined.\n+        \"\"\"\n+\n+        @attr.s\n+        class C:\n+            y = attr.field(kw_only=True)\n+\n+            def __attrs_pre_init__(self2, y):\n+                self2.z = y + 1\n+\n+        try:\n+            attr.validators.set_disabled(not with_validation)\n+            c = C(y=11)\n+        finally:\n+            attr.validators.set_disabled(False)\n+\n+        assert 12 == getattr(c, \"z\", None)\n \n     @pytest.mark.parametrize(\"with_validation\", [True, False])\n     def test_post_init(self, with_validation, monkeypatch):"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.54,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.4,
+        "type": "noul"
+      },
+      "r2_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r2_wired": {
+        "noul": 0.39,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 3097,
+      "output_tokens": 172
+    }
+  },
+  "variant": "split"
+}

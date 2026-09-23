@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests.py::test_custom_media_type` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/itsdangerous.py\n+++ b/itsdangerous.py\n@@ -669,6 +669,7 @@\n \n     #: The default algorithm to use for signature generation\n     default_algorithm = 'HS256'\n+    default_media_type = 'JWT'\n \n     default_serializer = _CompactJSON\n \n@@ -676,7 +677,7 @@\n         self, secret_key, salt=None,\n         serializer=None, serializer_kwargs=None,\n         signer=None, signer_kwargs=None,\n-        algorithm_name=None\n+        algorithm_name=None, media_type=None\n     ):\n         Serializer.__init__(\n             self, secret_key=secret_key, salt=salt,\n@@ -687,6 +688,9 @@\n             algorithm_name = self.default_algorithm\n         self.algorithm_name = algorithm_name\n         self.algorithm = self.make_algorithm(algorithm_name)\n+        if media_type is None:\n+            media_type = self.default_media_type\n+        self.media_type = media_type\n \n     def load_payload(self, payload, return_header=False):\n         payload = want_bytes(payload)\n@@ -740,6 +744,7 @@\n     def make_header(self, header_fields):\n         header = header_fields.copy() if header_fields else {}\n         header['alg'] = self.algorithm_name\n+        header['typ'] = self.media_type\n         return header\n \n     def dumps(self, obj, salt=None, header_fields=None):\n\n--- a/tests.py\n+++ b/tests.py\n@@ -192,11 +192,12 @@\n     def test_decode_return_header(self):\n         secret_key = 'predictable-key'\n         value = u'hello'\n-        header = {\"typ\": \"dummy\"}\n+        header = {\"cty\": \"dummy\"}\n \n         s = self.make_serializer(secret_key)\n         full_header = header.copy()\n         full_header['alg'] = s.algorithm_name\n+        full_header['typ'] = s.media_type\n \n         ts = s.dumps(value, header_fields=header)\n         loaded, loaded_header = s.loads(ts, return_header=True)\n@@ -235,6 +236,9 @@\n             self.assertEqual(s.load_payload(e.payload), value)\n         else:\n             self.fail('Did not get algorithm mismatch')\n+\n+    def test_custom_media_type(self):\n+        raise NotImplementedError\n \n \n class TimedJSONWebSignatureSerializerTest(unittest.TestCase):"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.01,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1036,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

@@ -1,0 +1,43 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_blueprints.py::test_child_overrides_parent_subdomain` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_blueprints.py::test_nesting_subdomains` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/flask/blueprints.py\n+++ b/src/flask/blueprints.py\n@@ -453,6 +453,15 @@\n         for blueprint, bp_options in self._blueprints:\n             bp_options = bp_options.copy()\n             bp_url_prefix = bp_options.get(\"url_prefix\")\n+            bp_subdomain = bp_options.get(\"subdomain\")\n+\n+            if bp_subdomain is None:\n+                bp_subdomain = blueprint.subdomain\n+\n+            if state.subdomain is not None and bp_subdomain is None:\n+                bp_options[\"subdomain\"] = state.subdomain\n+            elif bp_subdomain is not None:\n+                bp_options[\"subdomain\"] = bp_subdomain\n \n             if bp_url_prefix is None:\n                 bp_url_prefix = blueprint.url_prefix\n\n--- a/tests/test_blueprints.py\n+++ b/tests/test_blueprints.py\n@@ -950,6 +950,34 @@\n     assert response.status_code == 200\n \n \n+\n+\n+def test_child_overrides_parent_subdomain(app, client) -> None:\n+    child_subdomain = \"api\"\n+    parent_subdomain = \"parent\"\n+    parent = flask.Blueprint(\"parent\", __name__)\n+    child = flask.Blueprint(\"child\", __name__, subdomain=child_subdomain)\n+\n+    @child.route(\"/\")\n+    def index():\n+        return \"child\"\n+\n+    parent.register_blueprint(child)\n+    app.register_blueprint(parent, subdomain=parent_subdomain)\n+\n+    client.allow_subdomain_redirects = True\n+\n+    domain_name = \"domain.tld\"\n+    app.config[\"SERVER_NAME\"] = domain_name\n+    response = client.get(\"/\", base_url=f\"http://{child_subdomain}.{domain_name}\")\n+\n+    assert response.status_code == 200\n+\n+    response = client.get(\"/\", base_url=f\"http://{parent_subdomain}.{domain_name}\")\n+\n+    assert response.status_code == 404\n+\n+\n def test_unique_blueprint_names(app, client) -> None:\n     bp = flask.Blueprint(\"bp\", __name__)\n     bp2 = flask.Blueprint(\"bp\", __name__)"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.26,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.02,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1258,
+      "output_tokens": 38
+    }
+  },
+  "variant": "single"
+}

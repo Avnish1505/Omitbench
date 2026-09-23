@@ -1,0 +1,79 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `src/flask/app.py::redirect` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `src/flask/helpers.py::redirect` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_helpers.py::redirect` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_helpers.py::test_redirect_no_app` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_helpers.py::test_redirect_with_app` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/examples/tutorial/flaskr/auth.py\n+++ b/examples/tutorial/flaskr/auth.py\n@@ -22,7 +22,7 @@\n     @functools.wraps(view)\n     def wrapped_view(**kwargs):\n         if g.user is None:\n-            return redirect(url_for(\"auth.login\"))\n+            return None\n \n         return view(**kwargs)\n \n@@ -74,7 +74,7 @@\n                 error = f\"User {username} is already registered.\"\n             else:\n                 # Success, go to the login page.\n-                return redirect(url_for(\"auth.login\"))\n+                return None\n \n         flash(error)\n \n@@ -102,7 +102,7 @@\n             # store the user id in a new session and return to the index\n             session.clear()\n             session[\"user_id\"] = user[\"id\"]\n-            return redirect(url_for(\"index\"))\n+            return None\n \n         flash(error)\n \n@@ -113,5 +113,5 @@\n def logout():\n     \"\"\"Clear the current session, including the stored user id.\"\"\"\n     session.clear()\n-    return redirect(url_for(\"index\"))\n+    return None\n \n\n--- a/examples/tutorial/flaskr/blog.py\n+++ b/examples/tutorial/flaskr/blog.py\n@@ -78,7 +78,7 @@\n                 (title, body, g.user[\"id\"]),\n             )\n             db.commit()\n-            return redirect(url_for(\"blog.index\"))\n+            return None\n \n     return render_template(\"blog/create.html\")\n \n@@ -105,7 +105,7 @@\n                 \"UPDATE post SET title = ?, body = ? WHERE id = ?\", (title, body, id)\n             )\n             db.commit()\n-            return redirect(url_for(\"blog.index\"))\n+            return None\n \n     return render_template(\"blog/update.html\", post=post)\n \n@@ -122,5 +122,5 @@\n     db = get_db()\n     db.execute(\"DELETE FROM post WHERE id = ?\", (id,))\n     db.commit()\n-    return redirect(url_for(\"blog.index\"))\n+    return None\n \n\n--- a/src/flask/__init__.py\n+++ b/src/flask/__init__.py\n@@ -1,7 +1,6 @@\n from markupsafe import escape\n from markupsafe import Markup\n from werkzeug.exceptions import abort as abort\n-from werkzeug.utils import redirect as redirect\n \n from . import json as json\n from .app import Flask as Flask\n@@ -23,6 +22,7 @@\n from .helpers import get_flashed_messages as get_flashed_messages\n from .helpers import get_template_attribute as get_template_attribute\n from .helpers import make_response as make_response\n+from .helpers import redirect as redirect\n from .helpers import send_file as send_file\n from .helpers import send_from_directory as send_from_directory\n from .helpers import stream_with_context as stream_with_context\n\n--- a/src/flask/app.py\n+++ b/src/flask/app.py\n@@ -22,6 +22,7 @@\n from werkzeug.routing import RequestRedirect\n from werkzeug.routing import RoutingException\n from werkzeug.routing import Rule\n+from werkzeug.utils import redirect as _wz_redirect\n from werkzeug.wrappers import Response as BaseResponse\n \n from . import cli\n@@ -1630,6 +1631,16 @@\n \n         return asgiref_async_to_sync(func)\n \n+    def redirect(self, location: str, code: int = 302) -> BaseResponse:\n+        \"\"\"Create a redirect response object.\n+\n+        :param location: the url of the redirect\n+        :param code: http return code\n+\n+        .. versionadded:: 2.2\n+        \"\"\"\n+        return _wz_redirect(location, code=code, Response=self.response_class)\n+\n     def make_response(self, rv: ResponseReturnValue) -> Response:\n         \"\"\"Convert the return value from a view function to an instance of\n         :attr:`response_class`.\n\n--- a/src/flask/helpers.py\n+++ b/src/flask/helpers.py\n@@ -12,6 +12,7 @@\n import werkzeug.utils\n from werkzeug.routing import BuildError\n from werkzeug.urls import url_quote\n+from werkzeug.utils import redirect as _wz_redirect\n \n from .globals import _app_ctx_stack\n from .globals import _request_ctx_stack\n@@ -21,6 +22,7 @@\n from .signals import message_flashed\n \n if t.TYPE_CHECKING:  # pragma: no cover\n+    from werkzeug.wrappers import Response as BaseResponse\n     from .wrappers import Response\n \n \n@@ -338,6 +340,28 @@\n     if anchor is not None:\n         rv += f\"#{url_quote(anchor)}\"\n     return rv\n+\n+\n+def redirect(\n+    location: str, code: int = 302, Response: t.Optional[t.Type[\"BaseResponse\"]] = None\n+) -> \"BaseResponse\":\n+    \"\"\"Create a redirect response object.\n+\n+    If :data:`~flask.current_app` is available, it will use\n+    :meth:`~flask.app.Flask.redirect`, otherwise it will use\n+    :func:`werkzeug.utils.redirect`.\n+\n+    :param location: The URL to redirect to.\n+    :param code: The status code for the redirect.\n+    :param Response: The response class to use. Not used when\n+        ``current_app`` is active, which uses ``app.response_class``.\n+\n+    .. versionadded:: 2.2\n+    \"\"\"\n+    if current_app:\n+        return current_app.redirect(location, code=code)\n+\n+    return _wz_redirect(location, code=code, Response=Response)\n \n \n def get_template_attribute(template_name: str, attribute: str) -> t.Any:\n\n--- a/tests/test_helpers.py\n+++ b/tests/test_helpers.py\n@@ -156,6 +156,22 @@\n         assert flask.url_for(\"myview\", _method=\"GET\") == \"/myview/\"\n         assert flask.url_for(\"myview\", id=42, _method=\"GET\") == \"/myview/42\"\n         assert flask.url_for(\"myview\", _method=\"POST\") == \"/myview/create\"\n+\n+\n+def test_redirect_no_app():\n+    response = flask.redirect(\"https://localhost\", 307)\n+    assert response.location == \"https://localhost\"\n+    assert response.status_code == 307\n+\n+\n+def test_redirect_with_app(app):\n+    def redirect(location, code=302):\n+        raise ValueError\n+\n+    app.redirect = redirect\n+\n+    with app.app_context(), pytest.raises(ValueError):\n+        pass\n \n \n class TestNoImports:\n\n--- a/tests/test_signals.py\n+++ b/tests/test_signals.py\n@@ -154,7 +154,7 @@\n     @app.route(\"/\")\n     def index():\n         flask.flash(\"This is a flash message\", category=\"notice\")\n-        return flask.redirect(\"/other\")\n+        return None\n \n     recorded = []\n \n\n--- a/tests/test_testing.py\n+++ b/tests/test_testing.py\n@@ -144,7 +144,7 @@\n     @app.route(\"/\", methods=[\"GET\", \"POST\"])\n     def index():\n         if flask.request.method == \"POST\":\n-            return flask.redirect(\"/getsession\")\n+            return None\n         flask.session[\"data\"] = \"foo\"\n         return \"index\"\n "
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.87,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.87,
+        "type": "noul"
+      },
+      "r2": {
+        "noul": 0.24,
+        "type": "noul"
+      },
+      "r3": {
+        "noul": 0.16,
+        "type": "noul"
+      },
+      "r4": {
+        "noul": 0.29,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 3130,
+      "output_tokens": 89
+    }
+  },
+  "variant": "single"
+}

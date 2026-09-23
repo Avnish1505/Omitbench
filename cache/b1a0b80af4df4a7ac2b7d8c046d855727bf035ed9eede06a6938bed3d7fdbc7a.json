@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_defaults.py::test_default_map_nargs`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_defaults.py::test_default_map_nargs`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_defaults.py::test_default_map_nargs`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/docs/conf.py\n+++ b/docs/conf.py\n@@ -31,6 +31,7 @@\n intersphinx_mapping = {\n     \"python\": (\"https://docs.python.org/3/\", None),\n }\n+myst_heading_anchors = 3\n \n # HTML -----------------------------------------------------------------\n \n\n--- a/src/click/core.py\n+++ b/src/click/core.py\n@@ -2356,6 +2356,11 @@\n                 value = default_map_value\n                 source = ParameterSource.DEFAULT_MAP\n \n+                # A string from default_map must be split for multi-value\n+                # parameters, matching value_from_envvar behavior.\n+                if isinstance(value, str) and self.nargs != 1:\n+                    value = self.type.split_envvar_value(value)\n+\n         if value is UNSET:\n             default_value = self.get_default(ctx)\n             if default_value is not UNSET:\n\n--- a/tests/test_defaults.py\n+++ b/tests/test_defaults.py\n@@ -357,6 +357,30 @@\n     assert result.output == repr(expected)\n \n \n+@pytest.mark.parametrize(\n+    (\"default_map\", \"option_kwargs\", \"cli_args\", \"expected\"),\n+    [\n+        # String is split for nargs=2 option.\n+        ({\"point\": \"3 4\"}, {\"nargs\": 2, \"type\": int}, [], (3, 4)),\n+        # String is split for explicit Tuple type.\n+        ({\"point\": \"hello world\"}, {\"type\": (str, str)}, [], (\"hello\", \"world\")),\n+        # Already-structured tuple passes through unchanged.\n+        ({\"point\": (\"a\", \"b\")}, {\"nargs\": 2}, [], (\"a\", \"b\")),\n+        # Already-structured list passes through unchanged.\n+        ({\"point\": [5, 6]}, {\"nargs\": 2, \"type\": int}, [], (5, 6)),\n+        # CLI args override default_map for nargs > 1.\n+        (\n+            {\"point\": \"3 4\"},\n+            {\"nargs\": 2, \"type\": int},\n+            [\"--point\", \"10\", \"20\"],\n+            (10, 20),\n+        ),\n+    ],\n+)\n+def test_default_map_nargs(runner, default_map, option_kwargs, cli_args, expected):\n+    raise NotImplementedError\n+\n+\n def test_unset_in_default_map(runner):\n     \"\"\"An ``UNSET`` value in ``default_map`` should be treated as if\n     the key is absent, and so fallback to the parameter's own default."
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.87,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.03,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.13,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1204,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

@@ -1,0 +1,79 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `src/flask/ctx.py::session` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_basic.py::do_get` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_basic.py::do_nothing` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_basic.py::do_set` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_basic.py::test_session_accessed` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/flask/app.py\n+++ b/src/flask/app.py\n@@ -1318,8 +1318,8 @@\n                 for func in reversed(self.after_request_funcs[name]):\n                     response = self.ensure_sync(func)(response)\n \n-        if not self.session_interface.is_null_session(ctx.session):\n-            self.session_interface.save_session(self, ctx.session, response)\n+        if not self.session_interface.is_null_session(ctx._session):\n+            self.session_interface.save_session(self, ctx._session, response)\n \n         return response\n \n\n--- a/src/flask/ctx.py\n+++ b/src/flask/ctx.py\n@@ -324,7 +324,7 @@\n         except HTTPException as e:\n             self.request.routing_exception = e\n         self.flashes: list[tuple[str, str]] | None = None\n-        self.session: SessionMixin | None = session\n+        self._session: SessionMixin | None = session\n         # Functions that should be executed after the request on the response\n         # object.  These will be called before the regular \"after_request\"\n         # functions.\n@@ -351,7 +351,7 @@\n             self.app,\n             environ=self.request.environ,\n             request=self.request,\n-            session=self.session,\n+            session=self._session,\n         )\n \n     def match_request(self) -> None:\n@@ -363,6 +363,16 @@\n             self.request.url_rule, self.request.view_args = result  # type: ignore\n         except HTTPException as e:\n             self.request.routing_exception = e\n+\n+    @property\n+    def session(self) -> SessionMixin:\n+        \"\"\"The session data associated with this request. Not available until\n+        this context has been pushed. Accessing this property, also accessed by\n+        the :data:`~flask.session` proxy, sets :attr:`.SessionMixin.accessed`.\n+        \"\"\"\n+        assert self._session is not None, \"The session has not yet been opened.\"\n+        self._session.accessed = True\n+        return self._session\n \n     def push(self) -> None:\n         # Before we push the request context we have to ensure that there\n@@ -381,12 +391,12 @@\n         # This allows a custom open_session method to use the request context.\n         # Only open a new session if this is the first time the request was\n         # pushed, otherwise stream_with_context loses the session.\n-        if self.session is None:\n+        if self._session is None:\n             session_interface = self.app.session_interface\n-            self.session = session_interface.open_session(self.app, self.request)\n-\n-            if self.session is None:\n-                self.session = session_interface.make_null_session(self.app)\n+            self._session = session_interface.open_session(self.app, self.request)\n+\n+            if self._session is None:\n+                self._session = session_interface.make_null_session(self.app)\n \n         # Match the request URL after loading the session, so that the\n         # session is available in custom URL converters.\n\n--- a/src/flask/sessions.py\n+++ b/src/flask/sessions.py\n@@ -43,10 +43,15 @@\n     #: ``True``.\n     modified = True\n \n-    #: Some implementations can detect when session data is read or\n-    #: written and set this when that happens. The mixin default is hard\n-    #: coded to ``True``.\n-    accessed = True\n+    accessed = False\n+    \"\"\"Indicates if the session was accessed, even if it was not modified. This\n+    is set when the session object is accessed through the request context,\n+    including the global :data:`.session` proxy. A ``Vary: cookie`` header will\n+    be added if this is ``True``.\n+\n+    .. versionchanged:: 3.1.3\n+        This is tracked by the request context.\n+    \"\"\"\n \n \n class SecureCookieSession(CallbackDict[str, t.Any], SessionMixin):\n@@ -65,33 +70,14 @@\n     #: will only be written to the response if this is ``True``.\n     modified = False\n \n-    #: When data is read or written, this is set to ``True``. Used by\n-    # :class:`.SecureCookieSessionInterface` to add a ``Vary: Cookie``\n-    #: header, which allows caching proxies to cache different pages for\n-    #: different users.\n-    accessed = False\n-\n     def __init__(\n         self,\n-        initial: c.Mapping[str, t.Any] | c.Iterable[tuple[str, t.Any]] | None = None,\n+        initial: c.Mapping[str, t.Any] | None = None,\n     ) -> None:\n         def on_update(self: te.Self) -> None:\n             self.modified = True\n-            self.accessed = True\n \n         super().__init__(initial, on_update)\n-\n-    def __getitem__(self, key: str) -> t.Any:\n-        self.accessed = True\n-        return super().__getitem__(key)\n-\n-    def get(self, key: str, default: t.Any = None) -> t.Any:\n-        self.accessed = True\n-        return super().get(key, default)\n-\n-    def setdefault(self, key: str, default: t.Any = None) -> t.Any:\n-        self.accessed = True\n-        return super().setdefault(key, default)\n \n \n class NullSession(SecureCookieSession):\n\n--- a/src/flask/templating.py\n+++ b/src/flask/templating.py\n@@ -22,8 +22,8 @@\n \n \n def _default_template_ctx_processor() -> dict[str, t.Any]:\n-    \"\"\"Default template context processor.  Injects `request`,\n-    `session` and `g`.\n+    \"\"\"Default template context processor.  Replaces the ``request`` and ``g``\n+    proxies with their concrete objects for faster access.\n     \"\"\"\n     appctx = _cv_app.get(None)\n     reqctx = _cv_request.get(None)\n@@ -32,7 +32,8 @@\n         rv[\"g\"] = appctx.g\n     if reqctx is not None:\n         rv[\"request\"] = reqctx.request\n-        rv[\"session\"] = reqctx.session\n+        # The session proxy cannot be replaced, accessing it gets\n+        # RequestContext.session, which sets session.accessed.\n     return rv\n \n \n\n--- a/tests/test_basic.py\n+++ b/tests/test_basic.py\n@@ -20,6 +20,8 @@\n from werkzeug.routing import RequestRedirect\n \n import flask\n+from flask.globals import request_ctx\n+from flask.testing import FlaskClient\n \n require_cpython_gc = pytest.mark.skipif(\n     python_implementation() != \"CPython\",\n@@ -231,27 +233,46 @@\n     assert client.get(\"/foo/bar\").data == b\"bar\"\n \n \n-def test_session(app, client):\n-    @app.route(\"/set\", methods=[\"POST\"])\n-    def set():\n-        assert not flask.session.accessed\n-        assert not flask.session.modified\n+def test_session_accessed(app: flask.Flask, client: FlaskClient) -> None:\n+    @app.post(\"/\")\n+    def do_set():\n         flask.session[\"value\"] = flask.request.form[\"value\"]\n-        assert flask.session.accessed\n-        assert flask.session.modified\n         return \"value set\"\n \n-    @app.route(\"/get\")\n-    def get():\n-        assert not flask.session.accessed\n-        assert not flask.session.modified\n-        v = flask.session.get(\"value\", \"None\")\n-        assert flask.session.accessed\n-        assert not flask.session.modified\n-        return v\n-\n-    assert client.post(\"/set\", data={\"value\": \"42\"}).data == b\"value set\"\n-    assert client.get(\"/get\").data == b\"42\"\n+    @app.get(\"/\")\n+    def do_get():\n+        return flask.session.get(\"value\", \"None\")\n+\n+    @app.get(\"/nothing\")\n+    def do_nothing() -> str:\n+        return \"\"\n+\n+    with client:\n+        rv = client.get(\"/nothing\")\n+        assert \"cookie\" not in rv.vary\n+        assert not request_ctx._session.accessed\n+        assert not request_ctx._session.modified\n+\n+    with client:\n+        rv = client.post(data={\"value\": \"42\"})\n+        assert rv.text == \"value set\"\n+        assert \"cookie\" in rv.vary\n+        assert request_ctx._session.accessed\n+        assert request_ctx._session.modified\n+\n+    with client:\n+        rv = client.get()\n+        assert rv.text == \"42\"\n+        assert \"cookie\" in rv.vary\n+        assert request_ctx._session.accessed\n+        assert not request_ctx._session.modified\n+\n+    with client:\n+        rv = client.get(\"/nothing\")\n+        assert rv.text == \"\"\n+        assert \"cookie\" not in rv.vary\n+        assert not request_ctx._session.accessed\n+        assert not request_ctx._session.modified\n \n \n def test_session_path(app, client):"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.88,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.7,
+        "type": "noul"
+      },
+      "r2": {
+        "noul": 0.88,
+        "type": "noul"
+      },
+      "r3": {
+        "noul": 0.58,
+        "type": "noul"
+      },
+      "r4": {
+        "noul": 0.26,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 3551,
+      "output_tokens": 89
+    }
+  },
+  "variant": "single"
+}

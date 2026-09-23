@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_timeouts.py::test_async_client_new_request_send_timeout` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/httpx/_client.py\n+++ b/httpx/_client.py\n@@ -562,6 +562,15 @@\n \n         return request.stream\n \n+    def _set_timeout(self, request: Request) -> None:\n+        if \"timeout\" not in request.extensions:\n+            timeout = (\n+                self.timeout\n+                if isinstance(self.timeout, UseClientDefault)\n+                else Timeout(self.timeout)\n+            )\n+            request.extensions = dict(**request.extensions, timeout=timeout.as_dict())\n+\n \n class Client(BaseClient):\n     \"\"\"\n@@ -911,6 +920,8 @@\n             else follow_redirects\n         )\n \n+        self._set_timeout(request)\n+\n         auth = self._build_request_auth(request, auth)\n \n         response = self._send_handling_auth(\n@@ -1658,6 +1669,8 @@\n             else follow_redirects\n         )\n \n+        self._set_timeout(request)\n+\n         auth = self._build_request_auth(request, auth)\n \n         response = await self._send_handling_auth(\n\n--- a/tests/test_timeouts.py\n+++ b/tests/test_timeouts.py\n@@ -43,3 +43,14 @@\n             async with client.stream(\"GET\", server.url):\n                 await client.get(server.url)\n \n+\n+@pytest.mark.anyio\n+async def test_async_client_new_request_send_timeout(server):\n+    timeout = httpx.Timeout(1e-6)\n+\n+    async with httpx.AsyncClient(timeout=timeout) as client:\n+        with pytest.raises(httpx.TimeoutException):\n+            await client.send(\n+                httpx.Request(\"GET\", server.url.copy_with(path=\"/slow_response\"))\n+            )\n+"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.25,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 894,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

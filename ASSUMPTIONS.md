@@ -780,3 +780,46 @@ They are one model on one hard, out-of-domain classification task.
   exits on Python >= 3.14 and prints the interpreter version in its stderr
   output (`tests/test_jev.py::test_run_jev_refuses_python_314_plus`).
   `build_base` itself is unchanged in this branch.
+- *2026-09-23, transport.* Cloudflare 1010 on urllib's default User-Agent;
+  fixed before any scored call. The first smoke request got HTTP 403
+  `error code: 1010` (a signature block ahead of the API, so the key was
+  never checked) and the run aborted with no response, cache entry or
+  record. One unscored probe with `User-Agent: omitbench/0.3
+  (+https://github.com/Avnish1505/Omitbench)` and `Accept:
+  application/json` returned HTTP 200 (896 input tokens, not cached, not
+  scored). `jev._post` now sends both headers
+  (`tests/test_jev.py::test_post_sends_bearer_retries_429_and_parses`).
+  Headers are not part of the cache key. Question text, threshold,
+  min-combination and parsing are unchanged.
+- *2026-09-23, transport.* Cloudflare origin errors 520-524 were not
+  retried; one B7-single variant, werkzeug 09543c02582d CLEAN, got 520 and
+  was retried after the fix; no answer had been produced, so this fills a
+  gap and does not re-roll a result. `jev.RETRYABLE` now includes 520-524
+  (`tests/test_jev.py::test_post_sends_bearer_retries_429_and_parses`
+  covers a 520). Error responses are never cached, so the rerun served
+  every other variant from cache unchanged.
+- *2026-09-23, analysis script.* Calibration script aligned to the
+  pre-registered tie rule before any analysis output was read.
+  `analyze_calibration.mcc()` counted P(omitted) >= 0.5 as OMITTED; the
+  rule is OMITTED iff P(implemented) < 0.5, so a 0.5 tie is IMPLEMENTED (as
+  in `jev.verdicts_from` and `scripts/analyze.py`). Now strict `>`
+  (`tests/test_jev.py::test_calibration_mcc_treats_half_as_implemented`).
+  In the first full sweep 4 single and 13 split records sat exactly at
+  0.5. This affects only the calibration table's MCC column; rules 1-4 do
+  not read it.
+
+**Known input limits (documented, not excluded).** Found by checking why the
+sweep had more cache hits than the smoke run explained. They were not
+excluded: dropping cases after seeing results is CLAUDE.md anti-pattern #1.
+- *5 truncation-hidden variants.* `dd603b9fd25b` ABSENT+STUB,
+  `0e6e7f60a657` ABSENT+STUB, `a716128f48fd` STUB. The mutation falls past
+  the 6000-token diff cut (`judges.DIFF_TOKEN_CEILING`), so the mutated diff
+  is byte-identical to CLEAN while gold differs. One error per pair is
+  guaranteed for B7 **and** B5, because both get the same truncated input.
+- *Duplicate commit.* flask `54e05a28` and `54ff9b29` (iids
+  `e7e90c295d27`, `16f3aa8989d2`; both "use ruff linter and formatter",
+  2023-11-09) give identical diffs as detectors see them, for all four
+  variants. The cluster bootstrap therefore counts one change twice. This
+  affects every detector equally and slightly narrows all CIs.
+  *Future work:* dedupe by diff hash at corpus-build time, then re-run
+  everything.

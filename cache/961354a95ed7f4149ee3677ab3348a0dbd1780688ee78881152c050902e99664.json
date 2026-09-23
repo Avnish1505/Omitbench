@@ -1,0 +1,79 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_loader.py::ImportHook` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_loader.py::create_module` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_loader.py::exec_module` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_loader.py::find_spec` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_loader.py::test_pep_451_import_hook` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/jinja2/loaders.py\n+++ b/src/jinja2/loaders.py\n@@ -1,10 +1,11 @@\n \"\"\"API and implementations for loading templates from different data\n sources.\n \"\"\"\n+import importlib.util\n import os\n-import pkgutil\n import sys\n import weakref\n+import zipimport\n from collections import abc\n from hashlib import sha1\n from importlib import import_module\n@@ -253,21 +254,19 @@\n         # Make sure the package exists. This also makes namespace\n         # packages work, otherwise get_loader returns None.\n         import_module(package_name)\n-        self._loader = loader = pkgutil.get_loader(package_name)\n-\n-        # Zip loader's archive attribute points at the zip.\n-        self._archive = getattr(loader, \"archive\", None)\n+        spec = importlib.util.find_spec(package_name)\n+        self._loader = spec.loader\n+\n+        self._archive = None\n         self._template_root = None\n-\n-        if hasattr(loader, \"get_filename\"):\n-            # A standard directory package, or a zip package.\n-            self._template_root = os.path.join(\n-                os.path.dirname(loader.get_filename(package_name)), package_path\n-            )\n-        elif hasattr(loader, \"_path\"):\n-            # A namespace package, limited support. Find the first\n-            # contributor with the template directory.\n-            for root in loader._path:\n+        if isinstance(spec.loader, zipimport.zipimporter):\n+            self._archive = spec.loader.archive\n+            pkgdir = next(iter(spec.submodule_search_locations))\n+            self._template_root = os.path.join(pkgdir, package_path)\n+        elif spec.submodule_search_locations:\n+            # this will be one element for \"packages\" and multiple for\n+            # namespace packages\n+            for root in spec.submodule_search_locations:\n                 root = os.path.join(root, package_path)\n \n                 if os.path.isdir(root):\n\n--- a/tests/test_loader.py\n+++ b/tests/test_loader.py\n@@ -1,3 +1,6 @@\n+import importlib.abc\n+import importlib.machinery\n+import importlib.util\n import os\n import platform\n import shutil\n@@ -348,3 +351,30 @@\n def test_package_zip_list(package_zip_loader):\n     assert package_zip_loader.list_templates() == [\"foo/test.html\", \"test.html\"]\n \n+\n+def test_pep_451_import_hook(tmp_path):\n+    package_name = \"_my_pep451_pkg\"\n+    pkg = tmp_path.joinpath(package_name)\n+    pkg.mkdir()\n+    pkg.joinpath(\"__init__.py\").touch()\n+    templates = pkg.joinpath(\"templates\")\n+    templates.mkdir()\n+    templates.joinpath(\"foo.html\").write_text(\"hello world\")\n+\n+    class ImportHook(importlib.abc.MetaPathFinder, importlib.abc.Loader):\n+\n+        def create_module(self, spec):\n+            return None  # default behaviour is fine\n+\n+        def exec_module(self, module):\n+            return None  # we need this to satisfy the interface, it's wrong\n+\n+    # ensure we restore `sys.meta_path` after putting in our loader\n+    before = sys.meta_path[:]\n+    try:\n+        sys.meta_path.insert(0, ImportHook())\n+        package_loader = PackageLoader(package_name)\n+        assert package_loader.list_templates() == [\"foo.html\"]\n+    finally:\n+        sys.meta_path[:] = before\n+"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.94,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.25,
+        "type": "noul"
+      },
+      "r2": {
+        "noul": 0.22,
+        "type": "noul"
+      },
+      "r3": {
+        "noul": 0.02,
+        "type": "noul"
+      },
+      "r4": {
+        "noul": 0.28,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 2257,
+      "output_tokens": 89
+    }
+  },
+  "variant": "single"
+}

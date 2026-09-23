@@ -1,0 +1,79 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `src/attr/_make.py::add_replace` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_functional.py::TestReplace` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_functional.py::test_already_has_one` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_functional.py::test_invalid_field_name` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_functional.py::test_replaces` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/attr/__init__.py\n+++ b/src/attr/__init__.py\n@@ -10,7 +10,7 @@\n from . import converters, exceptions, filters, setters, validators\n from ._cmp import cmp_using\n from ._config import get_run_validators, set_run_validators\n-from ._funcs import asdict, assoc, astuple, evolve, has, resolve_types\n+from ._funcs import asdict, assoc, astuple, has, resolve_types\n from ._make import (\n     NOTHING,\n     Attribute,\n@@ -19,6 +19,7 @@\n     _Nothing,\n     attrib,\n     attrs,\n+    evolve,\n     fields,\n     fields_dict,\n     make_class,\n\n--- a/src/attr/_funcs.py\n+++ b/src/attr/_funcs.py\n@@ -394,60 +394,6 @@\n     return new\n \n \n-def evolve(*args, **changes):\n-    \"\"\"\n-    Create a new instance, based on the first positional argument with\n-    *changes* applied.\n-\n-    Args:\n-\n-        inst:\n-            Instance of a class with *attrs* attributes. *inst* must be passed\n-            as a positional argument.\n-\n-        changes:\n-            Keyword changes in the new copy.\n-\n-    Returns:\n-        A copy of inst with *changes* incorporated.\n-\n-    Raises:\n-        TypeError:\n-            If *attr_name* couldn't be found in the class ``__init__``.\n-\n-        attrs.exceptions.NotAnAttrsClassError:\n-            If *cls* is not an *attrs* class.\n-\n-    .. versionadded:: 17.1.0\n-    .. deprecated:: 23.1.0\n-       It is now deprecated to pass the instance using the keyword argument\n-       *inst*. It will raise a warning until at least April 2024, after which\n-       it will become an error. Always pass the instance as a positional\n-       argument.\n-    .. versionchanged:: 24.1.0\n-       *inst* can't be passed as a keyword argument anymore.\n-    \"\"\"\n-    try:\n-        (inst,) = args\n-    except ValueError:\n-        msg = (\n-            f\"evolve() takes 1 positional argument, but {len(args)} were given\"\n-        )\n-        raise TypeError(msg) from None\n-\n-    cls = inst.__class__\n-    attrs = fields(cls)\n-    for a in attrs:\n-        if not a.init:\n-            continue\n-        attr_name = a.name  # To deal with private attributes.\n-        init_name = a.alias\n-        if init_name not in changes:\n-            changes[init_name] = getattr(inst, attr_name)\n-\n-    return cls(**changes)\n-\n-\n def resolve_types(\n     cls, globalns=None, localns=None, attribs=None, include_extras=True\n ):\n\n--- a/src/attr/_make.py\n+++ b/src/attr/_make.py\n@@ -22,6 +22,7 @@\n from ._compat import (\n     PY_3_10_PLUS,\n     PY_3_11_PLUS,\n+    PY_3_13_PLUS,\n     _AnnotationExtractor,\n     _get_annotations,\n     get_generic_base,\n@@ -563,6 +564,64 @@\n         return\n \n     raise FrozenInstanceError\n+\n+\n+def evolve(*args, **changes):\n+    \"\"\"\n+    Create a new instance, based on the first positional argument with\n+    *changes* applied.\n+\n+    .. tip::\n+\n+       On Python 3.13 and later, you can also use `copy.replace` instead.\n+\n+    Args:\n+\n+        inst:\n+            Instance of a class with *attrs* attributes. *inst* must be passed\n+            as a positional argument.\n+\n+        changes:\n+            Keyword changes in the new copy.\n+\n+    Returns:\n+        A copy of inst with *changes* incorporated.\n+\n+    Raises:\n+        TypeError:\n+            If *attr_name* couldn't be found in the class ``__init__``.\n+\n+        attrs.exceptions.NotAnAttrsClassError:\n+            If *cls* is not an *attrs* class.\n+\n+    .. versionadded:: 17.1.0\n+    .. deprecated:: 23.1.0\n+       It is now deprecated to pass the instance using the keyword argument\n+       *inst*. It will raise a warning until at least April 2024, after which\n+       it will become an error. Always pass the instance as a positional\n+       argument.\n+    .. versionchanged:: 24.1.0\n+       *inst* can't be passed as a keyword argument anymore.\n+    \"\"\"\n+    try:\n+        (inst,) = args\n+    except ValueError:\n+        msg = (\n+            f\"evolve() takes 1 positional argument, but {len(args)} were given\"\n+        )\n+        raise TypeError(msg) from None\n+\n+    cls = inst.__class__\n+    attrs = fields(cls)\n+    for a in attrs:\n+        if not a.init:\n+            continue\n+        attr_name = a.name  # To deal with private attributes.\n+        init_name = a.alias\n+        if init_name not in changes:\n+            changes[init_name] = getattr(inst, attr_name)\n+\n+    return cls(**changes)\n \n \n class _ClassBuilder:\n@@ -978,6 +1037,9 @@\n         )\n \n         return self\n+\n+    def add_replace(self):\n+        raise NotImplementedError\n \n     def add_match_args(self):\n         self._cls_dict[\"__match_args__\"] = tuple(\n@@ -1380,6 +1442,9 @@\n             if cache_hash:\n                 msg = \"Invalid value for cache_hash.  To use hash caching, init must be True.\"\n                 raise TypeError(msg)\n+\n+        if PY_3_13_PLUS and not _has_own_attribute(cls, \"__replace__\"):\n+            builder.add_replace()\n \n         if (\n             PY_3_10_PLUS\n@@ -2394,7 +2459,7 @@\n         Copy *self* and apply *changes*.\n \n         This works similarly to `attrs.evolve` but that function does not work\n-        with {class}`Attribute`.\n+        with :class:`attrs.Attribute`.\n \n         It is mainly meant to be used for `transform-fields`.\n \n\n--- a/src/attr/_next_gen.py\n+++ b/src/attr/_next_gen.py\n@@ -316,6 +316,9 @@\n        If a class has an *inherited* classmethod called\n        ``__attrs_init_subclass__``, it is executed after the class is created.\n     .. deprecated:: 24.1.0 *hash* is deprecated in favor of *unsafe_hash*.\n+    .. versionadded:: 24.3.0\n+       Unless already present, a ``__replace__`` method is automatically\n+       created for `copy.replace` (Python 3.13+ only).\n \n     .. note::\n \n\n--- a/tests/test_functional.py\n+++ b/tests/test_functional.py\n@@ -4,6 +4,7 @@\n End-to-end tests.\n \"\"\"\n \n+import copy\n import inspect\n import pickle\n \n@@ -16,6 +17,7 @@\n \n import attr\n \n+from attr._compat import PY_3_13_PLUS\n from attr._make import NOTHING, Attribute\n from attr.exceptions import FrozenInstanceError\n \n@@ -767,3 +769,40 @@\n \n         assert [ToRegister] == REGISTRY\n \n+\n+@pytest.mark.skipif(not PY_3_13_PLUS, reason=\"requires Python 3.13+\")\n+class TestReplace:\n+    def test_replaces(self):\n+        \"\"\"\n+        copy.replace() is added by default and works like `attrs.evolve`.\n+        \"\"\"\n+        inst = C1(1, 2)\n+\n+        assert C1(1, 42) == copy.replace(inst, y=42)\n+        assert C1(42, 2) == copy.replace(inst, x=42)\n+\n+    def test_already_has_one(self):\n+        \"\"\"\n+        If the object already has a __replace__, it's left alone.\n+        \"\"\"\n+        sentinel = object()\n+\n+        @attr.s\n+        class C:\n+            x = attr.ib()\n+\n+            __replace__ = sentinel\n+\n+        assert sentinel == C.__replace__\n+\n+    def test_invalid_field_name(self):\n+        \"\"\"\n+        Invalid field names raise a TypeError.\n+\n+        This is consistent with dataclasses.\n+        \"\"\"\n+        inst = C1(1, 2)\n+\n+        with pytest.raises(TypeError):\n+            copy.replace(inst, z=42)\n+"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.03,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.29,
+        "type": "noul"
+      },
+      "r2": {
+        "noul": 0.31,
+        "type": "noul"
+      },
+      "r3": {
+        "noul": 0.26,
+        "type": "noul"
+      },
+      "r4": {
+        "noul": 0.28,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 3499,
+      "output_tokens": 89
+    }
+  },
+  "variant": "single"
+}

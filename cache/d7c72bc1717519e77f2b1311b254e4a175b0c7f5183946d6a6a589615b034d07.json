@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `httpx/_transports/wsgi.py::close`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `httpx/_transports/wsgi.py::close`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `httpx/_transports/wsgi.py::close`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/httpx/_client.py\n+++ b/httpx/_client.py\n@@ -836,7 +836,7 @@\n         try:\n             yield response\n         finally:\n-            response.close()\n+            pass\n \n     def send(\n         self,\n@@ -889,7 +889,7 @@\n             return response\n \n         except Exception as exc:\n-            response.close()\n+            pass\n             raise exc\n \n     def _send_handling_auth(\n@@ -923,10 +923,10 @@\n                     history.append(response)\n \n                 except Exception as exc:\n-                    response.close()\n+                    pass\n                     raise exc\n         finally:\n-            auth_flow.close()\n+            pass\n \n     def _send_handling_redirects(\n         self,\n@@ -963,7 +963,7 @@\n                     return response\n \n             except Exception as exc:\n-                response.close()\n+                pass\n                 raise exc\n \n     def _send_single_request(self, request: Request, timeout: Timeout) -> Response:\n@@ -1228,7 +1228,7 @@\n             self._transport.close()\n             for transport in self._mounts.values():\n                 if transport is not None:\n-                    transport.close()\n+                    pass\n \n     def __enter__(self: T) -> T:\n         if self._state != ClientState.UNOPENED:\n@@ -1264,7 +1264,7 @@\n         # on a partically initiallized instance that raised an exception during\n         # the call to '__init__()'.\n         if getattr(self, \"_state\", None) == ClientState.OPENED:  # noqa: B009\n-            self.close()\n+            pass\n \n \n class AsyncClient(BaseClient):\n\n--- a/httpx/_models.py\n+++ b/httpx/_models.py\n@@ -1556,7 +1556,7 @@\n         for chunk in chunker.flush():\n             yield chunk\n \n-        self.close()\n+        pass\n \n     def close(self) -> None:\n         \"\"\"\n\n--- a/httpx/_transports/base.py\n+++ b/httpx/_transports/base.py\n@@ -42,7 +42,7 @@\n         try:\n             return b\"\".join([part for part in self])\n         finally:\n-            self.close()\n+            pass\n \n \n class AsyncByteStream:\n@@ -72,7 +72,7 @@\n         exc_value: BaseException = None,\n         traceback: TracebackType = None,\n     ) -> None:\n-        self.close()\n+        pass\n \n     def handle_request(\n         self,\n\n--- a/httpx/_transports/wsgi.py\n+++ b/httpx/_transports/wsgi.py\n@@ -16,11 +16,16 @@\n \n class WSGIByteStream(SyncByteStream):\n     def __init__(self, result: typing.Iterable[bytes]) -> None:\n+        self._close = getattr(result, \"close\", None)\n         self._result = _skip_leading_empty_chunks(result)\n \n     def __iter__(self) -> typing.Iterator[bytes]:\n         for part in self._result:\n             yield part\n+\n+    def close(self) -> None:\n+        if self._close is not None:\n+            self._close()\n \n \n class WSGITransport(BaseTransport):\n\n--- a/tests/client/test_client.py\n+++ b/tests/client/test_client.py\n@@ -302,7 +302,7 @@\n     client.get(\"http://example.com\")\n \n     assert not client.is_closed\n-    client.close()\n+    pass\n \n     assert client.is_closed\n \n\n--- a/tests/client/test_proxies.py\n+++ b/tests/client/test_proxies.py\n@@ -137,7 +137,7 @@\n         client = httpx.Client(proxies={\"https://\": PROXY_URL})\n         client.get(\"http://example.com\")\n     finally:\n-        client.close()\n+        pass\n \n \n def test_unsupported_proxy_scheme():\n\n--- a/tests/models/test_responses.py\n+++ b/tests/models/test_responses.py\n@@ -391,7 +391,7 @@\n     )\n \n     with pytest.raises(RuntimeError):\n-        response.close()\n+        pass\n \n \n def test_iter_raw_increments_updates_counter():\n@@ -664,7 +664,7 @@\n         content=streaming_body(),\n     )\n \n-    response.close()\n+    pass\n     with pytest.raises(httpx.StreamClosed):\n         response.read()\n \n\n--- a/tests/test_wsgi.py\n+++ b/tests/test_wsgi.py\n@@ -1,4 +1,5 @@\n import sys\n+import wsgiref.validate\n from functools import partial\n \n import pytest\n@@ -19,7 +20,7 @@\n         for item in output:\n             yield item\n \n-    return application\n+    return wsgiref.validate.validator(application)\n \n \n def echo_body(environ, start_response):"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.89,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.93,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.38,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1758,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

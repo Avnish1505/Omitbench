@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_datastructures.py::test_iter_multi_data`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_datastructures.py::test_iter_multi_data`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_datastructures.py::test_iter_multi_data`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/werkzeug/datastructures/headers.py\n+++ b/src/werkzeug/datastructures/headers.py\n@@ -62,7 +62,7 @@\n         defaults: (\n             Headers\n             | MultiDict[str, t.Any]\n-            | cabc.Mapping[str, t.Any | cabc.Collection[t.Any]]\n+            | cabc.Mapping[str, t.Any | list[t.Any] | tuple[t.Any, ...] | set[t.Any]]\n             | cabc.Iterable[tuple[str, t.Any]]\n             | None\n         ) = None,\n@@ -227,7 +227,7 @@\n         arg: (\n             Headers\n             | MultiDict[str, t.Any]\n-            | cabc.Mapping[str, t.Any | cabc.Collection[t.Any]]\n+            | cabc.Mapping[str, t.Any | list[t.Any] | tuple[t.Any, ...] | set[t.Any]]\n             | cabc.Iterable[tuple[str, t.Any]]\n             | None\n         ) = None,\n@@ -491,12 +491,14 @@\n         arg: (\n             Headers\n             | MultiDict[str, t.Any]\n-            | cabc.Mapping[str, t.Any | cabc.Collection[t.Any]]\n+            | cabc.Mapping[\n+                str, t.Any | list[t.Any] | tuple[t.Any, ...] | cabc.Set[t.Any]\n+            ]\n             | cabc.Iterable[tuple[str, t.Any]]\n             | None\n         ) = None,\n         /,\n-        **kwargs: t.Any | cabc.Collection[t.Any],\n+        **kwargs: t.Any | list[t.Any] | tuple[t.Any, ...] | cabc.Set[t.Any],\n     ) -> None:\n         \"\"\"Replace headers in this object with items from another\n         headers object and keyword arguments.\n@@ -516,9 +518,7 @@\n                     self.setlist(key, arg.getlist(key))\n             elif isinstance(arg, cabc.Mapping):\n                 for key, value in arg.items():\n-                    if isinstance(value, cabc.Collection) and not isinstance(\n-                        value, str\n-                    ):\n+                    if isinstance(value, (list, tuple, set)):\n                         self.setlist(key, value)\n                     else:\n                         self.set(key, value)\n@@ -527,13 +527,16 @@\n                     self.set(key, value)\n \n         for key, value in kwargs.items():\n-            if isinstance(value, cabc.Collection) and not isinstance(value, str):\n+            if isinstance(value, (list, tuple, set)):\n                 self.setlist(key, value)\n             else:\n                 self.set(key, value)\n \n     def __or__(\n-        self, other: cabc.Mapping[str, t.Any | cabc.Collection[t.Any]]\n+        self,\n+        other: cabc.Mapping[\n+            str, t.Any | list[t.Any] | tuple[t.Any, ...] | cabc.Set[t.Any]\n+        ],\n     ) -> te.Self:\n         if not isinstance(other, cabc.Mapping):\n             return NotImplemented\n@@ -545,13 +548,11 @@\n     def __ior__(\n         self,\n         other: (\n-            cabc.Mapping[str, t.Any | cabc.Collection[t.Any]]\n+            cabc.Mapping[str, t.Any | list[t.Any] | tuple[t.Any, ...] | cabc.Set[t.Any]]\n             | cabc.Iterable[tuple[str, t.Any]]\n         ),\n     ) -> te.Self:\n-        if not isinstance(other, (cabc.Mapping, cabc.Iterable)) or isinstance(\n-            other, str\n-        ):\n+        if not isinstance(other, (cabc.Mapping, cabc.Iterable)):\n             return NotImplemented\n \n         self.update(other)\n\n--- a/src/werkzeug/datastructures/structures.py\n+++ b/src/werkzeug/datastructures/structures.py\n@@ -22,7 +22,7 @@\n def iter_multi_items(\n     mapping: (\n         MultiDict[K, V]\n-        | cabc.Mapping[K, V | cabc.Collection[V]]\n+        | cabc.Mapping[K, V | list[V] | tuple[V, ...] | set[V]]\n         | cabc.Iterable[tuple[K, V]]\n     ),\n ) -> cabc.Iterator[tuple[K, V]]:\n@@ -33,11 +33,11 @@\n         yield from mapping.items(multi=True)\n     elif isinstance(mapping, cabc.Mapping):\n         for key, value in mapping.items():\n-            if isinstance(value, cabc.Collection) and not isinstance(value, str):\n+            if isinstance(value, (list, tuple, set)):\n                 for v in value:\n                     yield key, v\n             else:\n-                yield key, value  # type: ignore[misc]\n+                yield key, value\n     else:\n         yield from mapping\n \n@@ -182,7 +182,7 @@\n         self,\n         mapping: (\n             MultiDict[K, V]\n-            | cabc.Mapping[K, V | cabc.Collection[V]]\n+            | cabc.Mapping[K, V | list[V] | tuple[V, ...] | set[V]]\n             | cabc.Iterable[tuple[K, V]]\n             | None\n         ) = None,\n@@ -194,7 +194,7 @@\n         elif isinstance(mapping, cabc.Mapping):\n             tmp = {}\n             for key, value in mapping.items():\n-                if isinstance(value, cabc.Collection) and not isinstance(value, str):\n+                if isinstance(value, (list, tuple, set)):\n                     value = list(value)\n \n                     if not value:\n@@ -419,7 +419,7 @@\n         self,\n         mapping: (\n             MultiDict[K, V]\n-            | cabc.Mapping[K, V | cabc.Collection[V]]\n+            | cabc.Mapping[K, V | list[V] | tuple[V, ...] | set[V]]\n             | cabc.Iterable[tuple[K, V]]\n         ),\n     ) -> None:\n@@ -444,7 +444,7 @@\n             self.add(key, value)\n \n     def __or__(  # type: ignore[override]\n-        self, other: cabc.Mapping[K, V | cabc.Collection[V]]\n+        self, other: cabc.Mapping[K, V | list[V] | tuple[V, ...] | set[V]]\n     ) -> MultiDict[K, V]:\n         if not isinstance(other, cabc.Mapping):\n             return NotImplemented\n@@ -455,11 +455,12 @@\n \n     def __ior__(  # type: ignore[override]\n         self,\n-        other: cabc.Mapping[K, V | cabc.Collection[V]] | cabc.Iterable[tuple[K, V]],\n+        other: (\n+            cabc.Mapping[K, V | list[V] | tuple[V, ...] | set[V]]\n+            | cabc.Iterable[tuple[K, V]]\n+        ),\n     ) -> te.Self:\n-        if not isinstance(other, (cabc.Mapping, cabc.Iterable)) or isinstance(\n-            other, str\n-        ):\n+        if not isinstance(other, (cabc.Mapping, cabc.Iterable)):\n             return NotImplemented\n \n         self.update(other)\n@@ -600,7 +601,7 @@\n         self,\n         mapping: (\n             MultiDict[K, V]\n-            | cabc.Mapping[K, V | cabc.Collection[V]]\n+            | cabc.Mapping[K, V | list[V] | tuple[V, ...] | set[V]]\n             | cabc.Iterable[tuple[K, V]]\n             | None\n         ) = None,\n@@ -744,7 +745,7 @@\n         self,\n         mapping: (\n             MultiDict[K, V]\n-            | cabc.Mapping[K, V | cabc.Collection[V]]\n+            | cabc.Mapping[K, V | list[V] | tuple[V, ...] | set[V]]\n             | cabc.Iterable[tuple[K, V]]\n         ),\n     ) -> None:\n@@ -1009,7 +1010,7 @@\n         self,\n         mapping: (\n             MultiDict[K, V]\n-            | cabc.Mapping[K, V | cabc.Collection[V]]\n+            | cabc.Mapping[K, V | list[V] | tuple[V, ...] | set[V]]\n             | cabc.Iterable[tuple[K, V]]\n             | None\n         ) = None,\n\n--- a/tests/test_datastructures.py\n+++ b/tests/test_datastructures.py\n@@ -1,6 +1,9 @@\n+from __future__ import annotations\n+\n import io\n import pickle\n import tempfile\n+import typing as t\n from contextlib import contextmanager\n from copy import copy\n from copy import deepcopy\n@@ -43,7 +46,7 @@\n \n \n class _MutableMultiDictTests:\n-    storage_class: type[\"ds.MultiDict\"]\n+    storage_class: type[ds.MultiDict]\n \n     def test_pickle(self):\n         cls = self.storage_class\n@@ -1281,3 +1284,15 @@\n     with pytest.raises(ValueError):\n         ds.Range(\"bytes\", ranges)\n \n+\n+@pytest.mark.parametrize(\n+    (\"value\", \"expect\"),\n+    [\n+        ({\"a\": \"ab\"}, [(\"a\", \"ab\")]),\n+        ({\"a\": [\"a\", \"b\"]}, [(\"a\", \"a\"), (\"a\", \"b\")]),\n+        ({\"a\": b\"ab\"}, [(\"a\", b\"ab\")]),\n+    ],\n+)\n+def test_iter_multi_data(value: t.Any, expect: list[tuple[t.Any, t.Any]]) -> None:\n+    raise NotImplementedError\n+"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.91,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.04,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.18,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 2811,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

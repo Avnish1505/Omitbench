@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_content.py::test_bytesio_content` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/httpx/_content.py\n+++ b/httpx/_content.py\n@@ -17,7 +17,7 @@\n from ._multipart import MultipartStream\n from ._transports.base import AsyncByteStream, SyncByteStream\n from ._types import RequestContent, RequestData, RequestFiles, ResponseContent\n-from ._utils import primitive_value_to_str\n+from ._utils import peek_filelike_length, primitive_value_to_str\n \n \n class ByteStream(AsyncByteStream, SyncByteStream):\n@@ -82,12 +82,17 @@\n \n     if isinstance(content, (bytes, str)):\n         body = content.encode(\"utf-8\") if isinstance(content, str) else content\n-        content_length = str(len(body))\n-        headers = {\"Content-Length\": content_length} if body else {}\n+        content_length = len(body)\n+        headers = {\"Content-Length\": str(content_length)} if body else {}\n         return headers, ByteStream(body)\n \n     elif isinstance(content, Iterable):\n-        headers = {\"Transfer-Encoding\": \"chunked\"}\n+        content_length_or_none = peek_filelike_length(content)\n+\n+        if content_length_or_none is None:\n+            headers = {\"Transfer-Encoding\": \"chunked\"}\n+        else:\n+            headers = {\"Content-Length\": str(content_length_or_none)}\n         return headers, IteratorByteStream(content)  # type: ignore\n \n     elif isinstance(content, AsyncIterable):\n\n--- a/httpx/_multipart.py\n+++ b/httpx/_multipart.py\n@@ -93,9 +93,8 @@\n             return len(headers) + len(to_bytes(self.file))\n \n         # Let's do our best not to read `file` into memory.\n-        try:\n-            file_length = peek_filelike_length(self.file)\n-        except OSError:\n+        file_length = peek_filelike_length(self.file)\n+        if file_length is None:\n             # As a last resort, read file and cache contents for later.\n             assert not hasattr(self, \"_data\")\n             self._data = to_bytes(self.file.read())\n\n--- a/httpx/_utils.py\n+++ b/httpx/_utils.py\n@@ -342,7 +342,7 @@\n     return None\n \n \n-def peek_filelike_length(stream: typing.IO) -> int:\n+def peek_filelike_length(stream: typing.Any) -> typing.Optional[int]:\n     \"\"\"\n     Given a file-like stream object, return its length in number of bytes\n     without reading it into memory.\n@@ -350,7 +350,9 @@\n     try:\n         # Is it an actual file?\n         fd = stream.fileno()\n-    except OSError:\n+        # Yup, seems to be an actual file.\n+        length = os.fstat(fd).st_size\n+    except (AttributeError, OSError):\n         # No... Maybe it's something that supports random access, like `io.BytesIO`?\n         try:\n             # Assuming so, go to end of stream to figure out its length,\n@@ -358,14 +360,11 @@\n             offset = stream.tell()\n             length = stream.seek(0, os.SEEK_END)\n             stream.seek(offset)\n-        except OSError:\n+        except (AttributeError, OSError):\n             # Not even that? Sorry, we're doomed...\n-            raise\n-        else:\n-            return length\n-    else:\n-        # Yup, seems to be an actual file.\n-        return os.fstat(fd).st_size\n+            return None\n+\n+    return length\n \n \n class Timer:\n\n--- a/tests/test_content.py\n+++ b/tests/test_content.py\n@@ -46,6 +46,18 @@\n     assert headers == {\"Content-Length\": \"13\"}\n     assert sync_content == b\"Hello, world!\"\n     assert async_content == b\"Hello, world!\"\n+\n+\n+@pytest.mark.asyncio\n+async def test_bytesio_content():\n+    headers, stream = encode_request(content=io.BytesIO(b\"Hello, world!\"))\n+    assert isinstance(stream, typing.Iterable)\n+    assert not isinstance(stream, typing.AsyncIterable)\n+\n+    content = b\"\".join([part for part in stream])\n+\n+    assert headers == {\"Content-Length\": \"13\"}\n+    assert content == b\"Hello, world!\"\n \n \n @pytest.mark.asyncio"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.25,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1510,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

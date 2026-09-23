@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_nativetypes.py::test_macro` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/jinja2/compiler.py\n+++ b/src/jinja2/compiler.py\n@@ -724,6 +724,7 @@\n         \"\"\"\n         self.writeline(\"resolve = context.resolve_or_missing\")\n         self.writeline(\"undefined = environment.undefined\")\n+        self.writeline(\"concat = environment.concat\")\n         # always use the standard Undefined class for the implicit else of\n         # conditional expressions\n         self.writeline(\"cond_expr_undefined = Undefined\")\n\n--- a/src/jinja2/environment.py\n+++ b/src/jinja2/environment.py\n@@ -280,6 +280,8 @@\n     #: the class that is used for code generation.  See\n     #: :class:`~jinja2.compiler.CodeGenerator` for more information.\n     code_generator_class: t.Type[\"CodeGenerator\"] = CodeGenerator\n+\n+    concat = \"\".join\n \n     #: the context class that is used for templates.  See\n     #: :class:`~jinja2.runtime.Context` for more information.\n@@ -1282,7 +1284,7 @@\n         ctx = self.new_context(dict(*args, **kwargs))\n \n         try:\n-            return concat(self.root_render_func(ctx))  # type: ignore\n+            return self.environment.concat(self.root_render_func(ctx))  # type: ignore\n         except Exception:\n             self.environment.handle_exception()\n \n@@ -1303,7 +1305,9 @@\n         ctx = self.new_context(dict(*args, **kwargs))\n \n         try:\n-            return concat([n async for n in self.root_render_func(ctx)])  # type: ignore\n+            return self.environment.concat(  # type: ignore\n+                [n async for n in self.root_render_func(ctx)]  # type: ignore\n+            )\n         except Exception:\n             return self.environment.handle_exception()\n \n\n--- a/src/jinja2/nativetypes.py\n+++ b/src/jinja2/nativetypes.py\n@@ -3,6 +3,7 @@\n from ast import parse\n from itertools import chain\n from itertools import islice\n+from types import GeneratorType\n \n from . import nodes\n from .compiler import CodeGenerator\n@@ -31,7 +32,9 @@\n         if not isinstance(raw, str):\n             return raw\n     else:\n-        raw = \"\".join([str(v) for v in chain(head, values)])\n+        if isinstance(values, GeneratorType):\n+            values = chain(head, values)\n+        raw = \"\".join([str(v) for v in values])\n \n     try:\n         return literal_eval(\n@@ -86,6 +89,7 @@\n     \"\"\"An environment that renders templates to native Python types.\"\"\"\n \n     code_generator_class = NativeCodeGenerator\n+    concat = staticmethod(native_concat)  # type: ignore\n \n \n class NativeTemplate(Template):\n@@ -101,7 +105,9 @@\n         ctx = self.new_context(dict(*args, **kwargs))\n \n         try:\n-            return native_concat(self.root_render_func(ctx))  # type: ignore\n+            return self.environment_class.concat(  # type: ignore\n+                self.root_render_func(ctx)  # type: ignore\n+            )\n         except Exception:\n             return self.environment.handle_exception()\n \n@@ -114,7 +120,7 @@\n         ctx = self.new_context(dict(*args, **kwargs))\n \n         try:\n-            return native_concat(\n+            return self.environment_class.concat(  # type: ignore\n                 [n async for n in self.root_render_func(ctx)]  # type: ignore\n             )\n         except Exception:\n\n--- a/src/jinja2/runtime.py\n+++ b/src/jinja2/runtime.py\n@@ -49,7 +49,6 @@\n     \"Markup\",\n     \"TemplateRuntimeError\",\n     \"missing\",\n-    \"concat\",\n     \"escape\",\n     \"markup_join\",\n     \"str_join\",\n\n--- a/tests/test_nativetypes.py\n+++ b/tests/test_nativetypes.py\n@@ -154,3 +154,10 @@\n     result = t.render()\n     assert result == \" True\"\n \n+\n+def test_macro(env):\n+    t = env.from_string(\"{%- macro x() -%}{{- [1,2] -}}{%- endmacro -%}{{- x()[1] -}}\")\n+    result = t.render()\n+    assert result == 2\n+    assert isinstance(result, int)\n+"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.15,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1497,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

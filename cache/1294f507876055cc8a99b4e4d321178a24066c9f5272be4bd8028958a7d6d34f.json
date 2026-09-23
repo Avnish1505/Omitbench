@@ -1,0 +1,115 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_termui.py::TextStreamWithoutBuffer` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_termui.py::pager_contextmanager` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_termui.py::test_get_pager_file_flushes_stream_on_exception` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_termui.py::test_get_pager_file_keeps_text_stream_without_buffer` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_termui.py::test_get_pager_file_reuses_existing_maybe_strip_ansi` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r5": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_termui.py::test_get_pager_file_supports_multiple_write_sites` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r6": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_termui.py::test_get_pager_file_with_real_pager_data_cases` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r7": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_termui.py::writer` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/tests/test_termui.py\n+++ b/tests/test_termui.py\n@@ -1,11 +1,17 @@\n+import contextlib\n+import io\n import platform\n import shlex\n+import shutil\n+import subprocess\n import tempfile\n import time\n+from functools import partial\n from unittest.mock import patch\n \n import pytest\n \n+import click\n import click._termui_impl\n from click._compat import WIN\n from click._termui_impl import Editor\n@@ -618,6 +624,160 @@\n     issue #1026, PR #1477, PR #1543, PR #2775.\n     \"\"\"\n     assert shlex.split(pager_env) == expected_parts\n+\n+\n+def test_get_pager_file_reuses_existing_maybe_strip_ansi(monkeypatch):\n+    \"\"\"An already-wrapped pager stream should be yielded unchanged.\"\"\"\n+    buffer = io.BytesIO()\n+    wrapped = click._termui_impl.MaybeStripAnsi(buffer, color=True, encoding=\"utf-8\")\n+\n+    @contextlib.contextmanager\n+    def pager_contextmanager(color=None):\n+        raise NotImplementedError\n+\n+    monkeypatch.setattr(\n+        click._termui_impl, \"_pager_contextmanager\", pager_contextmanager\n+    )\n+\n+    with click.get_pager_file(color=True) as pager:\n+        assert pager is wrapped\n+        pager.write(\"hello\")\n+\n+    assert buffer.getvalue() == b\"hello\"\n+\n+\n+def test_get_pager_file_keeps_text_stream_without_buffer(monkeypatch):\n+    \"\"\"\n+    A text stream with no ``.buffer`` should not be re-wrapped and have\n+    its color field set.\n+    \"\"\"\n+\n+    class TextStreamWithoutBuffer:\n+        encoding = \"utf-8\"\n+\n+        def __init__(self):\n+            self.value = \"\"\n+            self.color = None\n+\n+        def write(self, text):\n+            self.value += text\n+            return len(text)\n+\n+        def flush(self):\n+            pass\n+\n+    stream = TextStreamWithoutBuffer()\n+    styled_text = click.style(\"hello\", fg=\"red\")\n+\n+    @contextlib.contextmanager\n+    def pager_contextmanager(color=None):\n+        yield stream, \"utf-8\", color\n+\n+    monkeypatch.setattr(\n+        click._termui_impl, \"_pager_contextmanager\", pager_contextmanager\n+    )\n+\n+    with click.get_pager_file(color=False) as pager:\n+        assert pager is stream\n+        assert pager.color is False\n+        pager.write(styled_text)\n+\n+    assert stream.value == styled_text\n+\n+\n+def _run_get_pager_file_with_real_pager(monkeypatch, tmp_path, writer, color=False):\n+    pager_path = shutil.which(\"cat\")\n+    assert pager_path is not None, \"cat not available\"\n+\n+    pager_out = tmp_path / \"pager_out.txt\"\n+\n+    monkeypatch.setattr(click._termui_impl, \"isatty\", lambda _: True)\n+    monkeypatch.setitem(click._termui_impl.os.environ, \"PAGER\", pager_path)\n+\n+    with pager_out.open(\"w\") as f:\n+        force_subprocess_stdout = patch.object(\n+            subprocess,\n+            \"Popen\",\n+            partial(subprocess.Popen, stdout=f),\n+        )\n+        with force_subprocess_stdout:\n+            with click.get_pager_file(color=color) as pager:\n+                writer(pager)\n+\n+    return pager_out.read_text()\n+\n+\n+@pytest.mark.skipif(WIN, reason=\"Exercises the pipe pager path.\")\n+def test_get_pager_file_supports_multiple_write_sites(monkeypatch, tmp_path):\n+    \"\"\"Different helpers can write to the same pager stream.\"\"\"\n+\n+    def writer(pager):\n+        pager.write(\"prefix\\n\")\n+        click.echo(\"middle\", file=pager)\n+        pager.write(\"suffix\\n\")\n+\n+    output = _run_get_pager_file_with_real_pager(monkeypatch, tmp_path, writer)\n+\n+    assert output == \"prefix\\nmiddle\\nsuffix\\n\"\n+\n+\n+@pytest.mark.skipif(WIN, reason=\"Exercises the pipe pager path.\")\n+@pytest.mark.parametrize(\n+    (\"text\", \"color\", \"expected\"),\n+    [\n+        pytest.param(\"hello\\n\", False, \"hello\\n\", id=\"plain text\"),\n+        pytest.param(\n+            click.style(\"hello\", fg=\"red\") + \"\\n\", False, \"hello\\n\", id=\"strip ansi\"\n+        ),\n+        pytest.param(\n+            click.style(\"hello\", fg=\"red\") + \"\\n\",\n+            True,\n+            click.style(\"hello\", fg=\"red\") + \"\\n\",\n+            id=\"preserve ansi\",\n+        ),\n+        pytest.param(\"\", False, \"\", id=\"empty string\"),\n+    ],\n+)\n+def test_get_pager_file_with_real_pager_data_cases(\n+    monkeypatch, tmp_path, text, color, expected\n+):\n+    \"\"\"Real pager output should match text and color expectations.\"\"\"\n+    output = _run_get_pager_file_with_real_pager(\n+        monkeypatch, tmp_path, lambda pager: pager.write(text), color=color\n+    )\n+\n+    assert output == expected\n+\n+\n+def test_get_pager_file_flushes_stream_on_exception(monkeypatch):\n+    \"\"\"Exceptions should still flush the yielded stream in ``finally``.\"\"\"\n+\n+    class FlushableTextStream:\n+        encoding = \"utf-8\"\n+\n+        def __init__(self):\n+            self.color = None\n+            self.flush_calls = 0\n+\n+        def flush(self):\n+            self.flush_calls += 1\n+\n+    stream = FlushableTextStream()\n+\n+    @contextlib.contextmanager\n+    def pager_contextmanager(color=None):\n+        yield stream, \"utf-8\", color\n+\n+    monkeypatch.setattr(\n+        click._termui_impl, \"_pager_contextmanager\", pager_contextmanager\n+    )\n+\n+    with pytest.raises(RuntimeError, match=\"boom\"):\n+        with click.get_pager_file() as pager:\n+            assert pager is stream\n+            raise RuntimeError(\"boom\")\n+\n+    assert stream.flush_calls == 1\n \n \n def test_editor_unclosed_quote():"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.34,
+        "type": "noul"
+      },
+      "r2": {
+        "noul": 0.19,
+        "type": "noul"
+      },
+      "r3": {
+        "noul": 0.21,
+        "type": "noul"
+      },
+      "r4": {
+        "noul": 0.16,
+        "type": "noul"
+      },
+      "r5": {
+        "noul": 0.36,
+        "type": "noul"
+      },
+      "r6": {
+        "noul": 0.3,
+        "type": "noul"
+      },
+      "r7": {
+        "noul": 0.88,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 3685,
+      "output_tokens": 140
+    }
+  },
+  "variant": "single"
+}

@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_security.py::test_invalid_method` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/werkzeug/security.py\n+++ b/src/werkzeug/security.py\n@@ -5,7 +5,6 @@\n import os\n import posixpath\n import secrets\n-import warnings\n \n SALT_CHARS = \"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\"\n DEFAULT_PBKDF2_ITERATIONS = 600000\n@@ -24,14 +23,6 @@\n \n \n def _hash_internal(method: str, salt: str, password: str) -> tuple[str, str]:\n-    if method == \"plain\":\n-        warnings.warn(\n-            \"The 'plain' password method is deprecated and will be removed in\"\n-            \" Werkzeug 3.0. Migrate to the 'scrypt' method.\",\n-            stacklevel=3,\n-        )\n-        return password, method\n-\n     method, *args = method.split(\":\")\n     salt = salt.encode(\"utf-8\")\n     password = password.encode(\"utf-8\")\n@@ -72,12 +63,7 @@\n             f\"pbkdf2:{hash_name}:{iterations}\",\n         )\n     else:\n-        warnings.warn(\n-            f\"The '{method}' password method is deprecated and will be removed in\"\n-            \" Werkzeug 3.0. Migrate to the 'scrypt' method.\",\n-            stacklevel=3,\n-        )\n-        return hmac.new(salt, password, method).hexdigest(), method\n+        raise ValueError(f\"Invalid hash method '{method}'.\")\n \n \n def generate_password_hash(\n\n--- a/tests/test_security.py\n+++ b/tests/test_security.py\n@@ -42,6 +42,10 @@\n         generate_password_hash(\"secret\", salt_length=0)\n \n \n+def test_invalid_method():\n+    raise NotImplementedError\n+\n+\n def test_safe_join():\n     assert safe_join(\"foo\", \"bar/baz\") == posixpath.join(\"foo\", \"bar/baz\")\n     assert safe_join(\"foo\", \"../bar/baz\") is None"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.01,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 967,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

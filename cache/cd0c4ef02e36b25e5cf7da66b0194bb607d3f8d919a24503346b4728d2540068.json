@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_itsdangerous/test_timed.py::test_fallback_signers`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_itsdangerous/test_timed.py::test_fallback_signers`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_itsdangerous/test_timed.py::test_fallback_signers`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/itsdangerous/timed.py\n+++ b/src/itsdangerous/timed.py\n@@ -123,13 +123,20 @@\n         raised. All arguments are forwarded to the signer's\n         :meth:`~TimestampSigner.unsign` method.\n         \"\"\"\n-        base64d, timestamp = self.make_signer(salt).unsign(\n-            s, max_age, return_timestamp=True\n-        )\n-        payload = self.load_payload(base64d)\n-        if return_timestamp:\n-            return payload, timestamp\n-        return payload\n+        s = want_bytes(s)\n+        last_exception = None\n+        for signer in self.iter_unsigners(salt):\n+            try:\n+                base64d, timestamp = signer.unsign(\n+                    s, max_age, return_timestamp=True\n+                )\n+                payload = self.load_payload(base64d)\n+                if return_timestamp:\n+                    return payload, timestamp\n+                return payload\n+            except BadSignature as err:\n+                last_exception = err\n+        raise last_exception\n \n     def loads_unsafe(self, s, max_age=None, salt=None):\n         load_kwargs = {\"max_age\": max_age}\n\n--- a/tests/test_itsdangerous/test_timed.py\n+++ b/tests/test_itsdangerous/test_timed.py\n@@ -3,6 +3,7 @@\n from functools import partial\n \n import pytest\n+import hashlib\n from freezegun import freeze_time\n from test_itsdangerous.test_serializer import TestSerializer\n from test_itsdangerous.test_signer import TestSigner\n@@ -85,3 +86,6 @@\n         signed = serializer.dumps(value)\n         assert serializer.loads(signed, return_timestamp=True) == (value, ts)\n \n+    def test_fallback_signers(self):\n+        raise NotImplementedError\n+"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.94,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.04,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.08,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1072,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

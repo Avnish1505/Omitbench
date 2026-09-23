@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_slots.py::test_slots_cached_property_raising_attributeerror`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_slots.py::test_slots_cached_property_raising_attributeerror`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_slots.py::test_slots_cached_property_raising_attributeerror`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/attr/_make.py\n+++ b/src/attr/_make.py\n@@ -619,8 +619,12 @@\n     else:\n         lines.extend(\n             [\n-                \"         if hasattr(super(), '__getattr__'):\",\n-                \"              return super().__getattr__(item)\",\n+                \"         try:\",\n+                \"             return super().__getattribute__(item)\",\n+                \"         except AttributeError:\",\n+                \"             if not hasattr(super(), '__getattr__'):\",\n+                \"                 raise\",\n+                \"             return super().__getattr__(item)\",\n                 \"         original_error = f\\\"'{self.__class__.__name__}' object has no attribute '{item}'\\\"\",\n                 \"         raise AttributeError(original_error)\",\n             ]\n\n--- a/tests/test_slots.py\n+++ b/tests/test_slots.py\n@@ -807,6 +807,45 @@\n \n \n @pytest.mark.skipif(not PY_3_8_PLUS, reason=\"cached_property is 3.8+\")\n+def test_slots_cached_property_raising_attributeerror():\n+    \"\"\"\n+    Ensures AttributeError raised by a property is preserved by __getattr__()\n+    implementation.\n+\n+    Regression test for issue https://github.com/python-attrs/attrs/issues/1230\n+    \"\"\"\n+\n+    @attr.s(slots=True)\n+    class A:\n+        x = attr.ib()\n+\n+        @functools.cached_property\n+        def f(self):\n+            return self.p\n+\n+        @property\n+        def p(self):\n+            raise AttributeError(\"I am a property\")\n+\n+        @functools.cached_property\n+        def g(self):\n+            return self.q\n+\n+        @property\n+        def q(self):\n+            return 2\n+\n+    a = A(1)\n+    with pytest.raises(AttributeError, match=r\"^I am a property$\"):\n+        a.p\n+    with pytest.raises(AttributeError, match=r\"^I am a property$\"):\n+        a.f\n+\n+    assert a.g == 2\n+    assert a.q == 2\n+\n+\n+@pytest.mark.skipif(not PY_3_8_PLUS, reason=\"cached_property is 3.8+\")\n def test_slots_cached_property_with_getattr_calls_getattr_for_missing_attributes():\n     \"\"\"\n     Ensure __getattr__ implementation is maintained for non cached_properties."
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.26,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1196,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

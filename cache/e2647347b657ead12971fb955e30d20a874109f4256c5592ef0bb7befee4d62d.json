@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_cli.py::test_run_exclude_patterns` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/flask/cli.py\n+++ b/src/flask/cli.py\n@@ -858,7 +858,9 @@\n         self, value: t.Any, param: click.Parameter | None, ctx: click.Context | None\n     ) -> t.Any:\n         items = self.split_envvar_value(value)\n-        return [super().convert(item, param, ctx) for item in items]\n+        # can't call no-arg super() inside list comprehension until Python 3.12\n+        super_convert = super().convert\n+        return [super_convert(item, param, ctx) for item in items]\n \n \n @click.command(\"run\", short_help=\"Run a development server.\")\n\n--- a/tests/test_cli.py\n+++ b/tests/test_cli.py\n@@ -680,3 +680,5 @@\n     result = app.test_cli_runner().invoke(args=[\"blue\", \"--help\"])\n     assert result.exit_code == 2, f\"Unexpected success:\\n\\n{result.output}\"\n \n+\n+"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.03,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 726,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

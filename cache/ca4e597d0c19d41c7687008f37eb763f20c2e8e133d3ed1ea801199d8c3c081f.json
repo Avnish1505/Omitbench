@@ -1,0 +1,43 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_make.py::echo_func` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_additional_class_body` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/attr/_make.py\n+++ b/src/attr/_make.py\n@@ -2867,7 +2867,9 @@\n Factory = _add_hash(_add_eq(_add_repr(Factory, attrs=_f), attrs=_f), attrs=_f)\n \n \n-def make_class(name, attrs, bases=(object,), **attributes_arguments):\n+def make_class(\n+    name, attrs, bases=(object,), class_body=None, **attributes_arguments\n+):\n     r\"\"\"\n     A quick way to create a new class called *name* with *attrs*.\n \n@@ -2883,6 +2885,8 @@\n \n     :param tuple bases: Classes that the new class will subclass.\n \n+    :param dict class_body: An optional dictionary of class attributes for the new class.\n+\n     :param attributes_arguments: Passed unmodified to `attr.s`.\n \n     :return: A new class with *attrs*.\n@@ -2890,6 +2894,7 @@\n \n     .. versionadded:: 17.1.0 *bases*\n     .. versionchanged:: 18.1.0 If *attrs* is ordered, the order is retained.\n+    .. versionchanged:: 23.2.0 *class_body*\n     \"\"\"\n     if isinstance(attrs, dict):\n         cls_dict = attrs\n@@ -2904,6 +2909,8 @@\n     user_init = cls_dict.pop(\"__init__\", None)\n \n     body = {}\n+    if class_body is not None:\n+        body.update(class_body)\n     if pre_init is not None:\n         body[\"__attrs_pre_init__\"] = pre_init\n     if post_init is not None:\n\n--- a/tests/test_make.py\n+++ b/tests/test_make.py\n@@ -1106,6 +1106,18 @@\n         assert D in cls.__mro__\n         assert isinstance(cls(), D)\n \n+    def test_additional_class_body(self):\n+        \"\"\"\n+        Additional class_body is added to newly created class.\n+        \"\"\"\n+\n+        def echo_func(cls, *args):\n+            return args\n+\n+        cls = make_class(\"C\", {}, class_body={\"echo\": classmethod(echo_func)})\n+\n+        assert (\"a\", \"b\") == cls.echo(\"a\", \"b\")\n+\n     def test_clean_class(self, slots):\n         \"\"\"\n         Attribute definitions do not appear on the class body."
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.93,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.24,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1279,
+      "output_tokens": 38
+    }
+  },
+  "variant": "single"
+}

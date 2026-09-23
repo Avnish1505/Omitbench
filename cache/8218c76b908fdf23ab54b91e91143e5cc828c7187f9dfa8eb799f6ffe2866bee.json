@@ -1,0 +1,91 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `httpx/_urlparse.py::percent_encoded`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `httpx/_urlparse.py::percent_encoded`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `httpx/_urlparse.py::percent_encoded`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/models/test_url.py::test_path_query_fragment`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/models/test_url.py::test_path_query_fragment`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/models/test_url.py::test_path_query_fragment`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/httpx/_urlparse.py\n+++ b/httpx/_urlparse.py\n@@ -260,10 +260,8 @@\n     # For 'path' we need to drop ? and # from the GEN_DELIMS set.\n     parsed_path: str = quote(path, safe=SUB_DELIMS + \":/[]@\")\n     # For 'query' we need to drop '#' from the GEN_DELIMS set.\n-    # We also exclude '/' because it is more robust to replace it with a percent\n-    # encoding despite it not being a requirement of the spec.\n     parsed_query: typing.Optional[str] = (\n-        None if query is None else quote(query, safe=SUB_DELIMS + \":?[]@\")\n+        None if query is None else quote(query, safe=SUB_DELIMS + \":/?[]@\")\n     )\n     # For 'fragment' we can include all of the GEN_DELIMS set.\n     parsed_fragment: typing.Optional[str] = (\n@@ -432,13 +430,12 @@\n         if char not in NON_ESCAPED_CHARS:\n             return False\n \n-    # Any '%' characters must be valid '%xx' escape sequences.\n-    return string.count(\"%\") == len(PERCENT_ENCODED_REGEX.findall(string))\n-\n-\n-def quote(string: str, safe: str = \"/\") -> str:\n-    \"\"\"\n-    Use percent-encoding to quote a string if required.\n+    return True\n+\n+\n+def percent_encoded(string: str, safe: str = \"/\") -> str:\n+    \"\"\"\n+    Use percent-encoding to quote a string.\n     \"\"\"\n     if is_safe(string, safe=safe):\n         return string\n@@ -447,6 +444,39 @@\n     return \"\".join(\n         [char if char in NON_ESCAPED_CHARS else percent_encode(char) for char in string]\n     )\n+\n+\n+def quote(string: str, safe: str = \"/\") -> str:\n+    \"\"\"\n+    Use percent-encoding to quote a string, omitting existing '%xx' escape sequences.\n+\n+    See: https://www.rfc-editor.org/rfc/rfc3986#section-2.1\n+\n+    * `string`: The string to be percent-escaped.\n+    * `safe`: A string containing characters that may be treated as safe, and do not\n+        need to be escaped. Unreserved characters are always treated as safe.\n+        See: https://www.rfc-editor.org/rfc/rfc3986#section-2.3\n+    \"\"\"\n+    parts = []\n+    current_position = 0\n+    for match in re.finditer(PERCENT_ENCODED_REGEX, string):\n+        start_position, end_position = match.start(), match.end()\n+        matched_text = match.group(0)\n+        # Add any text up to the '%xx' escape sequence.\n+        if start_position != current_position:\n+            leading_text = string[current_position:start_position]\n+            parts.append(percent_encoded(leading_text, safe=safe))\n+\n+        # Add the '%xx' escape sequence.\n+        parts.append(matched_text)\n+        current_position = end_position\n+\n+    # Add any text after the final '%xx' escape sequence.\n+    if current_position != len(string):\n+        trailing_text = string[current_position:]\n+        parts.append(percent_encoded(trailing_text, safe=safe))\n+\n+    return \"\".join(parts)\n \n \n def urlencode(items: typing.List[typing.Tuple[str, str]]) -> str:\n@@ -464,5 +494,10 @@\n     - https://github.com/encode/httpx/issues/2721\n     - https://docs.python.org/3/library/urllib.parse.html#urllib.parse.urlencode\n     \"\"\"\n-    return \"&\".join([quote(k, safe=\"\") + \"=\" + quote(v, safe=\"\") for k, v in items])\n-\n+    return \"&\".join(\n+        [\n+            percent_encoded(k, safe=\"\") + \"=\" + percent_encoded(v, safe=\"\")\n+            for k, v in items\n+        ]\n+    )\n+\n\n--- a/tests/models/test_url.py\n+++ b/tests/models/test_url.py\n@@ -70,36 +70,79 @@\n # Tests for percent encoding across path, query, and fragment...\n \n \n-def test_path_percent_encoding():\n-    # Test percent encoding for SUB_DELIMS ALPHA NUM and allowable GEN_DELIMS\n-    url = httpx.URL(\"https://example.com/!$&'()*+,;= abc ABC 123 :/[]@\")\n-    assert url.raw_path == b\"/!$&'()*+,;=%20abc%20ABC%20123%20:/[]@\"\n-    assert url.path == \"/!$&'()*+,;= abc ABC 123 :/[]@\"\n-    assert url.query == b\"\"\n-    assert url.fragment == \"\"\n-\n-\n-def test_query_percent_encoding():\n-    # Test percent encoding for SUB_DELIMS ALPHA NUM and allowable GEN_DELIMS\n-    url = httpx.URL(\"https://example.com/?!$&'()*+,;= abc ABC 123 :/[]@\" + \"?\")\n-    assert url.raw_path == b\"/?!$&'()*+,;=%20abc%20ABC%20123%20:%2F[]@?\"\n-    assert url.path == \"/\"\n-    assert url.query == b\"!$&'()*+,;=%20abc%20ABC%20123%20:%2F[]@?\"\n-    assert url.fragment == \"\"\n-\n-\n-def test_fragment_percent_encoding():\n-    # Test percent encoding for SUB_DELIMS ALPHA NUM and allowable GEN_DELIMS\n-    url = httpx.URL(\"https://example.com/#!$&'()*+,;= abc ABC 123 :/[]@\" + \"?#\")\n-    assert url.raw_path == b\"/\"\n-    assert url.path == \"/\"\n-    assert url.query == b\"\"\n-    assert url.fragment == \"!$&'()*+,;= abc ABC 123 :/[]@?#\"\n+@pytest.mark.parametrize(\n+    \"url,raw_path,path,query,fragment\",\n+    [\n+        # URL with unescaped chars in path.\n+        (\n+            \"https://example.com/!$&'()*+,;= abc ABC 123 :/[]@\",\n+            b\"/!$&'()*+,;=%20abc%20ABC%20123%20:/[]@\",\n+            \"/!$&'()*+,;= abc ABC 123 :/[]@\",\n+            b\"\",\n+            \"\",\n+        ),\n+        # URL with escaped chars in path.\n+        (\n+            \"https://example.com/!$&'()*+,;=%20abc%20ABC%20123%20:/[]@\",\n+            b\"/!$&'()*+,;=%20abc%20ABC%20123%20:/[]@\",\n+            \"/!$&'()*+,;= abc ABC 123 :/[]@\",\n+            b\"\",\n+            \"\",\n+        ),\n+        # URL with mix of unescaped and escaped chars in path.\n+        # WARNING: This has the incorrect behaviour, adding the test as an interim step.\n+        (\n+            \"https://example.com/ %61%62%63\",\n+            b\"/%20%61%62%63\",\n+            \"/ abc\",\n+            b\"\",\n+            \"\",\n+        ),\n+        # URL with unescaped chars in query.\n+        (\n+            \"https://example.com/?!$&'()*+,;= abc ABC 123 :/[]@?\",\n+            b\"/?!$&'()*+,;=%20abc%20ABC%20123%20:/[]@?\",\n+            \"/\",\n+            b\"!$&'()*+,;=%20abc%20ABC%20123%20:/[]@?\",\n+            \"\",\n+        ),\n+        # URL with escaped chars in query.\n+        (\n+            \"https://example.com/?!$&%27()*+,;=%20abc%20ABC%20123%20:%2F[]@?\",\n+            b\"/?!$&%27()*+,;=%20abc%20ABC%20123%20:%2F[]@?\",\n+            \"/\",\n+            b\"!$&%27()*+,;=%20abc%20ABC%20123%20:%2F[]@?\",\n+            \"\",\n+        ),\n+        # URL with mix of unescaped and escaped chars in query.\n+        (\n+            \"https://example.com/?%20%97%98%99\",\n+            b\"/?%20%97%98%99\",\n+            \"/\",\n+            b\"%20%97%98%99\",\n+            \"\",\n+        ),\n+        # URL encoding characters in fragment.\n+        (\n+            \"https://example.com/#!$&'()*+,;= abc ABC 123 :/[]@?#\",\n+            b\"/\",\n+            \"/\",\n+            b\"\",\n+            \"!$&'()*+,;= abc ABC 123 :/[]@?#\",\n+        ),\n+    ],\n+)\n+def test_path_query_fragment(url, raw_path, path, query, fragment):\n+    url = httpx.URL(url)\n+    assert url.raw_path == raw_path\n+    assert url.path == path\n+    assert url.query == query\n+    assert url.fragment == fragment\n \n \n def test_url_query_encoding():\n     \"\"\"\n-    URL query parameters should use '%20' to encoding spaces,\n+    URL query parameters should use '%20' for encoding spaces,\n     and should treat '/' as a safe character. This behaviour differs\n     across clients, but we're matching browser behaviour here.\n \n@@ -107,17 +150,10 @@\n     and https://github.com/encode/httpx/discussions/2460\n     \"\"\"\n     url = httpx.URL(\"https://www.example.com/?a=b c&d=e/f\")\n-    assert url.raw_path == b\"/?a=b%20c&d=e%2Ff\"\n+    assert url.raw_path == b\"/?a=b%20c&d=e/f\"\n \n     url = httpx.URL(\"https://www.example.com/\", params={\"a\": \"b c\", \"d\": \"e/f\"})\n     assert url.raw_path == b\"/?a=b%20c&d=e%2Ff\"\n-\n-\n-def test_url_with_url_encoded_path():\n-    url = httpx.URL(\"https://www.example.com/path%20to%20somewhere\")\n-    assert url.path == \"/path to somewhere\"\n-    assert url.query == b\"\"\n-    assert url.raw_path == b\"/path%20to%20somewhere\"\n \n \n def test_url_params():"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.99,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.91,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.95,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.79,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 3465,
+      "output_tokens": 116
+    }
+  },
+  "variant": "split"
+}

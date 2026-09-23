@@ -1,0 +1,43 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_utils.py::echo` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_utils.py::test_prompts_eof` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/click/testing.py\n+++ b/src/click/testing.py\n@@ -115,6 +115,13 @@\n     @property\n     def mode(self) -> str:\n         return self._mode\n+\n+    def __next__(self) -> str:  # type: ignore\n+        try:\n+            line = super().__next__()\n+        except StopIteration as e:\n+            raise EOFError() from e\n+        return line\n \n \n def make_input_stream(\n@@ -341,7 +348,7 @@\n         @_pause_echo(echo_input)  # type: ignore\n         def visible_input(prompt: str | None = None) -> str:\n             sys.stdout.write(prompt or \"\")\n-            val = text_input.readline().rstrip(\"\\r\\n\")\n+            val = next(text_input).rstrip(\"\\r\\n\")\n             sys.stdout.write(f\"{val}\\n\")\n             sys.stdout.flush()\n             return val\n@@ -350,7 +357,7 @@\n         def hidden_input(prompt: str | None = None) -> str:\n             sys.stdout.write(f\"{prompt or ''}\\n\")\n             sys.stdout.flush()\n-            return text_input.readline().rstrip(\"\\r\\n\")\n+            return next(text_input).rstrip(\"\\r\\n\")\n \n         @_pause_echo(echo_input)  # type: ignore\n         def _getchar(echo: bool) -> str:\n\n--- a/tests/test_chain.py\n+++ b/tests/test_chain.py\n@@ -163,8 +163,8 @@\n         return processor\n \n     result = runner.invoke(cli, args, input=input)\n-    assert not result.exception\n-    assert result.output.splitlines() == expect\n+    # last two lines are '' and 'Aborted!'\n+    assert result.output.splitlines()[:-2] == expect\n \n \n def test_args_and_chain(runner):\n\n--- a/tests/test_termui.py\n+++ b/tests/test_termui.py\n@@ -242,7 +242,7 @@\n     def cli(f):\n         click.echo(f.name)\n \n-    result = runner.invoke(cli)\n+    result = runner.invoke(cli, input=\"\\n\")\n     assert result.output == f\"file [{__file__}]: \\n{__file__}\\n\"\n \n \n@@ -451,7 +451,7 @@\n     [\n         (True, \"password\\npassword\", None, \"password\"),\n         (\"Confirm Password\", \"password\\npassword\\n\", None, \"password\"),\n-        (True, \"\", \"\", \"\"),\n+        (True, \"\\n\\n\", \"\", \"\"),\n         (False, None, None, None),\n     ],\n )\n\n--- a/tests/test_utils.py\n+++ b/tests/test_utils.py\n@@ -179,6 +179,8 @@\n     assert out == \"Password:\\ninterrupted\\n\"\n \n \n+\n+\n def _test_gen_func():\n     yield \"a\"\n     yield \"b\""
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.06,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.04,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1385,
+      "output_tokens": 38
+    }
+  },
+  "variant": "single"
+}

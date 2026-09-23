@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `itsdangerous.py::simplejson`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `itsdangerous.py::simplejson`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `itsdangerous.py::simplejson`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/itsdangerous.py\n+++ b/itsdangerous.py\n@@ -10,37 +10,48 @@\n     :license: BSD, see LICENSE for more details.\n \"\"\"\n \n-import base64\n-import hashlib\n+import sys\n import hmac\n import zlib\n import time\n+import base64\n+import hashlib\n+import operator\n from datetime import datetime\n-import six\n-from six.moves import zip, map, reduce\n-\n-\n+\n+\n+PY2 = sys.version_info[0] == 2\n+if PY2:\n+    from itertools import izip\n+    text_type = unicode\n+    int_to_byte = chr\n+else:\n+    from functools import reduce\n+    izip = zip\n+    text_type = str\n+    int_to_byte = operator.methodcaller('to_bytes', 1, 'big')\n+\n+\n+# On Python 3 the builtin JSON module does not match the\n+# behavior of the JSON module from simplejson.  We need to\n+# wrap it and encode to utf-8 the return value.  This behavior\n+# does not match the behavior of the standalone simplejson\n+# module.  If we find simplejson installed we just use it\n+# unchanged.\n try:\n     import simplejson\n except ImportError:\n-    try:\n-        from django.utils import simplejson\n-    except ImportError:\n-        import json as simplejson\n+    import json as simplejson\n+    if not PY2:\n+        _json = simplejson\n \n \n # 2011/01/01 in UTC\n EPOCH = 1293840000\n \n \n-# _compat stuff, but we have no package...\n-\n-def byte2int(b):\n-    return b if six.PY3 else ord(b)\n-\n-\n def want_bytes(s, encoding='utf-8', errors='strict'):\n-    if isinstance(s, six.text_type):\n+    if isinstance(s, text_type):\n         s = s.encode(encoding, errors=errors)\n     return s\n \n@@ -61,8 +72,8 @@\n     else:\n         result = 1\n         left = val2\n-    for x, y in zip(left, val2):\n-        result |= byte2int(x) ^ byte2int(y)\n+    for x, y in izip(bytearray(left), bytearray(val2)):\n+        result |= x ^ y\n     return result == 0\n \n \n@@ -79,11 +90,12 @@\n         self.message = message\n \n     def __str__(self):\n-        s = self.__unicode__()\n-        return s if six.PY3 else s.encode('utf-8')\n-\n-    def __unicode__(self):\n-        return six.text_type(self.message)\n+        return text_type(self.message)\n+\n+    if PY2:\n+        __unicode__ = __str__\n+        def __str__(self):\n+            return self.__unicode__().encode('utf-8')\n \n \n class BadPayload(BadData):\n@@ -163,14 +175,13 @@\n     assert num >= 0\n     rv = []\n     while num:\n-        rv.append(six.int2byte(num & 0xff))\n+        rv.append(int_to_byte(num & 0xff))\n         num >>= 8\n     return b''.join(reversed(rv))\n \n \n def bytes_to_int(bytestr):\n-    assert isinstance(bytestr, bytes)\n-    return reduce(lambda a, b: a << 8 | b, map(byte2int, bytestr), 0)\n+    return reduce(lambda a, b: a << 8 | b, bytearray(bytestr), 0)\n \n \n class SigningAlgorithm(object):\n@@ -244,10 +255,10 @@\n     #: .. versionadded:: 0.14\n     default_key_derivation = 'django-concat'\n \n-    def __init__(self, secret_key, salt=None, sep=b'.', key_derivation=None,\n+    def __init__(self, secret_key, salt=None, sep='.', key_derivation=None,\n                  digest_method=None, algorithm=None):\n         self.secret_key = want_bytes(secret_key)\n-        self.sep = want_bytes(sep)\n+        self.sep = sep\n         self.salt = b'itsdangerous.Signer' if salt is None \\\n                     else want_bytes(salt)\n         if key_derivation is None:\n@@ -290,14 +301,15 @@\n \n     def sign(self, value):\n         \"\"\"Signs the given string.\"\"\"\n-        return value + self.sep + self.get_signature(value)\n+        return value + want_bytes(self.sep) + self.get_signature(value)\n \n     def unsign(self, signed_value):\n         \"\"\"Unsigns the given string.\"\"\"\n         signed_value = want_bytes(signed_value)\n-        if self.sep not in signed_value:\n+        sep = want_bytes(self.sep)\n+        if sep not in signed_value:\n             raise BadSignature('No %r found in value' % self.sep)\n-        value, sig = signed_value.rsplit(self.sep, 1)\n+        value, sig = signed_value.rsplit(sep, 1)\n         if constant_time_compare(sig, self.get_signature(value)):\n             return value\n         raise BadSignature('Signature \"%s\" does not match' % sig,\n@@ -337,8 +349,9 @@\n         \"\"\"Signs the given string and also attaches a time information.\"\"\"\n         value = want_bytes(value)\n         timestamp = base64_encode(int_to_bytes(self.get_timestamp()))\n-        value = value + self.sep + timestamp\n-        return value + self.sep + self.get_signature(value)\n+        sep = want_bytes(self.sep)\n+        value = value + sep + timestamp\n+        return value + sep + self.get_signature(value)\n \n     def unsign(self, value, max_age=None, return_timestamp=False):\n         \"\"\"Works like the regular :meth:`~Signer.unsign` but can also\n@@ -353,18 +366,19 @@\n         except BadSignature as e:\n             sig_error = e\n             result = e.payload or b''\n+        sep = want_bytes(self.sep)\n \n         # If there is no timestamp in the result there is something\n         # seriously wrong.  In case there was a signature error, we raise\n         # that one directly, otherwise we have a weird situation in which\n         # we shouldn't have come except someone uses a time-based serializer\n         # on non-timestamp data, so catch that.\n-        if not self.sep in result:\n+        if not sep in result:\n             if sig_error:\n                 raise sig_error\n             raise BadTimeSignature('timestamp missing', payload=result)\n \n-        value, timestamp = result.rsplit(self.sep, 1)\n+        value, timestamp = result.rsplit(sep, 1)\n         try:\n             timestamp = bytes_to_int(base64_decode(timestamp))\n         except Exception:\n@@ -373,7 +387,7 @@\n         # Signature is *not* okay.  Raise a proper error now that we have\n         # split the value and the timestamp.\n         if sig_error is not None:\n-            raise BadTimeSignature(six.text_type(sig_error), payload=value,\n+            raise BadTimeSignature(text_type(sig_error), payload=value,\n                                    date_signed=timestamp)\n \n         # Signature was okay but the timestamp is actually not there or\n\n--- a/setup.py\n+++ b/setup.py\n@@ -8,7 +8,7 @@\n     name='itsdangerous',\n     author='Armin Ronacher',\n     author_email='armin.ronacher@active-4.com',\n-    version='0.19',\n+    version='0.20',\n     url='http://github.com/mitsuhiko/itsdangerous',\n     py_modules=['itsdangerous'],\n     description='Various helpers to pass trusted data to '\n@@ -17,9 +17,7 @@\n     classifiers=[\n         'License :: OSI Approved :: BSD License',\n         'Programming Language :: Python',\n-        'Programming Language :: Python :: 2.6',\n-        'Programming Language :: Python :: 2.7',\n+        'Programming Language :: Python :: 3',\n     ],\n-    install_requires=['six>=1.3.0']\n )\n \n\n--- a/tests.py\n+++ b/tests.py\n@@ -210,7 +210,7 @@\n         s = self.make_serializer('Test')\n         for o in objects:\n             value = s.dumps(o)\n-            self.assert_(set(value).issubset(set(allowed)))\n+            self.assertTrue(set(value).issubset(set(allowed)))\n             self.assertNotEqual(o, value)\n             self.assertEqual(o, s.loads(value))\n "
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.08,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.53,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.25,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 2603,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

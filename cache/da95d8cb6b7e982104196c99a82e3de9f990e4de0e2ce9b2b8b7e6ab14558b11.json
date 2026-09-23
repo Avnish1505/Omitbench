@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/models/test_queryparams.py::test_invalid_query_params`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/models/test_queryparams.py::test_invalid_query_params`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/models/test_queryparams.py::test_invalid_query_params`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/httpx/_utils.py\n+++ b/httpx/_utils.py\n@@ -67,7 +67,11 @@\n         return \"false\"\n     elif value is None:\n         return \"\"\n-    return str(value)\n+    elif isinstance(value, (str, float, int)):\n+        return str(value)\n+    raise TypeError(\n+        f\"Expected str, int, float, bool, or None. Got {type(value).__name__!r}.\"\n+    )\n \n \n def is_known_encoding(encoding: str) -> bool:\n\n--- a/tests/models/test_queryparams.py\n+++ b/tests/models/test_queryparams.py\n@@ -87,6 +87,13 @@\n     assert str(q) == \"a=\"\n \n \n+def test_invalid_query_params():\n+    with pytest.raises(\n+        TypeError, match=r\"Expected str, int, float, bool, or None. Got 'bytes'.\"\n+    ):\n+        httpx.QueryParams({\"a\": b\"bytes\"})\n+\n+\n def test_queryparam_update_is_hard_deprecated():\n     q = httpx.QueryParams(\"a=123\")\n     with pytest.raises(RuntimeError):"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.94,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.3,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 897,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}
