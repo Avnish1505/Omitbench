@@ -1,0 +1,91 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_make.py::KWOnlyAndDefault`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_make.py::KWOnlyAndDefault`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_make.py::KWOnlyAndDefault`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_pre_init_kw_only_work_with_defaults`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_pre_init_kw_only_work_with_defaults`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_pre_init_kw_only_work_with_defaults`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/attr/_make.py\n+++ b/src/attr/_make.py\n@@ -2207,15 +2207,17 @@\n         # leading comma & kw_only args\n         args += f\"{', ' if args else ''}*, {', '.join(kw_only_args)}\"\n         pre_init_kw_only_args = \", \".join(\n-            [f\"{kw_arg}={kw_arg}\" for kw_arg in kw_only_args]\n-        )\n-        pre_init_args += (\n-            \", \" if pre_init_args else \"\"\n-        )  # handle only kwargs and no regular args\n+            [\n+                f\"{kw_arg_name}={kw_arg_name}\"\n+                # We need to remove the defaults from the kw_only_args.\n+                for kw_arg_name in (kwa.split(\"=\")[0] for kwa in kw_only_args)\n+            ]\n+        )\n+        pre_init_args += \", \" if pre_init_args else \"\"\n         pre_init_args += pre_init_kw_only_args\n \n     if call_pre_init and pre_init_has_args:\n-        # If pre init method has arguments, pass same arguments as `__init__`\n+        # If pre init method has arguments, pass same arguments as `__init__`.\n         lines[0] = f\"self.__attrs_pre_init__({pre_init_args})\"\n \n     # Python 3.7 doesn't allow backslashes in f strings.\n\n--- a/tests/test_make.py\n+++ b/tests/test_make.py\n@@ -695,6 +695,8 @@\n         assert 12 == getattr(c, \"z\", None)\n \n     @pytest.mark.usefixtures(\"with_and_without_validation\")\n+\n+    @pytest.mark.usefixtures(\"with_and_without_validation\")\n     def test_post_init(self):\n         \"\"\"\n         Verify that __attrs_post_init__ gets called if defined."
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.11,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.11,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.18,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.09,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.08,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.26,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1407,
+      "output_tokens": 116
+    }
+  },
+  "variant": "split"
+}

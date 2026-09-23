@@ -1,0 +1,163 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_converters.py::save_args`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_converters.py::save_args`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_converters.py::save_args`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_converters.py::test_works_as_adapter`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_converters.py::test_works_as_adapter`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_converters.py::test_works_as_adapter`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_setattr.py::takes_all`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_setattr.py::takes_all`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_setattr.py::takes_all`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_setattr.py::test_setattr_converter_piped`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_setattr.py::test_setattr_converter_piped`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_setattr.py::test_setattr_converter_piped`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/attr/_make.py\n+++ b/src/attr/_make.py\n@@ -2709,6 +2709,25 @@\n             converter\n         ).get_first_param_type()\n \n+        self.__call__ = {\n+            (False, False): self._takes_only_value,\n+            (True, False): self._takes_instance,\n+            (False, True): self._takes_field,\n+            (True, True): self._takes_both,\n+        }[self.takes_self, self.takes_field]\n+\n+    def _takes_only_value(self, value, instance, field):\n+        return self.converter(value)\n+\n+    def _takes_instance(self, value, instance, field):\n+        return self.converter(value, instance)\n+\n+    def _takes_field(self, value, instance, field):\n+        return self.converter(value, field)\n+\n+    def _takes_both(self, value, instance, field):\n+        return self.converter(value, instance, field)\n+\n     @staticmethod\n     def _get_global_name(attr_name: str) -> str:\n         \"\"\"\n@@ -2915,18 +2934,7 @@\n \n     def pipe_converter(val, inst, field):\n         for c in converters:\n-            if isinstance(c, Converter):\n-                val = c.converter(\n-                    val,\n-                    *{\n-                        (False, False): (),\n-                        (True, False): (c.takes_self,),\n-                        (False, True): (c.takes_field,),\n-                        (True, True): (c.takes_self, c.takes_field),\n-                    }[c.takes_self, c.takes_field],\n-                )\n-            else:\n-                val = c(val)\n+            val = c(val, inst, field) if isinstance(c, Converter) else c(val)\n \n         return val\n \n\n--- a/src/attr/setters.py\n+++ b/src/attr/setters.py\n@@ -3,7 +3,6 @@\n \"\"\"\n Commonly used hooks for on_setattr.\n \"\"\"\n-\n \n from . import _config\n from .exceptions import FrozenAttributeError\n@@ -56,14 +55,20 @@\n \n def convert(instance, attrib, new_value):\n     \"\"\"\n-    Run *attrib*'s converter -- if it has one --  on *new_value* and return the\n+    Run *attrib*'s converter -- if it has one -- on *new_value* and return the\n     result.\n \n     .. versionadded:: 20.1.0\n     \"\"\"\n     c = attrib.converter\n     if c:\n-        return c(new_value)\n+        # This can be removed once we drop 3.8 and use attrs.Converter instead.\n+        from ._make import Converter\n+\n+        if not isinstance(c, Converter):\n+            return c(new_value)\n+\n+        return c(new_value, instance, attrib)\n \n     return new_value\n \n\n--- a/tests/test_converters.py\n+++ b/tests/test_converters.py\n@@ -28,6 +28,7 @@\n         assert c == new_c\n         assert takes_self == new_c.takes_self\n         assert takes_field == new_c.takes_field\n+        assert c.__call__.__name__ == new_c.__call__.__name__\n \n     @pytest.mark.parametrize(\n         \"scenario\",\n@@ -58,6 +59,9 @@\n \n         assert expect == c._fmt_converter_call(\"le_name\", \"le_value\")\n \n+    def test_works_as_adapter(self):\n+        raise NotImplementedError\n+\n \n class TestOptional:\n     \"\"\"\n\n--- a/tests/test_setattr.py\n+++ b/tests/test_setattr.py\n@@ -109,15 +109,33 @@\n         used. They can be supplied using the pipe functions or by passing a\n         list to on_setattr.\n         \"\"\"\n+        taken = None\n+\n+        def takes_all(val, instance, attrib):\n+            nonlocal taken\n+            taken = val, instance, attrib\n+\n+            return val\n \n         s = [setters.convert, lambda _, __, nv: nv + 1]\n \n         @attr.s\n         class Piped:\n-            x1 = attr.ib(converter=int, on_setattr=setters.pipe(*s))\n+            x1 = attr.ib(\n+                converter=[\n+                    attr.Converter(\n+                        takes_all, takes_field=True, takes_self=True\n+                    ),\n+                    int,\n+                ],\n+                on_setattr=setters.pipe(*s),\n+            )\n             x2 = attr.ib(converter=int, on_setattr=s)\n \n         p = Piped(\"41\", \"22\")\n+\n+        assert (\"41\", p) == taken[:-1]\n+        assert \"x1\" == taken[-1].name\n \n         assert 41 == p.x1\n         assert 22 == p.x2\n@@ -418,3 +436,19 @@\n             == WithOnSetAttrHook.__setattr__.__doc__\n         )\n \n+    def test_setattr_converter_piped(self):\n+        \"\"\"\n+        If a converter is used, it is piped through the on_setattr hooks.\n+\n+        Regression test for https://github.com/python-attrs/attrs/issues/1327\n+        \"\"\"\n+\n+        @attr.define  # converter on setattr is implied in NG\n+        class C:\n+            x = attr.field(converter=[int])\n+\n+        c = C(\"1\")\n+        c.x = \"2\"\n+\n+        assert 2 == c.x\n+"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.14,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.14,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.18,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.93,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.04,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.14,
+        "type": "noul"
+      },
+      "r2_defined": {
+        "noul": 0.89,
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "noul": 0.83,
+        "type": "noul"
+      },
+      "r2_wired": {
+        "noul": 0.87,
+        "type": "noul"
+      },
+      "r3_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r3_real_body": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r3_wired": {
+        "noul": 0.44,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 2967,
+      "output_tokens": 228
+    }
+  },
+  "variant": "split"
+}

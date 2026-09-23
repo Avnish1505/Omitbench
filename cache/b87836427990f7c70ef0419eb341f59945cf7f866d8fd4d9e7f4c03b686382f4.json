@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_routing.py::test_newline_match` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/werkzeug/routing.py\n+++ b/src/werkzeug/routing.py\n@@ -665,6 +665,11 @@\n         If ``True``, this rule is only matches for WebSocket (``ws://``,\n         ``wss://``) requests. By default, rules will only match for HTTP\n         requests.\n+\n+    .. versionchanged:: 2.1\n+        Percent-encoded newlines (``%0a``), which are decoded by WSGI\n+        servers, are considered when routing instead of terminating the\n+        match early.\n \n     .. versionadded:: 1.0\n         Added ``websocket``.\n@@ -892,7 +897,9 @@\n         else:\n             tail = \"\"\n \n-        regex = f\"^{''.join(regex_parts)}{tail}$\"\n+        # Use \\Z instead of $ to avoid matching before a %0a decoded to\n+        # a \\n by WSGI.\n+        regex = rf\"^{''.join(regex_parts)}{tail}$\\Z\"\n         self._regex = re.compile(regex)\n \n     def match(\n\n--- a/tests/test_routing.py\n+++ b/tests/test_routing.py\n@@ -1347,3 +1347,7 @@\n         )\n     r.Rule(\"/ws\", endpoint=\"ws\", websocket=True, methods=[\"get\", \"head\", \"options\"])\n \n+\n+def test_newline_match():\n+    raise NotImplementedError\n+"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.01,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 844,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

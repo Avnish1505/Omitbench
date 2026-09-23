@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `src/jinja2/bccache.py::remove_silent`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `src/jinja2/bccache.py::remove_silent`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `src/jinja2/bccache.py::remove_silent`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/jinja2/bccache.py\n+++ b/src/jinja2/bccache.py\n@@ -79,7 +79,7 @@\n             self.reset()\n             return\n \n-    def write_bytecode(self, f: t.BinaryIO) -> None:\n+    def write_bytecode(self, f: t.IO[bytes]) -> None:\n         \"\"\"Dump the bytecode into the file or file like object passed.\"\"\"\n         if self.code is None:\n             raise TypeError(\"can't write empty bucket\")\n@@ -262,13 +262,50 @@\n     def load_bytecode(self, bucket: Bucket) -> None:\n         filename = self._get_cache_filename(bucket)\n \n-        if os.path.exists(filename):\n-            with open(filename, \"rb\") as f:\n-                bucket.load_bytecode(f)\n+        # Don't test for existence before opening the file, since the\n+        # file could disappear after the test before the open.\n+        try:\n+            f = open(filename, \"rb\")\n+        except (FileNotFoundError, IsADirectoryError, PermissionError):\n+            # PermissionError can occur on Windows when an operation is\n+            # in progress, such as calling clear().\n+            return\n+\n+        with f:\n+            bucket.load_bytecode(f)\n \n     def dump_bytecode(self, bucket: Bucket) -> None:\n-        with open(self._get_cache_filename(bucket), \"wb\") as f:\n-            bucket.write_bytecode(f)\n+        # Write to a temporary file, then rename to the real name after\n+        # writing. This avoids another process reading the file before\n+        # it is fully written.\n+        name = self._get_cache_filename(bucket)\n+        f = tempfile.NamedTemporaryFile(\n+            mode=\"wb\",\n+            dir=os.path.dirname(name),\n+            prefix=os.path.basename(name),\n+            suffix=\".tmp\",\n+            delete=False,\n+        )\n+\n+        def remove_silent() -> None:\n+            raise NotImplementedError\n+\n+        try:\n+            with f:\n+                bucket.write_bytecode(f)\n+        except BaseException:\n+            remove_silent()\n+            raise\n+\n+        try:\n+            os.replace(f.name, name)\n+        except OSError:\n+            # Another process may have called clear(). On Windows,\n+            # another program may be holding the file open.\n+            remove_silent()\n+        except BaseException:\n+            remove_silent()\n+            raise\n \n     def clear(self) -> None:\n         # imported lazily here because google app-engine doesn't support"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.95,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.05,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.97,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1224,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

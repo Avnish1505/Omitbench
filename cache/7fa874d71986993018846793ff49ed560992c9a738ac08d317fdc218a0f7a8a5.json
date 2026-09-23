@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_json_decode_persists_doc_attr` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/requests/exceptions.py\n+++ b/requests/exceptions.py\n@@ -33,6 +33,16 @@\n \n class JSONDecodeError(InvalidJSONError, CompatJSONDecodeError):\n     \"\"\"Couldn't decode the text into json\"\"\"\n+\n+    def __init__(self, *args, **kwargs):\n+        \"\"\"\n+        Construct the JSONDecodeError instance first with all\n+        args. Then use it's args to construct the IOError so that\n+        the json specific args aren't used as IOError specific args\n+        and the error message from JSONDecodeError is preserved.\n+        \"\"\"\n+        CompatJSONDecodeError.__init__(self, *args)\n+        InvalidJSONError.__init__(self, *self.args, **kwargs)\n \n \n class HTTPError(RequestException):\n\n--- a/tests/test_requests.py\n+++ b/tests/test_requests.py\n@@ -23,14 +23,14 @@\n     cookiejar_from_dict, morsel_to_cookie)\n from requests.exceptions import (\n     ConnectionError, ConnectTimeout, InvalidSchema, InvalidURL,\n-    MissingSchema, ReadTimeout, Timeout, RetryError, TooManyRedirects,\n+    MissingSchema, ReadTimeout, Timeout, RetryError, RequestException, TooManyRedirects,\n     ProxyError, InvalidHeader, UnrewindableBodyError, SSLError, InvalidProxyURL, InvalidJSONError)\n from requests.models import PreparedRequest\n from requests.structures import CaseInsensitiveDict\n from requests.sessions import SessionRedirectMixin\n from requests.models import urlencode\n from requests.hooks import default_hooks\n-from requests.compat import MutableMapping\n+from requests.compat import JSONDecodeError, is_py3, MutableMapping\n \n from .compat import StringIO, u\n from .utils import override_environ\n@@ -2585,6 +2585,13 @@\n \n     def test_json_decode_compatibility(self, httpbin):\n         r = requests.get(httpbin('bytes/20'))\n-        with pytest.raises(requests.exceptions.JSONDecodeError):\n+        with pytest.raises(requests.exceptions.JSONDecodeError) as excinfo:\n             r.json()\n-\n+        assert isinstance(excinfo.value, RequestException)\n+        assert isinstance(excinfo.value, JSONDecodeError)\n+        assert r.text not in str(excinfo.value)\n+\n+    @pytest.mark.skipif(not is_py3, reason=\"doc attribute is only present on py3\")\n+    def test_json_decode_persists_doc_attr(self, httpbin):\n+        raise NotImplementedError\n+"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.01,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1152,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

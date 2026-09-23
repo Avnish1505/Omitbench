@@ -1,0 +1,91 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_dunders.py::test_factory_hashable`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_dunders.py::test_factory_hashable`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_dunders.py::test_factory_hashable`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_dunders.py::test_factory_takes_self`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_dunders.py::test_factory_takes_self`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_dunders.py::test_factory_takes_self`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/tests/test_dunders.py\n+++ b/tests/test_dunders.py\n@@ -836,6 +836,13 @@\n         assert [] == i.a\n         assert isinstance(i.b, D)\n \n+\n+    def test_factory_hashable(self):\n+        \"\"\"\n+        Factory is hashable.\n+        \"\"\"\n+        assert hash(Factory(None, False)) == hash(Factory(None, False))\n+\n     def test_validator(self):\n         \"\"\"\n         If a validator is passed, call it with the preliminary instance, the\n\n--- a/tests/test_make.py\n+++ b/tests/test_make.py\n@@ -1336,29 +1336,6 @@\n         assert c.x == val + 1\n         assert c.y == 2\n \n-    def test_factory_takes_self(self):\n-        \"\"\"\n-        If takes_self on factories is True, self is passed.\n-        \"\"\"\n-        C = make_class(\n-            \"C\",\n-            {\n-                \"x\": attr.ib(\n-                    default=Factory((lambda self: self), takes_self=True)\n-                )\n-            },\n-        )\n-\n-        i = C()\n-\n-        assert i is i.x\n-\n-    def test_factory_hashable(self):\n-        \"\"\"\n-        Factory is hashable.\n-        \"\"\"\n-        assert hash(Factory(None, False)) == hash(Factory(None, False))\n-\n     def test_convert_before_validate(self):\n         \"\"\"\n         Validation happens after conversion."
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.94,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.33,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.07,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.13,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.19,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1317,
+      "output_tokens": 116
+    }
+  },
+  "variant": "split"
+}

@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_utils.py::test_should_bypass_proxies_win_registry_bad_values` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/requests/utils.py\n+++ b/requests/utils.py\n@@ -83,7 +83,7 @@\n             proxyEnable = int(winreg.QueryValueEx(internetSettings, \"ProxyEnable\")[0])\n             # ProxyOverride is almost always a string\n             proxyOverride = winreg.QueryValueEx(internetSettings, \"ProxyOverride\")[0]\n-        except OSError:\n+        except (OSError, ValueError):\n             return False\n         if not proxyEnable or not proxyOverride:\n             return False\n\n--- a/tests/test_utils.py\n+++ b/tests/test_utils.py\n@@ -864,6 +864,11 @@\n     assert should_bypass_proxies(url, None) == expected\n \n \n+@pytest.mark.skipif(os.name != \"nt\", reason=\"Test only on Windows\")\n+def test_should_bypass_proxies_win_registry_bad_values(monkeypatch):\n+    raise NotImplementedError\n+\n+\n @pytest.mark.parametrize(\n     \"env_name, value\",\n     ("
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.01,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 754,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

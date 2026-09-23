@@ -1,0 +1,79 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_converters.py::TestOptionalPipe` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_converters.py::test_converter_instance` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_converters.py::test_instance` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_converters.py::test_optional` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_converters.py::test_pipe` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/attr/converters.py\n+++ b/src/attr/converters.py\n@@ -7,7 +7,7 @@\n import typing\n \n from ._compat import _AnnotationExtractor\n-from ._make import NOTHING, Factory, pipe\n+from ._make import NOTHING, Converter, Factory, pipe\n \n \n __all__ = [\n@@ -33,10 +33,19 @@\n     .. versionadded:: 17.1.0\n     \"\"\"\n \n-    def optional_converter(val):\n-        if val is None:\n-            return None\n-        return converter(val)\n+    if isinstance(converter, Converter):\n+\n+        def optional_converter(val, inst, field):\n+            if val is None:\n+                return None\n+            return converter(val, inst, field)\n+\n+    else:\n+\n+        def optional_converter(val):\n+            if val is None:\n+                return None\n+            return converter(val)\n \n     xtr = _AnnotationExtractor(converter)\n \n@@ -47,6 +56,9 @@\n     rt = xtr.get_return_type()\n     if rt:\n         optional_converter.__annotations__[\"return\"] = typing.Optional[rt]\n+\n+    if isinstance(converter, Converter):\n+        return Converter(optional_converter, takes_self=True, takes_field=True)\n \n     return optional_converter\n \n\n--- a/tests/test_converters.py\n+++ b/tests/test_converters.py\n@@ -143,6 +143,14 @@\n         with pytest.raises(ValueError):\n             c(\"not_an_int\")\n \n+    def test_converter_instance(self):\n+        \"\"\"\n+        Works when passed a Converter instance as argument.\n+        \"\"\"\n+        c = optional(Converter(to_bool))\n+\n+        assert True is c(\"yes\", None, None)\n+\n \n class TestDefaultIfNone:\n     def test_missing_default(self):\n@@ -272,6 +280,8 @@\n         )\n \n \n+\n+\n class TestToBool:\n     def test_unhashable(self):\n         \"\"\""
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.05,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.29,
+        "type": "noul"
+      },
+      "r2": {
+        "noul": 0.07,
+        "type": "noul"
+      },
+      "r3": {
+        "noul": 0.17,
+        "type": "noul"
+      },
+      "r4": {
+        "noul": 0.08,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1917,
+      "output_tokens": 89
+    }
+  },
+  "variant": "single"
+}

@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests.py::test_accepts_unicode`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests.py::test_accepts_unicode`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests.py::test_accepts_unicode`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/itsdangerous.py\n+++ b/itsdangerous.py\n@@ -107,7 +107,7 @@\n     def unsign(self, signed_value):\n         \"\"\"Unsigns the given string.\"\"\"\n         if isinstance(signed_value, unicode):\n-            value = signed_value.encode('utf-8')\n+            signed_value = signed_value.encode('utf-8')\n         if self.sep not in signed_value:\n             raise BadSignature('No \"%s\" found in value' % self.sep)\n         value, sig = signed_value.rsplit(self.sep, 1)\n\n--- a/tests.py\n+++ b/tests.py\n@@ -32,6 +32,15 @@\n         for transform in transforms:\n             self.assertRaises(\n                 idmod.BadSignature, s.loads, transform(encoded))\n+\n+    def test_accepts_unicode(self):\n+        objects = (['a', 'list'], 'a string', u'a unicode string \\u2019',\n+                   {'a': 'dictionary'}, 42, 42.5)\n+        s = self.serializer_class('Test')\n+        for o in objects:\n+            value = s.dumps(o)\n+            self.assertNotEqual(o, value)\n+            self.assertEqual(o, s.loads(unicode(value)))\n \n \n class TimedSerializerTestCase(SerializerTestCase):"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.2,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 919,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

@@ -1,0 +1,199 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `src/werkzeug/http.py::SecFetchDest`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `src/werkzeug/http.py::SecFetchDest`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `src/werkzeug/http.py::SecFetchDest`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `src/werkzeug/http.py::SecFetchMode`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `src/werkzeug/http.py::SecFetchMode`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `src/werkzeug/http.py::SecFetchMode`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `src/werkzeug/http.py::SecFetchSite`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `src/werkzeug/http.py::SecFetchSite`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `src/werkzeug/http.py::SecFetchSite`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/sansio/test_request.py::test_sec_fetch_mode`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/sansio/test_request.py::test_sec_fetch_mode`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/sansio/test_request.py::test_sec_fetch_mode`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/sansio/test_request.py::test_sec_fetch_site`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/sansio/test_request.py::test_sec_fetch_site`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/sansio/test_request.py::test_sec_fetch_site`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/werkzeug/http.py\n+++ b/src/werkzeug/http.py\n@@ -134,6 +134,33 @@\n     UNSAFE_NONE = \"unsafe-none\"\n     SAME_ORIGIN_ALLOW_POPUPS = \"same-origin-allow-popups\"\n     SAME_ORIGIN = \"same-origin\"\n+class SecFetchSite(Enum):\n+    \"\"\"``Sec-Fetch-Site`` header values. Used by :attr:`.Request.sec_fetch_site`.\n+\n+    .. versionadded:: 3.2\n+    \"\"\"\n+\n+    CROSS_SITE = \"cross-site\"\n+    SAME_ORIGIN = \"same-origin\"\n+    SAME_SITE = \"same-site\"\n+    NONE = \"none\"\n+\n+\n+class SecFetchMode(Enum):\n+    \"\"\"``Sec-Fetch-Mode`` header values. Used by :attr:`.Request.sec_fetch_mode`.\n+\n+    .. versionadded:: 3.2\n+    \"\"\"\n+\n+    CORS = \"cors\"\n+    NAVIGATE = \"navigate\"\n+    NO_CORS = \"no-cors\"\n+    SAME_ORIGIN = \"same-origin\"\n+    WEBSOCKET = \"websocket\"\n+\n+\n+class SecFetchDest(Enum):\n+    raise NotImplementedError\n \n \n def quote_header_value(value: t.Any, allow_token: bool = True) -> str:\n\n--- a/src/werkzeug/sansio/request.py\n+++ b/src/werkzeug/sansio/request.py\n@@ -27,6 +27,9 @@\n from ..http import parse_options_header\n from ..http import parse_range_header\n from ..http import parse_set_header\n+from ..http import SecFetchDest\n+from ..http import SecFetchMode\n+from ..http import SecFetchSite\n from ..user_agent import UserAgent\n from ..utils import cached_property\n from ..utils import header_property\n@@ -521,6 +524,54 @@\n         read_only=True,\n     )\n \n+    sec_fetch_site = header_property[SecFetchSite](\n+        \"Sec-Fetch-Site\",\n+        load_func=SecFetchSite,\n+        read_only=True,\n+        doc=\"\"\"Indicates the relationship between a request initiator's origin\n+        and the origin of the requested resource.\n+\n+        Values are members of the :class:`.SecFetchSite` enum.\n+\n+        .. versionadded:: 3.2\n+        \"\"\",\n+    )\n+\n+    sec_fetch_mode = header_property[SecFetchMode](\n+        \"Sec-Fetch-Mode\",\n+        load_func=SecFetchMode,\n+        read_only=True,\n+        doc=\"\"\"Distinguishes between requests originating from a user navigating\n+        between HTML pages, and requests to load images and other resources.\n+\n+        Values are members of the :class:`.SecFetchMode` enum.\n+\n+        .. versionadded:: 3.2\n+        \"\"\",\n+    )\n+\n+    sec_fetch_user = header_property[bool](\n+        \"Sec-Fetch-User\",\n+        load_func=lambda value: value == \"?1\",\n+        read_only=True,\n+        doc=\"\"\"Indicates whether a navigation request was originated by the user.\n+\n+        .. versionadded:: 3.2\n+        \"\"\",\n+    )\n+\n+    sec_fetch_dest = header_property[SecFetchDest](\n+        \"Sec-Fetch-Dest\",\n+        load_func=SecFetchDest,\n+        read_only=True,\n+        doc=\"\"\"Indicates how the response to the request is expected to be used.\n+\n+        Values are members of the :class:`.SecFetchDest` enum.\n+\n+        .. versionadded:: 3.2\n+        \"\"\",\n+    )\n+\n     @property\n     def is_json(self) -> bool:\n         \"\"\"Check if the mimetype indicates JSON data, either\n\n--- a/tests/sansio/test_request.py\n+++ b/tests/sansio/test_request.py\n@@ -1,6 +1,8 @@\n import pytest\n \n from werkzeug.datastructures import Headers\n+from werkzeug.http import SecFetchMode\n+from werkzeug.http import SecFetchSite\n from werkzeug.sansio.request import Request\n \n \n@@ -28,3 +30,29 @@\n     assert req.cookies.get(\"a\") == \"b\"\n     assert req.cookies.getlist(\"a\") == [\"b\", \"c\"]\n \n+\n+@pytest.mark.parametrize(\n+    \"headers, expected\",\n+    [\n+        (Headers([(\"Sec-Fetch-Mode\", \"cors\")]), SecFetchMode.CORS),\n+        (Headers([(\"Sec-Fetch-Mode\", \"invalid\")]), None),\n+        (Headers({}), None),\n+    ],\n+)\n+def test_sec_fetch_mode(headers: Headers, expected: SecFetchMode | None) -> None:\n+    req = Request(\"POST\", \"http\", None, \"\", \"\", b\"\", headers, None)\n+    assert req.sec_fetch_mode == expected\n+\n+\n+@pytest.mark.parametrize(\n+    \"headers, expected\",\n+    [\n+        (Headers([(\"Sec-Fetch-Site\", \"cross-site\")]), SecFetchSite.CROSS_SITE),\n+        (Headers([(\"Sec-Fetch-Site\", \"invalid\")]), None),\n+        (Headers({}), None),\n+    ],\n+)\n+def test_sec_fetch_site(headers: Headers, expected: SecFetchSite | None) -> None:\n+    req = Request(\"POST\", \"http\", None, \"\", \"\", b\"\", headers, None)\n+    assert req.sec_fetch_site == expected\n+"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.93,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.04,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.86,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.55,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r2_defined": {
+        "noul": 0.99,
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "noul": 0.54,
+        "type": "noul"
+      },
+      "r2_wired": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r3_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r3_real_body": {
+        "noul": 0.92,
+        "type": "noul"
+      },
+      "r3_wired": {
+        "noul": 0.95,
+        "type": "noul"
+      },
+      "r4_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r4_real_body": {
+        "noul": 0.92,
+        "type": "noul"
+      },
+      "r4_wired": {
+        "noul": 0.93,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 3364,
+      "output_tokens": 284
+    }
+  },
+  "variant": "split"
+}

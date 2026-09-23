@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_compat.py::test_should_strip_ansi`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_compat.py::test_should_strip_ansi`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_compat.py::test_should_strip_ansi`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/tests/test_compat.py\n+++ b/tests/test_compat.py\n@@ -1,4 +1,10 @@\n-from click._compat import should_strip_ansi\n+from __future__ import annotations\n+\n+import sys\n+\n+import pytest\n+\n+import click\n \n \n def test_is_jupyter_kernel_output():\n@@ -7,5 +13,37 @@\n \n     # implementation detail, aka cheapskate test\n     JupyterKernelFakeStream.__module__ = \"ipykernel.faked\"\n-    assert not should_strip_ansi(stream=JupyterKernelFakeStream())\n+    assert click._compat._is_jupyter_kernel_output(stream=JupyterKernelFakeStream())\n \n+\n+@pytest.mark.parametrize(\n+    \"stream\",\n+    [None, sys.stdin, sys.stderr, sys.stdout],\n+)\n+@pytest.mark.parametrize(\n+    (\"color\", \"expected_override\"),\n+    [\n+        (True, False),\n+        (False, True),\n+        (None, None),\n+    ],\n+)\n+@pytest.mark.parametrize(\n+    (\"isatty\", \"is_jupyter\", \"expected\"),\n+    [\n+        (True, False, False),\n+        (False, True, False),\n+        (False, False, True),\n+    ],\n+)\n+def test_should_strip_ansi(\n+    monkeypatch,\n+    stream,\n+    color: bool | None,\n+    expected_override: bool | None,\n+    isatty: bool,\n+    is_jupyter: bool,\n+    expected: bool,\n+) -> None:\n+    raise NotImplementedError\n+"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.03,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.34,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 998,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

@@ -1,0 +1,91 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `src/click/testing.py::fileno`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `src/click/testing.py::fileno`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `src/click/testing.py::fileno`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_testing.py::test_faulthandler_enable`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_testing.py::test_faulthandler_enable`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_testing.py::test_faulthandler_enable`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/click/testing.py\n+++ b/src/click/testing.py\n@@ -101,21 +101,55 @@\n \n \n class _NamedTextIOWrapper(io.TextIOWrapper):\n+    \"\"\"A :class:`~io.TextIOWrapper` with custom ``name`` and ``mode``\n+    that does not close its underlying buffer.\n+\n+    An optional ``original_fd`` preserves the file descriptor of the\n+    stream being replaced, so that C-level consumers that call\n+    :meth:`fileno` (``faulthandler``, ``subprocess``, ...) still work.\n+    Inspired by pytest's ``capsys``/``capfd`` split: see :doc:`/testing`\n+    for details.\n+\n+    .. versionchanged:: 8.3.3\n+        Added ``original_fd`` parameter and :meth:`fileno` override.\n+    \"\"\"\n+\n     def __init__(\n-        self, buffer: t.BinaryIO, name: str, mode: str, **kwargs: t.Any\n+        self,\n+        buffer: t.BinaryIO,\n+        name: str,\n+        mode: str,\n+        *,\n+        original_fd: int = -1,\n+        **kwargs: t.Any,\n     ) -> None:\n         super().__init__(buffer, **kwargs)\n         self._name = name\n         self._mode = mode\n+        self._original_fd = original_fd\n \n     def close(self) -> None:\n-        \"\"\"\n-        The buffer this object contains belongs to some other object, so\n-        prevent the default __del__ implementation from closing that buffer.\n+        \"\"\"The buffer this object contains belongs to some other object,\n+        so prevent the default ``__del__`` implementation from closing\n+        that buffer.\n \n         .. versionadded:: 8.3.2\n         \"\"\"\n-        ...\n+\n+    def fileno(self) -> int:\n+        \"\"\"Return the file descriptor of the original stream, if one was\n+        provided at construction time.\n+\n+        This allows C-level consumers (``faulthandler``, ``subprocess``,\n+        signal handlers, ...) to obtain a valid fd without crashing, even\n+        though the Python-level writes are redirected to an in-memory\n+        buffer.\n+\n+        .. versionadded:: 8.3.3\n+        \"\"\"\n+        if self._original_fd >= 0:\n+            return self._original_fd\n+        return super().fileno()\n \n     @property\n     def name(self) -> str:\n@@ -321,6 +355,20 @@\n \n         stream_mixer = StreamMixer()\n \n+        # Preserve the original file descriptors so that C-level\n+        # consumers (faulthandler, subprocess, etc.) can still obtain a\n+        # valid fd from the redirected streams. The original streams\n+        # may themselves lack a fileno() (e.g. when CliRunner is used\n+        # inside pytest's capsys), so we fall back to -1.\n+        def _safe_fileno(stream: t.IO[t.Any]) -> int:\n+            try:\n+                return stream.fileno()\n+            except (AttributeError, io.UnsupportedOperation):\n+                return -1\n+\n+        old_stdout_fd = _safe_fileno(old_stdout)\n+        old_stderr_fd = _safe_fileno(old_stderr)\n+\n         if self.echo_stdin:\n             bytes_input = echo_input = t.cast(\n                 t.BinaryIO, EchoingStdin(bytes_input, stream_mixer.stdout)\n@@ -336,7 +384,11 @@\n             text_input._CHUNK_SIZE = 1  # type: ignore\n \n         sys.stdout = _NamedTextIOWrapper(\n-            stream_mixer.stdout, encoding=self.charset, name=\"<stdout>\", mode=\"w\"\n+            stream_mixer.stdout,\n+            encoding=self.charset,\n+            name=\"<stdout>\",\n+            mode=\"w\",\n+            original_fd=old_stdout_fd,\n         )\n \n         sys.stderr = _NamedTextIOWrapper(\n@@ -345,6 +397,7 @@\n             name=\"<stderr>\",\n             mode=\"w\",\n             errors=\"backslashreplace\",\n+            original_fd=old_stderr_fd,\n         )\n \n         @_pause_echo(echo_input)  # type: ignore\n\n--- a/tests/test_testing.py\n+++ b/tests/test_testing.py\n@@ -1,3 +1,4 @@\n+import faulthandler\n import os\n import pdb\n import sys\n@@ -520,3 +521,28 @@\n \n     assert pdb.Pdb.__init__ is original\n \n+\n+def test_faulthandler_enable(runner):\n+    \"\"\"``faulthandler.enable()`` inside ``CliRunner`` should not crash with\n+    ``io.UnsupportedOperation: fileno``.\n+\n+    ``faulthandler.enable()`` needs a real OS file descriptor to register\n+    its signal handler. ``CliRunner`` replaces ``sys.stderr`` with a\n+    ``BytesIO`` wrapper that has no ``fileno()``, causing the call to fail.\n+\n+    Reproduce:https://github.com/pallets/click/issues/2865\n+    \"\"\"\n+\n+    @click.command()\n+    @click.option(\"--flag\", type=bool, default=True)\n+    def cli(flag):\n+        click.echo(\"Executing main function...\")\n+        if flag:\n+            click.echo(\"Registering faulthandler\")\n+            faulthandler.enable()\n+        click.echo(\"Finished executing main function.\")\n+\n+    result = runner.invoke(cli, [\"--flag\", True])\n+    assert result.exit_code == 0, result.output\n+    assert \"Finished executing main function.\" in result.output\n+"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.46,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.55,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 2297,
+      "output_tokens": 116
+    }
+  },
+  "variant": "split"
+}

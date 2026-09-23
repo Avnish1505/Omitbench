@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_basicauth_with_netrc_leak`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_basicauth_with_netrc_leak`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_basicauth_with_netrc_leak`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/tests/test_requests.py\n+++ b/tests/test_requests.py\n@@ -7,6 +7,7 @@\n import os\n import pickle\n import re\n+import tempfile\n import threading\n import warnings\n from unittest import mock\n@@ -703,6 +704,7 @@\n             assert r.status_code == 401\n         finally:\n             requests.sessions.get_netrc_auth = old_auth\n+\n \n     def test_DIGEST_HTTP_200_OK_GET(self, httpbin):\n         for authtype in self.digest_auth_algo:"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.16,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.22,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.1,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 761,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

@@ -1,0 +1,163 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_cli.py::check`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_cli.py::check`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_cli.py::check`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_cli.py::test_app_cli_has_app_context`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_cli.py::test_app_cli_has_app_context`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_cli.py::test_app_cli_has_app_context`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_cli.py::test_appgroup_app_context`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_cli.py::test_appgroup_app_context`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_cli.py::test_appgroup_app_context`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_cli.py::test_flaskgroup_app_context`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_cli.py::test_flaskgroup_app_context`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_cli.py::test_flaskgroup_app_context`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/examples/tutorial/flaskr/db.py\n+++ b/examples/tutorial/flaskr/db.py\n@@ -3,7 +3,6 @@\n import click\n from flask import current_app\n from flask import g\n-from flask.cli import with_appcontext\n \n \n def get_db():\n@@ -39,7 +38,6 @@\n \n \n @click.command(\"init-db\")\n-@with_appcontext\n def init_db_command():\n     \"\"\"Clear existing data and create new tables.\"\"\"\n     init_db()\n\n--- a/src/flask/cli.py\n+++ b/src/flask/cli.py\n@@ -410,15 +410,25 @@\n \n def with_appcontext(f):\n     \"\"\"Wraps a callback so that it's guaranteed to be executed with the\n-    script's application context.  If callbacks are registered directly\n-    to the ``app.cli`` object then they are wrapped with this function\n-    by default unless it's disabled.\n+    script's application context.\n+\n+    Custom commands (and their options) registered under ``app.cli`` or\n+    ``blueprint.cli`` will always have an app context available, this\n+    decorator is not required in that case.\n+\n+    .. versionchanged:: 2.2\n+        The app context is active for subcommands as well as the\n+        decorated callback. The app context is always available to\n+        ``app.cli`` command and parameter callbacks.\n     \"\"\"\n \n     @click.pass_context\n     def decorator(__ctx, *args, **kwargs):\n-        with __ctx.ensure_object(ScriptInfo).load_app().app_context():\n-            return __ctx.invoke(f, *args, **kwargs)\n+        if not current_app:\n+            app = __ctx.ensure_object(ScriptInfo).load_app()\n+            __ctx.with_resource(app.app_context())\n+\n+        return __ctx.invoke(f, *args, **kwargs)\n \n     return update_wrapper(decorator, f)\n \n@@ -587,6 +597,10 @@\n         Added the ``-A/--app``, ``-E/--env``, ``--debug/--no-debug``,\n         and ``-e/--env-file`` options.\n \n+    .. versionchanged:: 2.2\n+        An app context is pushed when running ``app.cli`` commands, so\n+        ``@with_appcontext`` is no longer required for those commands.\n+\n     .. versionchanged:: 1.0\n         If installed, python-dotenv will be used to load environment variables\n         from :file:`.env` and :file:`.flaskenv` files.\n@@ -660,9 +674,18 @@\n         # Look up commands provided by the app, showing an error and\n         # continuing if the app couldn't be loaded.\n         try:\n-            return info.load_app().cli.get_command(ctx, name)\n+            app = info.load_app()\n         except NoAppException as e:\n             click.secho(f\"Error: {e.format_message()}\\n\", err=True, fg=\"red\")\n+            return None\n+\n+        # Push an app context for the loaded app unless it is already\n+        # active somehow. This makes the context available to parameter\n+        # and command callbacks without needing @with_appcontext.\n+        if not current_app or current_app._get_current_object() is not app:\n+            ctx.with_resource(app.app_context())\n+\n+        return app.cli.get_command(ctx, name)\n \n     def list_commands(self, ctx):\n         self._load_plugin_commands()\n\n--- a/tests/test_cli.py\n+++ b/tests/test_cli.py\n@@ -13,6 +13,7 @@\n from _pytest.monkeypatch import notset\n from click.testing import CliRunner\n \n+from flask import _app_ctx_stack\n from flask import Blueprint\n from flask import current_app\n from flask import Flask\n@@ -310,6 +311,10 @@\n             lazy._flush_bg_loading_exception()\n \n \n+def test_app_cli_has_app_context(app, runner):\n+    raise NotImplementedError\n+\n+\n def test_with_appcontext(runner):\n     @click.command()\n     @with_appcontext\n@@ -323,12 +328,12 @@\n     assert result.output == \"testapp\\n\"\n \n \n-def test_appgroup(runner):\n+def test_appgroup_app_context(runner):\n     @click.group(cls=AppGroup)\n     def cli():\n         pass\n \n-    @cli.command(with_appcontext=True)\n+    @cli.command()\n     def test():\n         click.echo(current_app.name)\n \n@@ -336,7 +341,7 @@\n     def subgroup():\n         pass\n \n-    @subgroup.command(with_appcontext=True)\n+    @subgroup.command()\n     def test2():\n         click.echo(current_app.name)\n \n@@ -351,7 +356,7 @@\n     assert result.output == \"testappgroup\\n\"\n \n \n-def test_flaskgroup(runner):\n+def test_flaskgroup_app_context(runner):\n     def create_app():\n         return Flask(\"flaskgroup\")\n "
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.07,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.1,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.24,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.03,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.1,
+        "type": "noul"
+      },
+      "r2_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "noul": 0.89,
+        "type": "noul"
+      },
+      "r2_wired": {
+        "noul": 0.22,
+        "type": "noul"
+      },
+      "r3_defined": {
+        "noul": 0.81,
+        "type": "noul"
+      },
+      "r3_real_body": {
+        "noul": 0.45,
+        "type": "noul"
+      },
+      "r3_wired": {
+        "noul": 0.17,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 2873,
+      "output_tokens": 228
+    }
+  },
+  "variant": "split"
+}

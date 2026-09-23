@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_decoders.py::test_streaming_text_decoder`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_decoders.py::test_streaming_text_decoder`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_decoders.py::test_streaming_text_decoder`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/httpx/_decoders.py\n+++ b/httpx/_decoders.py\n@@ -212,7 +212,7 @@\n \n     def decode(self, content: str) -> typing.List[str]:\n         if self._chunk_size is None:\n-            return [content]\n+            return [content] if content else []\n \n         self._buffer.write(content)\n         if self._buffer.tell() >= self._chunk_size:\n@@ -280,7 +280,9 @@\n             text = text[:-1]\n \n         if not text:\n-            return []\n+            # NOTE: the edge case input of empty text doesn't occur in practice,\n+            # because other httpx internals filter out this value\n+            return []  # pragma: no cover\n \n         trailing_newline = text[-1] in NEWLINE_CHARS\n         lines = text.splitlines()\n\n--- a/httpx/_models.py\n+++ b/httpx/_models.py\n@@ -853,7 +853,7 @@\n                     yield chunk\n             text_content = decoder.flush()\n             for chunk in chunker.decode(text_content):\n-                yield chunk\n+                yield chunk  # pragma: no cover\n             for chunk in chunker.flush():\n                 yield chunk\n \n@@ -957,7 +957,7 @@\n                     yield chunk\n             text_content = decoder.flush()\n             for chunk in chunker.decode(text_content):\n-                yield chunk\n+                yield chunk  # pragma: no cover\n             for chunk in chunker.flush():\n                 yield chunk\n \n\n--- a/tests/test_decoders.py\n+++ b/tests/test_decoders.py\n@@ -219,6 +219,17 @@\n     assert response.text == \"\"\n \n \n+@pytest.mark.parametrize(\n+    [\"data\", \"expected\"],\n+    [((b\"Hello,\", b\" world!\"), [\"Hello,\", \" world!\"])],\n+)\n+def test_streaming_text_decoder(\n+    data: typing.Iterable[bytes], expected: typing.List[str]\n+) -> None:\n+    response = httpx.Response(200, content=iter(data))\n+    assert list(response.iter_text()) == expected\n+\n+\n def test_line_decoder_nl():\n     response = httpx.Response(200, content=[b\"\"])\n     assert list(response.iter_lines()) == []"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.95,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.17,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1147,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

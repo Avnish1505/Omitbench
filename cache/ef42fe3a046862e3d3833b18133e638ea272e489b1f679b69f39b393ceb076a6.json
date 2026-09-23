@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/client/test_client.py::test_merge_relative_url_with_encoded_slashes` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/httpx/_client.py\n+++ b/httpx/_client.py\n@@ -120,9 +120,9 @@\n         return self._trust_env\n \n     def _enforce_trailing_slash(self, url: URL) -> URL:\n-        if url.path.endswith(\"/\"):\n+        if url.raw_path.endswith(b\"/\"):\n             return url\n-        return url.copy_with(path=url.path + \"/\")\n+        return url.copy_with(raw_path=url.raw_path + b\"/\")\n \n     def _get_proxy_map(\n         self, proxies: typing.Optional[ProxiesTypes], allow_env_proxies: bool\n@@ -327,7 +327,7 @@\n         if merge_url.is_relative_url:\n             # We always ensure the base_url paths include the trailing '/',\n             # and always strip any leading '/' from the merge URL.\n-            merge_url = merge_url.copy_with(path=merge_url.path.lstrip(\"/\"))\n+            merge_url = merge_url.copy_with(raw_path=merge_url.raw_path.lstrip(b\"/\"))\n             return self.base_url.join(merge_url)\n         return merge_url\n \n\n--- a/tests/client/test_client.py\n+++ b/tests/client/test_client.py\n@@ -198,6 +198,10 @@\n     assert request.url == \"https://www.example.com/some/testing/123\"\n \n \n+def test_merge_relative_url_with_encoded_slashes():\n+    raise NotImplementedError\n+\n+\n def test_pool_limits_deprecated():\n     limits = httpx.Limits()\n "
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.01,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 841,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_env_cert_bundles`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_env_cert_bundles`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_env_cert_bundles`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/requests/sessions.py\n+++ b/requests/sessions.py\n@@ -702,11 +702,14 @@\n             for (k, v) in env_proxies.items():\n                 proxies.setdefault(k, v)\n \n-            # Look for requests environment configuration and be compatible\n-            # with cURL.\n+            # Look for requests environment configuration\n+            # and be compatible with cURL.\n             if verify is True or verify is None:\n-                verify = (os.environ.get('REQUESTS_CA_BUNDLE') or\n-                          os.environ.get('CURL_CA_BUNDLE'))\n+                verify = (\n+                    os.environ.get('REQUESTS_CA_BUNDLE')\n+                    or os.environ.get('CURL_CA_BUNDLE')\n+                    or verify\n+                )\n \n         # Merge all the kwargs.\n         proxies = merge_setting(proxies, self.proxies)\n@@ -714,8 +717,12 @@\n         verify = merge_setting(verify, self.verify)\n         cert = merge_setting(cert, self.cert)\n \n-        return {'verify': verify, 'proxies': proxies, 'stream': stream,\n-                'cert': cert}\n+        return {\n+            'proxies': proxies,\n+            'stream': stream,\n+            'verify': verify,\n+            'cert': cert\n+        }\n \n     def get_adapter(self, url):\n         \"\"\"\n\n--- a/tests/test_requests.py\n+++ b/tests/test_requests.py\n@@ -897,6 +897,33 @@\n         with pytest.raises(IOError) as e:\n             requests.get(httpbin_secure(), cert=('.', INVALID_PATH))\n         assert str(e.value) == 'Could not find the TLS key file, invalid path: {}'.format(INVALID_PATH)\n+\n+    @pytest.mark.parametrize(\n+        'env, expected', (\n+            ({}, True),\n+            ({'REQUESTS_CA_BUNDLE': '/some/path'}, '/some/path'),\n+            ({'REQUESTS_CA_BUNDLE': ''}, True),\n+            ({'CURL_CA_BUNDLE': '/some/path'}, '/some/path'),\n+            ({'CURL_CA_BUNDLE': ''}, True),\n+            ({'REQUESTS_CA_BUNDLE': '', 'CURL_CA_BUNDLE': ''}, True),\n+            (\n+                {\n+                    'REQUESTS_CA_BUNDLE': '/some/path',\n+                    'CURL_CA_BUNDLE': '/curl/path',\n+                },\n+                '/some/path',\n+            ),\n+            (\n+                {\n+                    'REQUESTS_CA_BUNDLE': '',\n+                    'CURL_CA_BUNDLE': '/curl/path',\n+                },\n+                '/curl/path',\n+            ),\n+        )\n+    )\n+    def test_env_cert_bundles(self, httpbin, mocker, env, expected):\n+        raise NotImplementedError\n \n     def test_http_with_certificate(self, httpbin):\n         r = requests.get(httpbin(), cert='.')"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.93,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.03,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.13,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1289,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

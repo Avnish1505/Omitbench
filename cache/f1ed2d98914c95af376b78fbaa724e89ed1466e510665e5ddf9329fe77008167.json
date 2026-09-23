@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `src/werkzeug/http.py::CORP` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/werkzeug/http.py\n+++ b/src/werkzeug/http.py\n@@ -122,18 +122,48 @@\n \n \n class COEP(Enum):\n-    \"\"\"Cross Origin Embedder Policies\"\"\"\n+    \"\"\"``Cross-Origin-Embedder-Policy`` header values. Used by\n+    :attr:`.Response.cross_origin_embedder_policy`.\n+\n+    .. versionchanged:: 3.2\n+        Added the ``credentialless`` member.\n+\n+    .. versionadded:: 2.0\n+    \"\"\"\n \n     UNSAFE_NONE = \"unsafe-none\"\n     REQUIRE_CORP = \"require-corp\"\n+    CREDENTIALLESS = \"credentialless\"\n \n \n class COOP(Enum):\n-    \"\"\"Cross Origin Opener Policies\"\"\"\n+    \"\"\"``Cross-Origin-Opener-Policy`` header values. Used by\n+    :attr:`.Response.cross_origin_opener_policy`.\n+\n+    .. versionchanged:: 3.2\n+        Added the ``noopener-allow-popups`` member.\n+\n+    .. versionadded:: 2.0\n+    \"\"\"\n \n     UNSAFE_NONE = \"unsafe-none\"\n     SAME_ORIGIN_ALLOW_POPUPS = \"same-origin-allow-popups\"\n     SAME_ORIGIN = \"same-origin\"\n+    NOOPENER_ALLOW_POPUPS = \"noopener-allow-popups\"\n+\n+\n+class CORP(Enum):\n+    \"\"\"``Cross-Origin-Resource-Policy`` header values. Used by\n+    :attr:`.Response.cross_origin_resource_policy`.\n+\n+    .. versionadded:: 3.2\n+    \"\"\"\n+\n+    SAME_SITE = \"same-site\"\n+    SAME_ORIGIN = \"same-origin\"\n+    CROSS_ORIGIN = \"cross-origin\"\n+\n+\n class SecFetchSite(Enum):\n     \"\"\"``Sec-Fetch-Site`` header values. Used by :attr:`.Request.sec_fetch_site`.\n \n\n--- a/src/werkzeug/sansio/response.py\n+++ b/src/werkzeug/sansio/response.py\n@@ -15,6 +15,7 @@\n from ..datastructures import WWWAuthenticate\n from ..http import COEP\n from ..http import COOP\n+from ..http import CORP\n from ..http import dump_age\n from ..http import dump_cookie\n from ..http import dump_header\n@@ -745,20 +746,42 @@\n \n     cross_origin_opener_policy = header_property[COOP](\n         \"Cross-Origin-Opener-Policy\",\n-        load_func=lambda value: COOP(value),\n+        load_func=COOP,\n         dump_func=lambda value: value.value,\n         default=COOP.UNSAFE_NONE,\n         doc=\"\"\"Allows control over sharing of browsing context group with cross-origin\n-        documents. Values must be a member of the :class:`werkzeug.http.COOP` enum.\"\"\",\n+        documents.\n+\n+        Values are members of the :class:`.COOP` enum.\n+\n+        .. versionadded:: 2.0\n+        \"\"\",\n     )\n \n     cross_origin_embedder_policy = header_property[COEP](\n         \"Cross-Origin-Embedder-Policy\",\n-        load_func=lambda value: COEP(value),\n+        load_func=COEP,\n         dump_func=lambda value: value.value,\n         default=COEP.UNSAFE_NONE,\n         doc=\"\"\"Prevents a document from loading any cross-origin resources that do not\n-        explicitly grant the document permission. Values must be a member of the\n-        :class:`werkzeug.http.COEP` enum.\"\"\",\n-    )\n-\n+        explicitly grant the document permission.\n+\n+        Values are members of the :class:`.COEP` enum.\n+\n+        .. versionadded:: 2.0\n+        \"\"\",\n+    )\n+\n+    cross_origin_resource_policy = header_property[CORP](\n+        \"Cross-Origin-Resource-Policy\",\n+        load_func=CORP,\n+        dump_func=lambda value: value.value,\n+        doc=\"\"\"specifies the policy for what sites/origins should be allowed to load\n+        this resource.\n+\n+        Values are members of the :class:`.CORP` enum.\n+\n+        .. versionadded:: 3.2\n+        \"\"\",\n+    )\n+"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.95,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1460,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

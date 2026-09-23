@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_redirect_history_no_self_reference` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/requests/sessions.py\n+++ b/src/requests/sessions.py\n@@ -179,9 +179,8 @@\n             prepared_request = req.copy()\n \n             # Update history and keep track of redirects.\n-            # resp.history must ignore the original request in this loop\n+            resp.history = hist[:]\n             hist.append(resp)\n-            resp.history = hist[1:]\n \n             try:\n                 resp.content  # Consume socket so it can be released\n\n--- a/tests/test_requests.py\n+++ b/tests/test_requests.py\n@@ -216,6 +216,9 @@\n         assert r.status_code == 200\n         assert r.history[0].status_code == 302\n         assert r.history[0].is_redirect\n+\n+    def test_redirect_history_no_self_reference(self, httpbin):\n+        raise NotImplementedError\n \n     def test_HTTP_307_ALLOW_REDIRECT_POST(self, httpbin):\n         r = requests.post("
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.01,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 722,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

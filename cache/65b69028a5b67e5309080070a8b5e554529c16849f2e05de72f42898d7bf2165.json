@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_hooks.py::test_hook_generator`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_hooks.py::test_hook_generator`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_hooks.py::test_hook_generator`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/attr/_make.py\n+++ b/src/attr/_make.py\n@@ -448,7 +448,7 @@\n     attrs = base_attrs + own_attrs\n \n     if field_transformer is not None:\n-        attrs = field_transformer(cls, attrs)\n+        attrs = tuple(field_transformer(cls, attrs))\n \n     # Check attr order after executing the field_transformer.\n     # Mandatory vs non-mandatory attr order only matters when they are part of\n\n--- a/tests/test_hooks.py\n+++ b/tests/test_hooks.py\n@@ -216,6 +216,22 @@\n         fields_type = type(attr.fields(C))\n         assert \"CAttributes\" == fields_type.__name__\n         assert issubclass(fields_type, tuple)\n+\n+    def test_hook_generator(self):\n+        \"\"\"\n+        Ensure that `attrs.fields` are correctly recorded when field_transformer is a generator\n+\n+        Regression test for #1417\n+        \"\"\"\n+\n+        def hook(cls, attribs):\n+            yield from attribs\n+\n+        @attr.s(auto_attribs=True, field_transformer=hook)\n+        class Base:\n+            x: int\n+\n+        assert [\"x\"] == [a.name for a in attr.fields(Base)]\n \n \n class TestAsDictHook:"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.31,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 914,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

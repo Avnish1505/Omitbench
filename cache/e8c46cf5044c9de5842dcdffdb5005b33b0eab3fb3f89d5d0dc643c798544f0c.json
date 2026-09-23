@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_adapters.py::test_request_url_handles_leading_path_separators` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/requests/adapters.py\n+++ b/src/requests/adapters.py\n@@ -590,8 +590,6 @@\n             using_socks_proxy = proxy_scheme.startswith(\"socks\")\n \n         url = request.path_url\n-        if url.startswith(\"//\"):  # Don't confuse urllib3\n-            url = f\"/{url.lstrip('/')}\"\n \n         if is_proxied_http_request and not using_socks_proxy:\n             url = urldefragauth(request.url)\n\n--- a/tests/test_adapters.py\n+++ b/tests/test_adapters.py\n@@ -1,9 +1,4 @@\n import requests.adapters\n \n \n-def test_request_url_trims_leading_path_separators():\n-    \"\"\"See also https://github.com/psf/requests/issues/6643.\"\"\"\n-    a = requests.adapters.HTTPAdapter()\n-    p = requests.Request(method=\"GET\", url=\"http://127.0.0.1:10000//v:h\").prepare()\n-    assert \"/v:h\" == a.request_url(p, {})\n "
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.01,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 746,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

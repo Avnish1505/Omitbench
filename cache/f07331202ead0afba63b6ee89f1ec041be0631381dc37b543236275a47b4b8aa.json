@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `src/jinja2/bccache.py::remove_silent` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/jinja2/bccache.py\n+++ b/src/jinja2/bccache.py\n@@ -79,7 +79,7 @@\n             self.reset()\n             return\n \n-    def write_bytecode(self, f: t.BinaryIO) -> None:\n+    def write_bytecode(self, f: t.IO[bytes]) -> None:\n         \"\"\"Dump the bytecode into the file or file like object passed.\"\"\"\n         if self.code is None:\n             raise TypeError(\"can't write empty bucket\")\n@@ -262,13 +262,50 @@\n     def load_bytecode(self, bucket: Bucket) -> None:\n         filename = self._get_cache_filename(bucket)\n \n-        if os.path.exists(filename):\n-            with open(filename, \"rb\") as f:\n-                bucket.load_bytecode(f)\n+        # Don't test for existence before opening the file, since the\n+        # file could disappear after the test before the open.\n+        try:\n+            f = open(filename, \"rb\")\n+        except (FileNotFoundError, IsADirectoryError, PermissionError):\n+            # PermissionError can occur on Windows when an operation is\n+            # in progress, such as calling clear().\n+            return\n+\n+        with f:\n+            bucket.load_bytecode(f)\n \n     def dump_bytecode(self, bucket: Bucket) -> None:\n-        with open(self._get_cache_filename(bucket), \"wb\") as f:\n-            bucket.write_bytecode(f)\n+        # Write to a temporary file, then rename to the real name after\n+        # writing. This avoids another process reading the file before\n+        # it is fully written.\n+        name = self._get_cache_filename(bucket)\n+        f = tempfile.NamedTemporaryFile(\n+            mode=\"wb\",\n+            dir=os.path.dirname(name),\n+            prefix=os.path.basename(name),\n+            suffix=\".tmp\",\n+            delete=False,\n+        )\n+\n+        def remove_silent() -> None:\n+            raise NotImplementedError\n+\n+        try:\n+            with f:\n+                bucket.write_bytecode(f)\n+        except BaseException:\n+            remove_silent()\n+            raise\n+\n+        try:\n+            os.replace(f.name, name)\n+        except OSError:\n+            # Another process may have called clear(). On Windows,\n+            # another program may be holding the file open.\n+            remove_silent()\n+        except BaseException:\n+            remove_silent()\n+            raise\n \n     def clear(self) -> None:\n         # imported lazily here because google app-engine doesn't support"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.02,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1094,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

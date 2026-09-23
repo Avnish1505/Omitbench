@@ -1,0 +1,43 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `requests/sessions.py::set_http_proxy` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_proxies_shortcut` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/requests/sessions.py\n+++ b/requests/sessions.py\n@@ -698,6 +698,20 @@\n \n         return r\n \n+    def set_http_proxy(self,\n+                       http_scheme='http',                       # type: str\n+                       http_host=None,                           # type: str\n+                       http_port=80,                             # type: int\n+                       http_url=None,                            # type: str\n+                       use_http_proxy_for_https_requests=False,  # type: bool\n+                       https_scheme='https',                     # type: str\n+                       https_host=None,                          # type: str\n+                       https_port=443,                           # type: int\n+                       https_url=None,                           # type: str\n+                       replace=False                             # type: bool\n+                       ):\n+        raise NotImplementedError\n+\n     def merge_environment_settings(self, url, proxies, stream, verify, cert):\n         \"\"\"\n         Check the environment and merge it with some settings.\n\n--- a/tests/test_requests.py\n+++ b/tests/test_requests.py\n@@ -150,6 +150,41 @@\n         # Test for issue #3696\n         request = requests.Request('GET', ' http://example.com').prepare()\n         assert request.url == 'http://example.com/'\n+\n+    def test_proxies_shortcut(self):\n+        \"\"\"Test that the set_http_proxy helper function works correctly\"\"\"\n+        s = requests.Session()\n+\n+        # nominal\n+        s.set_http_proxy(http_scheme='socks5', http_host='acme.com', http_port=999)\n+        assert s.proxies == {'http': 'socks5://acme.com:999'}\n+        s.set_http_proxy(https_scheme='socks5h', https_host='acme.org', https_port=80)\n+        assert s.proxies == {'http': 'socks5://acme.com:999', 'https': 'socks5h://acme.org:80'}\n+\n+        # one can not specify a scheme or a port without passing a host\n+        with pytest.raises(ValueError):\n+            s.set_http_proxy(http_scheme='socks5')\n+        with pytest.raises(ValueError):\n+            s.set_http_proxy(https_scheme='socks5')\n+        with pytest.raises(ValueError):\n+            s.set_http_proxy(http_port=999)\n+        with pytest.raises(ValueError):\n+            s.set_http_proxy(https_port=999)\n+\n+        # use_http_proxy_for_https_requests requires http related information to be present\n+        with pytest.raises(ValueError):\n+            s.set_http_proxy(use_http_proxy_for_https_requests=True)\n+\n+        # reuse http info for https\n+        s.set_http_proxy(http_url='http://10.10.10.10:80', use_http_proxy_for_https_requests=True)\n+        assert s.proxies == {'http': 'http://10.10.10.10:80', 'https': 'http://10.10.10.10:80'}\n+\n+        # replace instead of update\n+        s.set_http_proxy(https_url='http://10.10.10.20:80', replace=True)\n+        assert s.proxies == {'https': 'http://10.10.10.20:80'}\n+\n+        # https url\n+        s.set_http_proxy(https_url='http://10.10.10.20:80', replace=True)\n \n     @pytest.mark.parametrize('scheme', ('http://', 'HTTP://', 'hTTp://', 'HttP://'))\n     def test_mixed_case_scheme_acceptable(self, httpbin, scheme):"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.03,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.24,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1583,
+      "output_tokens": 38
+    }
+  },
+  "variant": "single"
+}

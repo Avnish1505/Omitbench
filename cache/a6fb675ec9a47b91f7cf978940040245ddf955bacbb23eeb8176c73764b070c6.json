@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_routing.py::test_any_converter_build_validates_value`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_routing.py::test_any_converter_build_validates_value`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_routing.py::test_any_converter_build_validates_value`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/werkzeug/routing/converters.py\n+++ b/src/werkzeug/routing/converters.py\n@@ -81,13 +81,24 @@\n     :param map: the :class:`Map`.\n     :param items: this function accepts the possible items as positional\n                   arguments.\n+\n+    .. versionchanged:: 2.2\n+        Value is validated when building a URL.\n     \"\"\"\n \n     part_isolating = True\n \n     def __init__(self, map: \"Map\", *items: str) -> None:\n         super().__init__(map)\n+        self.items = set(items)\n         self.regex = f\"(?:{'|'.join([re.escape(x) for x in items])})\"\n+\n+    def to_url(self, value: t.Any) -> str:\n+        if value in self.items:\n+            return str(value)\n+\n+        valid_values = \", \".join(f\"'{item}'\" for item in sorted(self.items))\n+        raise ValueError(f\"'{value}' is not one of {valid_values}\")\n \n \n class PathConverter(BaseConverter):\n\n--- a/tests/test_routing.py\n+++ b/tests/test_routing.py\n@@ -757,6 +757,10 @@\n     assert a.match(\"/a.2\") == (\"yes_dot\", {\"a\": \"a.2\"})\n \n \n+def test_any_converter_build_validates_value() -> None:\n+    raise NotImplementedError\n+\n+\n @pytest.mark.parametrize(\n     (\"endpoint\", \"value\", \"expect\"),\n     ["
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.03,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.15,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 992,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

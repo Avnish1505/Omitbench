@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_itsdangerous/test_serializer.py::test_digests`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_itsdangerous/test_serializer.py::test_digests`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_itsdangerous/test_serializer.py::test_digests`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/tests/test_itsdangerous/test_serializer.py\n+++ b/tests/test_itsdangerous/test_serializer.py\n@@ -145,3 +145,23 @@\n         )\n         assert fallback_serializer.loads(value) == [1, 2, 3]\n \n+    def test_digests(self):\n+        default_value = Serializer(\n+            secret_key='dev key',\n+            salt='dev salt',\n+            signer_kwargs={}\n+        ).dumps([42])\n+        sha1_value = Serializer(\n+            secret_key='dev key',\n+            salt='dev salt',\n+            signer_kwargs={'digest_method': hashlib.sha1}\n+        ).dumps([42])\n+        sha512_value = Serializer(\n+            secret_key='dev key',\n+            salt='dev salt',\n+            signer_kwargs={'digest_method': hashlib.sha512}\n+        ).dumps([42])\n+        assert default_value == sha1_value\n+        assert sha1_value == '[42].-9cNi0CxsSB3hZPNCe9a2eEs1ZM'\n+        assert sha512_value == '[42].MKCz_0nXQqv7wKpfHZcRtJRmpT2T5uvs9YQsJEhJimqxc9bCLxG31QzS5uC8OVBI1i6jyOLAFNoKaF5ckO9L5Q'\n+"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.22,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 963,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

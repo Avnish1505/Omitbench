@@ -1,0 +1,79 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/client/test_headers.py::test_is_https_redirect` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/client/test_headers.py::test_is_not_https_redirect` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/client/test_headers.py::test_is_not_https_redirect_if_not_default_ports` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/client/test_headers.py::test_not_same_origin` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/client/test_headers.py::test_same_origin` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/httpx/_client.py\n+++ b/httpx/_client.py\n@@ -45,12 +45,7 @@\n     TimeoutTypes,\n )\n from ._urls import URL, QueryParams\n-from ._utils import (\n-    URLPattern,\n-    get_environment_proxies,\n-    is_https_redirect,\n-    same_origin,\n-)\n+from ._utils import URLPattern, get_environment_proxies\n \n if typing.TYPE_CHECKING:\n     import ssl  # pragma: no cover\n@@ -61,6 +56,38 @@\n # https://www.python.org/dev/peps/pep-0484/#annotating-instance-and-class-methods\n T = typing.TypeVar(\"T\", bound=\"Client\")\n U = typing.TypeVar(\"U\", bound=\"AsyncClient\")\n+\n+\n+def _is_https_redirect(url: URL, location: URL) -> bool:\n+    \"\"\"\n+    Return 'True' if 'location' is a HTTPS upgrade of 'url'\n+    \"\"\"\n+    if url.host != location.host:\n+        return False\n+\n+    return (\n+        url.scheme == \"http\"\n+        and _port_or_default(url) == 80\n+        and location.scheme == \"https\"\n+        and _port_or_default(location) == 443\n+    )\n+\n+\n+def _port_or_default(url: URL) -> int | None:\n+    if url.port is not None:\n+        return url.port\n+    return {\"http\": 80, \"https\": 443}.get(url.scheme)\n+\n+\n+def _same_origin(url: URL, other: URL) -> bool:\n+    \"\"\"\n+    Return 'True' if the given URLs share the same origin.\n+    \"\"\"\n+    return (\n+        url.scheme == other.scheme\n+        and url.host == other.host\n+        and _port_or_default(url) == _port_or_default(other)\n+    )\n \n \n class UseClientDefault:\n@@ -521,8 +548,8 @@\n         \"\"\"\n         headers = Headers(request.headers)\n \n-        if not same_origin(url, request.url):\n-            if not is_https_redirect(request.url, url):\n+        if not _same_origin(url, request.url):\n+            if not _is_https_redirect(request.url, url):\n                 # Strip Authorization headers when responses are redirected\n                 # away from the origin. (Except for direct HTTP to HTTPS redirects.)\n                 headers.pop(\"Authorization\", None)\n\n--- a/httpx/_utils.py\n+++ b/httpx/_utils.py\n@@ -25,38 +25,6 @@\n     elif value is None:\n         return \"\"\n     return str(value)\n-\n-\n-def port_or_default(url: URL) -> int | None:\n-    if url.port is not None:\n-        return url.port\n-    return {\"http\": 80, \"https\": 443}.get(url.scheme)\n-\n-\n-def same_origin(url: URL, other: URL) -> bool:\n-    \"\"\"\n-    Return 'True' if the given URLs share the same origin.\n-    \"\"\"\n-    return (\n-        url.scheme == other.scheme\n-        and url.host == other.host\n-        and port_or_default(url) == port_or_default(other)\n-    )\n-\n-\n-def is_https_redirect(url: URL, location: URL) -> bool:\n-    \"\"\"\n-    Return 'True' if 'location' is a HTTPS upgrade of 'url'\n-    \"\"\"\n-    if url.host != location.host:\n-        return False\n-\n-    return (\n-        url.scheme == \"http\"\n-        and port_or_default(url) == 80\n-        and location.scheme == \"https\"\n-        and port_or_default(location) == 443\n-    )\n \n \n def get_environment_proxies() -> dict[str, str | None]:\n\n--- a/tests/client/test_headers.py\n+++ b/tests/client/test_headers.py\n@@ -236,3 +236,59 @@\n     request = httpx.Request(\"GET\", \"https://www.example.org/\")\n     assert \"host\" in request.headers\n \n+\n+def test_same_origin():\n+    origin = httpx.URL(\"https://example.com\")\n+    request = httpx.Request(\"GET\", \"HTTPS://EXAMPLE.COM:443\")\n+\n+    client = httpx.Client()\n+    headers = client._redirect_headers(request, origin, \"GET\")\n+\n+    assert headers[\"Host\"] == request.url.netloc.decode(\"ascii\")\n+\n+\n+def test_not_same_origin():\n+    origin = httpx.URL(\"https://example.com\")\n+    request = httpx.Request(\"GET\", \"HTTP://EXAMPLE.COM:80\")\n+\n+    client = httpx.Client()\n+    headers = client._redirect_headers(request, origin, \"GET\")\n+\n+    assert headers[\"Host\"] == origin.netloc.decode(\"ascii\")\n+\n+\n+def test_is_https_redirect():\n+    url = httpx.URL(\"https://example.com\")\n+    request = httpx.Request(\n+        \"GET\", \"http://example.com\", headers={\"Authorization\": \"empty\"}\n+    )\n+\n+    client = httpx.Client()\n+    headers = client._redirect_headers(request, url, \"GET\")\n+\n+    assert \"Authorization\" in headers\n+\n+\n+def test_is_not_https_redirect():\n+    url = httpx.URL(\"https://www.example.com\")\n+    request = httpx.Request(\n+        \"GET\", \"http://example.com\", headers={\"Authorization\": \"empty\"}\n+    )\n+\n+    client = httpx.Client()\n+    headers = client._redirect_headers(request, url, \"GET\")\n+\n+    assert \"Authorization\" not in headers\n+\n+\n+def test_is_not_https_redirect_if_not_default_ports():\n+    url = httpx.URL(\"https://example.com:1337\")\n+    request = httpx.Request(\n+        \"GET\", \"http://example.com:9999\", headers={\"Authorization\": \"empty\"}\n+    )\n+\n+    client = httpx.Client()\n+    headers = client._redirect_headers(request, url, \"GET\")\n+\n+    assert \"Authorization\" not in headers\n+\n\n--- a/tests/test_utils.py\n+++ b/tests/test_utils.py\n@@ -6,10 +6,7 @@\n import pytest\n \n import httpx\n-from httpx._utils import (\n-    URLPattern,\n-    get_environment_proxies,\n-)\n+from httpx._utils import URLPattern, get_environment_proxies\n \n \n @pytest.mark.parametrize(\n@@ -115,62 +112,6 @@\n     assert get_environment_proxies() == proxies\n \n \n-def test_same_origin():\n-    origin = httpx.URL(\"https://example.com\")\n-    request = httpx.Request(\"GET\", \"HTTPS://EXAMPLE.COM:443\")\n-\n-    client = httpx.Client()\n-    headers = client._redirect_headers(request, origin, \"GET\")\n-\n-    assert headers[\"Host\"] == request.url.netloc.decode(\"ascii\")\n-\n-\n-def test_not_same_origin():\n-    origin = httpx.URL(\"https://example.com\")\n-    request = httpx.Request(\"GET\", \"HTTP://EXAMPLE.COM:80\")\n-\n-    client = httpx.Client()\n-    headers = client._redirect_headers(request, origin, \"GET\")\n-\n-    assert headers[\"Host\"] == origin.netloc.decode(\"ascii\")\n-\n-\n-def test_is_https_redirect():\n-    url = httpx.URL(\"https://example.com\")\n-    request = httpx.Request(\n-        \"GET\", \"http://example.com\", headers={\"Authorization\": \"empty\"}\n-    )\n-\n-    client = httpx.Client()\n-    headers = client._redirect_headers(request, url, \"GET\")\n-\n-    assert \"Authorization\" in headers\n-\n-\n-def test_is_not_https_redirect():\n-    url = httpx.URL(\"https://www.example.com\")\n-    request = httpx.Request(\n-        \"GET\", \"http://example.com\", headers={\"Authorization\": \"empty\"}\n-    )\n-\n-    client = httpx.Client()\n-    headers = client._redirect_headers(request, url, \"GET\")\n-\n-    assert \"Authorization\" not in headers\n-\n-\n-def test_is_not_https_redirect_if_not_default_ports():\n-    url = httpx.URL(\"https://example.com:1337\")\n-    request = httpx.Request(\n-        \"GET\", \"http://example.com:9999\", headers={\"Authorization\": \"empty\"}\n-    )\n-\n-    client = httpx.Client()\n-    headers = client._redirect_headers(request, url, \"GET\")\n-\n-    assert \"Authorization\" not in headers\n-\n-\n @pytest.mark.parametrize(\n     [\"pattern\", \"url\", \"expected\"],\n     ["
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.31,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.2,
+        "type": "noul"
+      },
+      "r2": {
+        "noul": 0.25,
+        "type": "noul"
+      },
+      "r3": {
+        "noul": 0.23,
+        "type": "noul"
+      },
+      "r4": {
+        "noul": 0.19,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 3367,
+      "output_tokens": 89
+    }
+  },
+  "variant": "single"
+}

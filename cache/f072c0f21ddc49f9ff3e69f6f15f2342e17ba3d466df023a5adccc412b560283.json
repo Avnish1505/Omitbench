@@ -1,0 +1,79 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_security.py::test_default_password_method` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_security.py::test_pbkdf2` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_security.py::test_require_salt` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_security.py::test_salted_hashes` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_security.py::test_scrypt` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/werkzeug/security.py\n+++ b/src/werkzeug/security.py\n@@ -5,10 +5,7 @@\n import os\n import posixpath\n import secrets\n-import typing as t\n-\n-if t.TYPE_CHECKING:\n-    pass\n+import warnings\n \n SALT_CHARS = \"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\"\n DEFAULT_PBKDF2_ITERATIONS = 600000\n@@ -21,91 +18,124 @@\n def gen_salt(length: int) -> str:\n     \"\"\"Generate a random string of SALT_CHARS with specified ``length``.\"\"\"\n     if length <= 0:\n-        raise ValueError(\"Salt length must be positive\")\n+        raise ValueError(\"Salt length must be at least 1.\")\n \n     return \"\".join(secrets.choice(SALT_CHARS) for _ in range(length))\n \n \n def _hash_internal(method: str, salt: str, password: str) -> tuple[str, str]:\n-    \"\"\"Internal password hash helper.  Supports plaintext without salt,\n-    unsalted and salted passwords.  In case salted passwords are used\n-    hmac is used.\n-    \"\"\"\n     if method == \"plain\":\n+        warnings.warn(\n+            \"The 'plain' password method is deprecated and will be removed in\"\n+            \" Werkzeug 2.4. Migrate to the 'scrypt' method.\",\n+            stacklevel=3,\n+        )\n         return password, method\n \n+    method, *args = method.split(\":\")\n     salt = salt.encode(\"utf-8\")\n     password = password.encode(\"utf-8\")\n \n-    if method.startswith(\"pbkdf2:\"):\n-        if not salt:\n-            raise ValueError(\"Salt is required for PBKDF2\")\n+    if method == \"scrypt\":\n+        if not args:\n+            n = 2**15\n+            r = 8\n+            p = 1\n+        else:\n+            try:\n+                n, r, p = map(int, args)\n+            except ValueError:\n+                raise ValueError(\"'scrypt' takes 3 arguments.\") from None\n \n-        args = method[7:].split(\":\")\n+        maxmem = 132 * n * r * p  # ideally 128, but some extra seems needed\n+        return (\n+            hashlib.scrypt(password, salt=salt, n=n, r=r, p=p, maxmem=maxmem).hex(),\n+            f\"scrypt:{n}:{r}:{p}\",\n+        )\n+    elif method == \"pbkdf2\":\n+        len_args = len(args)\n \n-        if len(args) not in (1, 2):\n-            raise ValueError(\"Invalid number of arguments for PBKDF2\")\n+        if len_args == 0:\n+            hash_name = \"sha256\"\n+            iterations = DEFAULT_PBKDF2_ITERATIONS\n+        elif len_args == 1:\n+            hash_name = args[0]\n+            iterations = DEFAULT_PBKDF2_ITERATIONS\n+        elif len_args == 2:\n+            hash_name = args[0]\n+            iterations = int(args[1])\n+        else:\n+            raise ValueError(\"'pbkdf2' takes 2 arguments.\")\n \n-        method = args.pop(0)\n-        iterations = int(args[0] or 0) if args else DEFAULT_PBKDF2_ITERATIONS\n         return (\n-            hashlib.pbkdf2_hmac(method, password, salt, iterations).hex(),\n-            f\"pbkdf2:{method}:{iterations}\",\n+            hashlib.pbkdf2_hmac(hash_name, password, salt, iterations).hex(),\n+            f\"pbkdf2:{hash_name}:{iterations}\",\n         )\n-\n-    if salt:\n+    else:\n+        warnings.warn(\n+            f\"The '{method}' password method is deprecated and will be removed in\"\n+            \" Werkzeug 2.4. Migrate to the 'scrypt' method.\",\n+            stacklevel=3,\n+        )\n         return hmac.new(salt, password, method).hexdigest(), method\n-\n-    return hashlib.new(method, password).hexdigest(), method\n \n \n def generate_password_hash(\n-    password: str, method: str = \"pbkdf2:sha256\", salt_length: int = 16\n+    password: str, method: str = \"pbkdf2\", salt_length: int = 16\n ) -> str:\n-    \"\"\"Hash a password with the given method and salt with a string of\n-    the given length. The format of the string returned includes the method\n-    that was used so that :func:`check_password_hash` can check the hash.\n+    \"\"\"Securely hash a password for storage. A password can be compared to a stored hash\n+    using :func:`check_password_hash`.\n \n-    The format for the hashed string looks like this::\n+    The following methods are supported:\n \n-        method$salt$hash\n+    -   ``scrypt``, more secure but not available on PyPy. The parameters are ``n``,\n+        ``r``, and ``p``, the default is ``scrypt:32768:8:1``. See\n+        :func:`hashlib.scrypt`.\n+    -   ``pbkdf2``, the default. The parameters are ``hash_method`` and ``iterations``,\n+        the default is ``pbkdf2:sha256:600000``. See :func:`hashlib.pbkdf2_hmac`.\n \n-    This method can **not** generate unsalted passwords but it is possible\n-    to set param method='plain' in order to enforce plaintext passwords.\n-    If a salt is used, hmac is used internally to salt the password.\n+    Default parameters may be updated to reflect current guidelines, and methods may be\n+    deprecated and removed if they are no longer considered secure. To migrate old\n+    hashes, you may generate a new hash when checking an old hash, or you may contact\n+    users with a link to reset their password.\n \n-    If PBKDF2 is wanted it can be enabled by setting the method to\n-    ``pbkdf2:method:iterations`` where iterations is optional::\n+    :param password: The plaintext password.\n+    :param method: The key derivation function and parameters.\n+    :param salt_length: The number of characters to generate for the salt.\n \n-        pbkdf2:sha256:80000$salt$hash\n-        pbkdf2:sha256$salt$hash\n+    .. versionchanged:: 2.3\n+        Scrypt support was added.\n \n-    :param password: the password to hash.\n-    :param method: the hash method to use (one that hashlib supports). Can\n-                   optionally be in the format ``pbkdf2:method:iterations``\n-                   to enable PBKDF2.\n-    :param salt_length: the length of the salt in letters.\n+    .. versionchanged:: 2.3\n+        The default iterations for pbkdf2 was increased to 600,000.\n+\n+    .. versionchanged:: 2.3\n+        All plain hashes are deprecated and will not be supported in Werkzeug 2.4.\n     \"\"\"\n-    salt = gen_salt(salt_length) if method != \"plain\" else \"\"\n+    salt = gen_salt(salt_length)\n     h, actual_method = _hash_internal(method, salt, password)\n     return f\"{actual_method}${salt}${h}\"\n \n \n def check_password_hash(pwhash: str, password: str) -> bool:\n-    \"\"\"Check a password against a given salted and hashed password value.\n-    In order to support unsalted legacy passwords this method supports\n-    plain text passwords, md5 and sha1 hashes (both salted and unsalted).\n+    \"\"\"Securely check that the given stored password hash, previously generated using\n+    :func:`generate_password_hash`, matches the given password.\n \n-    Returns `True` if the password matched, `False` otherwise.\n+    Methods may be deprecated and removed if they are no longer considered secure. To\n+    migrate old hashes, you may generate a new hash when checking an old hash, or you\n+    may contact users with a link to reset their password.\n \n-    :param pwhash: a hashed string like returned by\n-                   :func:`generate_password_hash`.\n-    :param password: the plaintext password to compare against the hash.\n+    :param pwhash: The hashed password.\n+    :param password: The plaintext password.\n+\n+    .. versionchanged:: 2.3\n+        All plain hashes are deprecated and will not be supported in Werkzeug 2.4.\n     \"\"\"\n-    if pwhash.count(\"$\") < 2:\n+    try:\n+        method, salt, hashval = pwhash.split(\"$\", 2)\n+    except ValueError:\n         return False\n \n-    method, salt, hashval = pwhash.split(\"$\", 2)\n     return hmac.compare_digest(_hash_internal(method, salt, password)[0], hashval)\n \n \n\n--- a/tests/test_security.py\n+++ b/tests/test_security.py\n@@ -1,5 +1,6 @@\n import os\n import posixpath\n+import sys\n \n import pytest\n \n@@ -8,25 +9,31 @@\n from werkzeug.security import safe_join\n \n \n-def test_password_hashing():\n-    hash0 = generate_password_hash(\"default\")\n-    assert check_password_hash(hash0, \"default\")\n-    assert hash0.startswith(\"pbkdf2:sha256:600000$\")\n+def test_default_password_method():\n+    value = generate_password_hash(\"secret\")\n+    assert value.startswith(\"pbkdf2:\")\n \n-    hash1 = generate_password_hash(\"default\", \"sha1\")\n-    hash2 = generate_password_hash(\"default\", method=\"sha1\")\n-    assert hash1 != hash2\n-    assert check_password_hash(hash1, \"default\")\n-    assert check_password_hash(hash2, \"default\")\n-    assert hash1.startswith(\"sha1$\")\n-    assert hash2.startswith(\"sha1$\")\n \n+@pytest.mark.xfail(\n+    sys.implementation.name == \"pypy\", reason=\"scrypt unavailable on pypy\"\n+)\n+def test_scrypt():\n+    value = generate_password_hash(\"secret\", method=\"scrypt\")\n+    assert check_password_hash(value, \"secret\")\n+    assert value.startswith(\"scrypt:32768:8:1$\")\n+\n+\n+def test_pbkdf2():\n+    value = generate_password_hash(\"secret\", method=\"pbkdf2\")\n+    assert check_password_hash(value, \"secret\")\n+    assert value.startswith(\"pbkdf2:sha256:600000$\")\n+\n+\n+\n+\n+def test_require_salt():\n     with pytest.raises(ValueError):\n-        generate_password_hash(\"default\", \"sha1\", salt_length=0)\n-\n-    fakehash = generate_password_hash(\"default\", method=\"plain\")\n-    assert fakehash == \"plain$$default\"\n-    assert check_password_hash(fakehash, \"default\")\n+        generate_password_hash(\"secret\", salt_length=0)\n \n \n def test_safe_join():"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.1,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.15,
+        "type": "noul"
+      },
+      "r2": {
+        "noul": 0.25,
+        "type": "noul"
+      },
+      "r3": {
+        "noul": 0.02,
+        "type": "noul"
+      },
+      "r4": {
+        "noul": 0.19,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 4043,
+      "output_tokens": 89
+    }
+  },
+  "variant": "single"
+}

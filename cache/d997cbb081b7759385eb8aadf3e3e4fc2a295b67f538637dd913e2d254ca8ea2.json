@@ -1,0 +1,127 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `src/flask/config.py::from_prefixed_env`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `src/flask/config.py::from_prefixed_env`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `src/flask/config.py::from_prefixed_env`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_config.py::test_config_from_custom_prefixed_env`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_config.py::test_config_from_custom_prefixed_env`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_config.py::test_config_from_custom_prefixed_env`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_config.py::test_config_from_prefixed_env`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_config.py::test_config_from_prefixed_env`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_config.py::test_config_from_prefixed_env`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/flask/config.py\n+++ b/src/flask/config.py\n@@ -1,9 +1,17 @@\n import errno\n+import json\n import os\n import types\n import typing as t\n \n from werkzeug.utils import import_string\n+\n+\n+def _json_loads(raw: t.Union[str, bytes]) -> t.Any:\n+    try:\n+        return json.loads(raw)\n+    except json.JSONDecodeError:\n+        return raw\n \n \n class ConfigAttribute:\n@@ -96,6 +104,44 @@\n                 \" file\"\n             )\n         return self.from_pyfile(rv, silent=silent)\n+\n+    def from_prefixed_env(\n+        self,\n+        prefix: str = \"FLASK_\",\n+        *,\n+        loads: t.Callable[[t.Union[str, bytes]], t.Any] = _json_loads,\n+    ) -> bool:\n+        \"\"\"Updates the config from environment variables with the prefix.\n+\n+        Calling this method will result in every environment variable\n+        starting with **prefix** being placed into the configuration\n+        without the **prefix**. The prefix is configurable as an\n+        argument. Note that this method updates the existing config.\n+\n+        For example if there is an environment variable\n+        ``FLASK_SECRET_KEY`` with value ``secretly`` and the prefix is\n+        ``FLASK_`` the config will contain the key ``SECRET_KEY`` with\n+        the value ``secretly`` after calling this method.\n+\n+        The value of the environment variable will be passed to the\n+        **loads** parameter before being placed into the config. By\n+        default **loads** utilises the stdlib json.loads to parse the\n+        value, falling back to the value itself on parsing error.\n+\n+        :param loads: A callable that takes a str (or bytes) returns\n+            the parsed value.\n+        :return: Always returns ``True``.\n+\n+        .. versionadded:: 2.1.0\n+\n+        \"\"\"\n+        mapping = {}\n+        for raw_key, value in os.environ.items():\n+            if raw_key.startswith(prefix):\n+                key = raw_key[len(prefix) :]  # Use removeprefix with Python 3.9\n+                mapping[key] = loads(value)\n+\n+        return self.from_mapping(mapping)\n \n     def from_pyfile(self, filename: str, silent: bool = False) -> bool:\n         \"\"\"Updates the values in the config from a Python file.  This function\n\n--- a/tests/test_config.py\n+++ b/tests/test_config.py\n@@ -36,6 +36,25 @@\n     current_dir = os.path.dirname(os.path.abspath(__file__))\n     app.config.from_file(os.path.join(current_dir, \"static\", \"config.json\"), json.load)\n     common_object_test(app)\n+\n+\n+def test_config_from_prefixed_env(monkeypatch):\n+    app = flask.Flask(__name__)\n+    monkeypatch.setenv(\"FLASK_A\", \"A value\")\n+    monkeypatch.setenv(\"FLASK_B\", \"true\")\n+    monkeypatch.setenv(\"FLASK_C\", \"1\")\n+    monkeypatch.setenv(\"FLASK_D\", \"1.2\")\n+    monkeypatch.setenv(\"NOT_FLASK_A\", \"Another value\")\n+    app.config.from_prefixed_env()\n+    assert app.config[\"A\"] == \"A value\"\n+    assert app.config[\"B\"] is True\n+    assert app.config[\"C\"] == 1\n+    assert app.config[\"D\"] == 1.2\n+    assert \"Another value\" not in app.config.items()\n+\n+\n+def test_config_from_custom_prefixed_env(monkeypatch):\n+    raise NotImplementedError\n \n \n def test_config_from_mapping():"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.94,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.85,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.94,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.03,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.13,
+        "type": "noul"
+      },
+      "r2_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r2_wired": {
+        "noul": 0.8,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 2215,
+      "output_tokens": 172
+    }
+  },
+  "variant": "split"
+}

@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_blueprints.py::test_child_and_parent_subdomain`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_blueprints.py::test_child_and_parent_subdomain`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_blueprints.py::test_child_and_parent_subdomain`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/flask/blueprints.py\n+++ b/src/flask/blueprints.py\n@@ -358,6 +358,9 @@\n         :param options: Keyword arguments forwarded from\n             :meth:`~Flask.register_blueprint`.\n \n+        .. versionchanged:: 2.3\n+            Nested blueprints now correctly apply subdomains.\n+\n         .. versionchanged:: 2.0.1\n             Nested blueprints are registered with their dotted name.\n             This allows different blueprints with the same name to be\n@@ -458,10 +461,12 @@\n             if bp_subdomain is None:\n                 bp_subdomain = blueprint.subdomain\n \n-            if state.subdomain is not None and bp_subdomain is None:\n-                bp_options[\"subdomain\"] = state.subdomain\n+            if state.subdomain is not None and bp_subdomain is not None:\n+                bp_options[\"subdomain\"] = bp_subdomain + \".\" + state.subdomain\n             elif bp_subdomain is not None:\n                 bp_options[\"subdomain\"] = bp_subdomain\n+            elif state.subdomain is not None:\n+                bp_options[\"subdomain\"] = state.subdomain\n \n             if bp_url_prefix is None:\n                 bp_url_prefix = blueprint.url_prefix\n\n--- a/tests/test_blueprints.py\n+++ b/tests/test_blueprints.py\n@@ -971,7 +971,7 @@\n     assert response.status_code == 200\n \n \n-def test_child_overrides_parent_subdomain(app, client) -> None:\n+def test_child_and_parent_subdomain(app, client) -> None:\n     child_subdomain = \"api\"\n     parent_subdomain = \"parent\"\n     parent = flask.Blueprint(\"parent\", __name__)\n@@ -988,7 +988,9 @@\n \n     domain_name = \"domain.tld\"\n     app.config[\"SERVER_NAME\"] = domain_name\n-    response = client.get(\"/\", base_url=f\"http://{child_subdomain}.{domain_name}\")\n+    response = client.get(\n+        \"/\", base_url=f\"http://{child_subdomain}.{parent_subdomain}.{domain_name}\"\n+    )\n \n     assert response.status_code == 200\n "
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.93,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.21,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1160,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

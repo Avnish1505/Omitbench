@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_validators.py::TestOr`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_validators.py::TestOr`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_validators.py::TestOr`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/attr/validators.py\n+++ b/src/attr/validators.py\n@@ -35,6 +35,7 @@\n     \"min_len\",\n     \"not_\",\n     \"optional\",\n+    \"or_\",\n     \"set_disabled\",\n ]\n \n@@ -615,3 +616,46 @@\n         exc_types = (exc_types,)\n     return _NotValidator(validator, msg, exc_types)\n \n+\n+@attrs(repr=False, slots=True, hash=True)\n+class _OrValidator:\n+    validators = attrib()\n+\n+    def __call__(self, inst, attr, value):\n+        for v in self.validators:\n+            try:\n+                v(inst, attr, value)\n+            except Exception:  # noqa: BLE001, PERF203, S112\n+                continue\n+            else:\n+                return\n+\n+        msg = f\"None of {self.validators!r} satisfied for value {value!r}\"\n+        raise ValueError(msg)\n+\n+    def __repr__(self):\n+        return f\"<or validator wrapping {self.validators!r}>\"\n+\n+\n+def or_(*validators):\n+    \"\"\"\n+    A validator that composes multiple validators into one.\n+\n+    When called on a value, it runs all wrapped validators until one of them\n+    is satisfied.\n+\n+    :param ~collections.abc.Iterable[typing.Callable] validators: Arbitrary\n+        number of validators.\n+\n+    :raises ValueError: If no validator is satisfied. Raised with a\n+        human-readable error message listing all the wrapped validators and\n+        the value that failed all of them.\n+\n+    .. versionadded:: 24.1.0\n+    \"\"\"\n+    vals = []\n+    for v in validators:\n+        vals.extend(v.validators if isinstance(v, _OrValidator) else [v])\n+\n+    return _OrValidator(tuple(vals))\n+\n\n--- a/tests/test_validators.py\n+++ b/tests/test_validators.py\n@@ -30,6 +30,7 @@\n     min_len,\n     not_,\n     optional,\n+    or_,\n )\n \n from .utils import simple_attr\n@@ -1262,3 +1263,5 @@\n             \"(got <class 'str'>).\"\n         ) == e.value.args[0]\n \n+\n+"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.06,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.05,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.21,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1163,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

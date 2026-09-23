@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_defaults.py::test_unset_in_default_map` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/click/core.py\n+++ b/src/click/core.py\n@@ -685,6 +685,20 @@\n             self.obj = rv = object_type()\n         return rv\n \n+    def _default_map_has(self, name: str | None) -> bool:\n+        \"\"\"Check if :attr:`default_map` contains a real value for ``name``.\n+\n+        Returns ``False`` when the key is absent, the map is ``None``,\n+        ``name`` is ``None``, or the stored value is the internal\n+        :data:`UNSET` sentinel.\n+        \"\"\"\n+        return (\n+            name is not None\n+            and self.default_map is not None\n+            and name in self.default_map\n+            and self.default_map[name] is not UNSET\n+        )\n+\n     @t.overload\n     def lookup_default(\n         self, name: str, call: t.Literal[True] = True\n@@ -705,15 +719,17 @@\n         .. versionchanged:: 8.0\n             Added the ``call`` parameter.\n         \"\"\"\n-        if self.default_map is not None:\n-            value = self.default_map.get(name)\n-\n-            if call and callable(value):\n-                return value()\n-\n-            return value\n-\n-        return None\n+        if not self._default_map_has(name):\n+            return None\n+\n+        # Assert to make the type checker happy.\n+        assert self.default_map is not None\n+        value = self.default_map[name]\n+\n+        if call and callable(value):\n+            return value()\n+\n+        return value\n \n     def fail(self, message: str) -> t.NoReturn:\n         \"\"\"Aborts the execution of the program with a specific error\n@@ -2281,9 +2297,7 @@\n         name = self.name\n         value = ctx.lookup_default(name, call=False) if name is not None else None\n \n-        if value is None and not (\n-            ctx.default_map is not None and name is not None and name in ctx.default_map\n-        ):\n+        if value is None and not ctx._default_map_has(name):\n             value = self.default\n \n         if call and callable(value):\n@@ -2325,9 +2339,7 @@\n \n         if value is UNSET:\n             default_map_value = ctx.lookup_default(self.name)  # type: ignore[arg-type]\n-            if default_map_value is not None or (\n-                ctx.default_map is not None and self.name in ctx.default_map\n-            ):\n+            if default_map_value is not None or ctx._default_map_has(self.name):\n                 value = default_map_value\n                 source = ParameterSource.DEFAULT_MAP\n \n\n--- a/tests/test_defaults.py\n+++ b/tests/test_defaults.py\n@@ -2,6 +2,7 @@\n \n import click\n from click import UNPROCESSED\n+from click._utils import UNSET\n \n \n @pytest.mark.parametrize(\n@@ -355,3 +356,22 @@\n     assert result.exit_code == 0\n     assert result.output == repr(expected)\n \n+\n+def test_unset_in_default_map(runner):\n+    \"\"\"An ``UNSET`` value in ``default_map`` should be treated as if\n+    the key is absent, and so fallback to the parameter's own default.\n+\n+    Refs: https://github.com/pallets/click/pull/3224#issuecomment-3968643305\n+    \"\"\"\n+\n+    @click.command(\n+        context_settings={\"default_map\": {\"port\": UNSET}},\n+    )\n+    @click.option(\"--port\", default=8000)\n+    def cli(port):\n+        click.echo(f\"port={port}\")\n+\n+    result = runner.invoke(cli, [])\n+    assert result.exit_code == 0\n+    assert result.output.strip() == \"port=8000\"\n+"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.21,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1379,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_utils.py::test_should_bypass_proxies_no_proxy_domain_boundary`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_utils.py::test_should_bypass_proxies_no_proxy_domain_boundary`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_utils.py::test_should_bypass_proxies_no_proxy_domain_boundary`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/requests/utils.py\n+++ b/src/requests/utils.py\n@@ -851,9 +851,11 @@\n                 host_with_port += f\":{parsed.port}\"\n \n             for host in no_proxy_hosts:\n+                host = host.lstrip(\".\")\n+                if hostname == host or host_with_port == host:\n+                    return True\n+                host = \".\" + host\n                 if hostname.endswith(host) or host_with_port.endswith(host):\n-                    # The URL does match something in no_proxy, so we don't want\n-                    # to apply the proxies on this URL.\n                     return True\n \n     with set_environ(\"no_proxy\", no_proxy_arg):\n\n--- a/tests/test_utils.py\n+++ b/tests/test_utils.py\n@@ -844,6 +844,22 @@\n     assert should_bypass_proxies(url, no_proxy=no_proxy) == expected\n \n \n+@pytest.mark.parametrize(\n+    \"url, expected\",\n+    (\n+        (\"http://localhost/\", True),\n+        (\"http://anotherdomain.com:8888/\", True),\n+        (\"http://newdomain.com:1234/\", True),\n+        (\"http://www.newdomain.com:1234/\", True),\n+        (\"http://foo.d.o.t/\", True),\n+        (\"http://d.o.t/\", True),\n+        (\"http://prelocalhost/\", False),\n+        (\"http://newdomain.com/\", False),\n+        (\"http://newdomain.com:1235/\", False),\n+    ),\n+)\n+\n+\n @pytest.mark.skipif(os.name != \"nt\", reason=\"Test only on Windows\")\n @pytest.mark.parametrize(\n     \"url, expected, override\","
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.14,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.31,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.41,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1023,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

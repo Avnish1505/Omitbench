@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_utils.py::test_should_bypass_proxies_win_registry_ProxyOverride_value` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/requests/utils.py\n+++ b/src/requests/utils.py\n@@ -97,7 +97,7 @@\n         # '<local>' string by the localhost entry and the corresponding\n         # canonical entry.\n         proxyOverride = proxyOverride.split(\";\")\n-        # filter out empty strings to avoid re.match all true.\n+        # filter out empty strings to avoid re.match return true in the following code.\n         proxyOverride = filter(None, proxyOverride)\n         # now check if we match one of the registry values.\n         for test in proxyOverride:\n\n--- a/tests/test_utils.py\n+++ b/tests/test_utils.py\n@@ -925,3 +925,35 @@\n \n     assert \"Expected exception\" in str(exception.value)\n \n+\n+@pytest.mark.skipif(os.name != \"nt\", reason=\"Test only on Windows\")\n+def test_should_bypass_proxies_win_registry_ProxyOverride_value(monkeypatch):\n+    \"\"\"Tests for function should_bypass_proxies to check if proxy\n+    can be bypassed or not with Windows ProxyOverride registry value ending with a semicolon.\n+    \"\"\"\n+    import winreg\n+\n+    class RegHandle:\n+        def Close(self):\n+            pass\n+\n+    ie_settings = RegHandle()\n+\n+    def OpenKey(key, subkey):\n+        return ie_settings\n+\n+    def QueryValueEx(key, value_name):\n+        if key is ie_settings:\n+            if value_name == \"ProxyEnable\":\n+                return [1]\n+            elif value_name == \"ProxyOverride\":\n+                return [\n+                    \"192.168.*;127.0.0.1;localhost.localdomain;172.16.1.1;<-loopback>;\"\n+                ]\n+\n+    monkeypatch.setenv(\"NO_PROXY\", \"\")\n+    monkeypatch.setenv(\"no_proxy\", \"\")\n+    monkeypatch.setattr(winreg, \"OpenKey\", OpenKey)\n+    monkeypatch.setattr(winreg, \"QueryValueEx\", QueryValueEx)\n+    assert should_bypass_proxies(\"http://example.com/\", None) is False\n+"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.33,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1023,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

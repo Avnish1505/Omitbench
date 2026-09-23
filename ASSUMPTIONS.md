@@ -791,3 +791,19 @@ They are one model on one hard, out-of-domain classification task.
   (`tests/test_jev.py::test_post_sends_bearer_retries_429_and_parses`).
   Headers are not part of the cache key. Question text, threshold,
   min-combination and parsing are unchanged.
+- *2026-09-23, transport.* Cloudflare origin errors 520-524 were not
+  retried; one B7-single variant, werkzeug 09543c02582d CLEAN, got 520 and
+  was retried after the fix; no answer had been produced, so this fills a
+  gap and does not re-roll a result. `jev.RETRYABLE` now includes 520-524
+  (`tests/test_jev.py::test_post_sends_bearer_retries_429_and_parses`
+  covers a 520). Error responses are never cached, so the rerun served
+  every other variant from cache unchanged.
+- *2026-09-23, analysis script.* Calibration script aligned to the
+  pre-registered tie rule before any analysis output was read.
+  `analyze_calibration.mcc()` counted P(omitted) >= 0.5 as OMITTED; the
+  rule is OMITTED iff P(implemented) < 0.5, so a 0.5 tie is IMPLEMENTED (as
+  in `jev.verdicts_from` and `scripts/analyze.py`). Now strict `>`
+  (`tests/test_jev.py::test_calibration_mcc_treats_half_as_implemented`).
+  In the first full sweep 4 single and 13 split records sat exactly at
+  0.5. This affects only the calibration table's MCC column; rules 1-4 do
+  not read it.

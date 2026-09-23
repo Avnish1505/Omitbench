@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_routing.py::test_bind_long_idna_name_with_port` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/werkzeug/routing/map.py\n+++ b/src/werkzeug/routing/map.py\n@@ -251,6 +251,9 @@\n         if path_info is None:\n             path_info = \"/\"\n \n+        # Port isn't part of IDNA, and might push a name over the 63 octet limit.\n+        server_name, port_sep, port = server_name.partition(\":\")\n+\n         try:\n             server_name = server_name.encode(\"idna\").decode(\"ascii\")\n         except UnicodeError as e:\n@@ -258,7 +261,7 @@\n \n         return MapAdapter(\n             self,\n-            server_name,\n+            f\"{server_name}{port_sep}{port}\",\n             script_name,\n             subdomain,\n             url_scheme,\n\n--- a/tests/test_routing.py\n+++ b/tests/test_routing.py\n@@ -1045,6 +1045,10 @@\n     assert adapter.subdomain == \"<invalid>\"\n \n \n+def test_bind_long_idna_name_with_port():\n+    raise NotImplementedError\n+\n+\n def test_converter_parser():\n     args, kwargs = r.parse_converter_args(\"test, a=1, b=3.0\")\n "
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.01,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 784,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

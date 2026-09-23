@@ -81,7 +81,10 @@ THRESHOLD = 0.5                 # pre-registered, never tuned on this corpus
 MAX_RETRIES = 4
 TIMEOUT_S = 60
 CACHE_DIR = os.environ.get("OMITBENCH_JEV_CACHE_DIR", J.CACHE_DIR)   # override for mock runs
-RETRYABLE = {429, 500, 502, 503, 504, 529}
+# 520-524 are Cloudflare origin errors (empty/unparseable origin reply,
+# origin down, timeouts). Transient by nature; not retrying 520 dropped one
+# variant in the first full sweep. ASSUMPTIONS.md section 13.
+RETRYABLE = {429, 500, 502, 503, 504, 520, 521, 522, 523, 524, 529}
 # urllib's default "Python-urllib/3.x" User-Agent is blocked by Cloudflare in
 # front of the API (HTTP 403, "error code: 1010") before the key is checked.
 # Transport fix, found in the first smoke call; ASSUMPTIONS.md section 13.

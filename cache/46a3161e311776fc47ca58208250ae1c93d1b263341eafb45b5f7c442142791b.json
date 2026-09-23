@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_nativetypes.py::test_block`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_nativetypes.py::test_block`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_nativetypes.py::test_block`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/jinja2/runtime.py\n+++ b/src/jinja2/runtime.py\n@@ -367,7 +367,7 @@\n \n     @internalcode\n     async def _async_call(self) -> str:\n-        rv = concat(\n+        rv = self._context.environment.concat(  # type: ignore\n             [x async for x in self._stack[self._depth](self._context)]  # type: ignore\n         )\n \n@@ -381,7 +381,9 @@\n         if self._context.environment.is_async:\n             return self._async_call()  # type: ignore\n \n-        rv = concat(self._stack[self._depth](self._context))\n+        rv = self._context.environment.concat(  # type: ignore\n+            self._stack[self._depth](self._context)\n+        )\n \n         if self._context.eval_ctx.autoescape:\n             return Markup(rv)\n\n--- a/tests/test_nativetypes.py\n+++ b/tests/test_nativetypes.py\n@@ -161,3 +161,7 @@\n     assert result == 2\n     assert isinstance(result, int)\n \n+\n+def test_block(env):\n+    raise NotImplementedError\n+"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.03,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.08,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 898,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

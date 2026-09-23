@@ -1,0 +1,43 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_reqctx.py::test_copy_context_thread` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_reqctx.py::work` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/flask/ctx.py\n+++ b/src/flask/ctx.py\n@@ -189,18 +189,18 @@\n \n     .. versionadded:: 0.10\n     \"\"\"\n-    ctx = _cv_app.get(None)\n-\n-    if ctx is None:\n+    # Store the context that was active when the decorator was applied.\n+    original = _cv_app.get(None)\n+\n+    if original is None:\n         raise RuntimeError(\n             \"'copy_current_request_context' can only be used when a\"\n             \" request context is active, such as in a view function.\"\n         )\n \n-    ctx = ctx.copy()\n-\n     def wrapper(*args: t.Any, **kwargs: t.Any) -> t.Any:\n-        with ctx:\n+        # Copy the context before pushing, so each worker acts independently.\n+        with original.copy() as ctx:\n             return ctx.app.ensure_sync(f)(*args, **kwargs)\n \n     return update_wrapper(wrapper, f)  # type: ignore[return-value]\n\n--- a/tests/test_reqctx.py\n+++ b/tests/test_reqctx.py\n@@ -1,16 +1,15 @@\n+from __future__ import annotations\n+\n+import collections.abc as cabc\n import warnings\n+from concurrent import futures\n \n import pytest\n \n import flask\n-from flask.globals import app_ctx\n from flask.sessions import SecureCookieSessionInterface\n from flask.sessions import SessionInterface\n-\n-try:\n-    from greenlet import greenlet\n-except ImportError:\n-    greenlet = None\n+from flask.testing import FlaskClient\n \n \n def test_teardown_on_pop(app):\n@@ -145,61 +144,34 @@\n         index()\n \n \n-@pytest.mark.skipif(greenlet is None, reason=\"greenlet not installed\")\n-class TestGreenletContextCopying:\n-    def test_greenlet_context_copying(self, app, client):\n-        greenlets = []\n-\n-        @app.route(\"/\")\n-        def index():\n-            flask.session[\"fizz\"] = \"buzz\"\n-            ctx = app_ctx.copy()\n-\n-            def g():\n-                assert not flask.request\n-                assert not flask.current_app\n-                with ctx:\n-                    assert flask.request\n-                    assert flask.current_app == app\n-                    assert flask.request.path == \"/\"\n-                    assert flask.request.args[\"foo\"] == \"bar\"\n-                    assert flask.session.get(\"fizz\") == \"buzz\"\n-                assert not flask.request\n-                return 42\n-\n-            greenlets.append(greenlet(g))\n-            return \"Hello World!\"\n-\n-        rv = client.get(\"/?foo=bar\")\n-        assert rv.data == b\"Hello World!\"\n-\n-        result = greenlets[0].run()\n-        assert result == 42\n-\n-    def test_greenlet_context_copying_api(self, app, client):\n-        greenlets = []\n-\n-        @app.route(\"/\")\n-        def index():\n-            flask.session[\"fizz\"] = \"buzz\"\n-\n-            @flask.copy_current_request_context\n-            def g():\n-                assert flask.request\n-                assert flask.current_app == app\n-                assert flask.request.path == \"/\"\n-                assert flask.request.args[\"foo\"] == \"bar\"\n-                assert flask.session.get(\"fizz\") == \"buzz\"\n-                return 42\n-\n-            greenlets.append(greenlet(g))\n-            return \"Hello World!\"\n-\n-        rv = client.get(\"/?foo=bar\")\n-        assert rv.data == b\"Hello World!\"\n-\n-        result = greenlets[0].run()\n-        assert result == 42\n+def test_copy_context_thread(\n+    request: pytest.FixtureRequest, app: flask.Flask, client: FlaskClient\n+) -> None:\n+    executor = futures.ThreadPoolExecutor(max_workers=2)\n+    request.addfinalizer(lambda: executor.shutdown(cancel_futures=True))\n+    result: cabc.Iterator[int] | None = None\n+\n+    @app.route(\"/\")\n+    def index():\n+        flask.session[\"fizz\"] = \"buzz\"\n+\n+        @flask.copy_current_request_context\n+        def work(n: int) -> int:\n+            assert flask.current_app == app\n+            assert flask.request.path == \"/\"\n+            assert flask.request.args[\"foo\"] == \"bar\"\n+            assert flask.session[\"fizz\"] == \"buzz\"\n+            return n\n+\n+        nonlocal result\n+        result = executor.map(work, range(10))\n+        return \"Hello World!\"\n+\n+    rv = client.get(query_string={\"foo\": \"bar\"})\n+    assert rv.text == \"Hello World!\"\n+\n+    assert result is not None\n+    assert set(result) == set(range(10))\n \n \n def test_session_error_pops_context():"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.3,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.95,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1837,
+      "output_tokens": 38
+    }
+  },
+  "variant": "single"
+}

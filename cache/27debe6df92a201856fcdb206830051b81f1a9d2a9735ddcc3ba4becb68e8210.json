@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_api.py::test_get_template_undefined`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_api.py::test_get_template_undefined`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_api.py::test_get_template_undefined`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/jinja2/environment.py\n+++ b/jinja2/environment.py\n@@ -25,7 +25,7 @@\n from jinja2.compiler import generate, CodeGenerator\n from jinja2.runtime import Undefined, new_context, Context\n from jinja2.exceptions import TemplateSyntaxError, TemplateNotFound, \\\n-     TemplatesNotFound, TemplateRuntimeError\n+     TemplatesNotFound, TemplateRuntimeError, UndefinedError\n from jinja2.utils import import_string, LRUCache, Markup, missing, \\\n      concat, consume, internalcode, have_async_gen\n from jinja2._compat import imap, ifilter, string_types, iteritems, \\\n@@ -812,12 +812,20 @@\n         before it fails.  If it cannot find any of the templates, it will\n         raise a :exc:`TemplatesNotFound` exception.\n \n-        .. versionadded:: 2.3\n+        .. versionchanged:: 2.11\n+            If names is :class:`Undefined`, an :exc:`UndefinedError` is\n+            raised instead. If no templates were found and names\n+            contains :class:`Undefined`, the message is more helpful.\n \n         .. versionchanged:: 2.4\n            If `names` contains a :class:`Template` object it is returned\n            from the function unchanged.\n-        \"\"\"\n+\n+        .. versionadded:: 2.3\n+        \"\"\"\n+        if isinstance(names, Undefined):\n+            names._fail_with_undefined_error()\n+\n         if not names:\n             raise TemplatesNotFound(message=u'Tried to select from an empty list '\n                                             u'of templates.')\n@@ -829,7 +837,7 @@\n                 name = self.join_path(name, parent)\n             try:\n                 return self._load_template(name, globals)\n-            except TemplateNotFound:\n+            except (TemplateNotFound, UndefinedError):\n                 pass\n         raise TemplatesNotFound(names)\n \n@@ -842,7 +850,7 @@\n \n         .. versionadded:: 2.3\n         \"\"\"\n-        if isinstance(template_name_or_list, string_types):\n+        if isinstance(template_name_or_list, (string_types, Undefined)):\n             return self.get_template(template_name_or_list, parent, globals)\n         elif isinstance(template_name_or_list, Template):\n             return template_name_or_list\n\n--- a/jinja2/exceptions.py\n+++ b/jinja2/exceptions.py\n@@ -43,7 +43,12 @@\n \n @implements_to_string\n class TemplateNotFound(IOError, LookupError, TemplateError):\n-    \"\"\"Raised if a template does not exist.\"\"\"\n+    \"\"\"Raised if a template does not exist.\n+\n+    .. versionchanged:: 2.11\n+        If the given name is :class:`Undefined` and no message was\n+        provided, an :exc:`UndefinedError` is raised.\n+    \"\"\"\n \n     # looks weird, but removes the warning descriptor that just\n     # bogusly warns us about message being deprecated\n@@ -51,8 +56,15 @@\n \n     def __init__(self, name, message=None):\n         IOError.__init__(self, name)\n+\n         if message is None:\n+            from jinja2.runtime import Undefined\n+\n+            if isinstance(name, Undefined):\n+                name._fail_with_undefined_error()\n+\n             message = name\n+\n         self.message = message\n         self.name = name\n         self.templates = [name]\n@@ -66,13 +78,27 @@\n     are selected.  This is a subclass of :class:`TemplateNotFound`\n     exception, so just catching the base exception will catch both.\n \n+    .. versionchanged:: 2.11\n+        If a name in the list of names is :class:`Undefined`, a message\n+        about it being undefined is shown rather than the empty string.\n+\n     .. versionadded:: 2.2\n     \"\"\"\n \n     def __init__(self, names=(), message=None):\n         if message is None:\n+            from jinja2.runtime import Undefined\n+\n+            parts = []\n+\n+            for name in names:\n+                if isinstance(name, Undefined):\n+                    parts.append(name._undefined_message)\n+                else:\n+                    parts.append(name)\n+\n             message = u'none of the templates given were found: ' + \\\n-                      u', '.join(imap(text_type, names))\n+                      u', '.join(imap(text_type, parts))\n         TemplateNotFound.__init__(self, names and names[-1] or None, message)\n         self.templates = list(names)\n \n\n--- a/jinja2/runtime.py\n+++ b/jinja2/runtime.py\n@@ -668,27 +668,34 @@\n         self._undefined_name = name\n         self._undefined_exception = exc\n \n+    @property\n+    def _undefined_message(self):\n+        \"\"\"Build a message about the undefined value based on how it was\n+        accessed.\n+        \"\"\"\n+        if self._undefined_hint:\n+            return self._undefined_hint\n+\n+        if self._undefined_obj is missing:\n+            return '%r is undefined' % self._undefined_name\n+\n+        if not isinstance(self._undefined_name, string_types):\n+            return '%s has no element %r' % (\n+                object_type_repr(self._undefined_obj),\n+                self._undefined_name\n+            )\n+\n+        return '%r has no attribute %r' % (\n+            object_type_repr(self._undefined_obj),\n+            self._undefined_name\n+        )\n+\n     @internalcode\n     def _fail_with_undefined_error(self, *args, **kwargs):\n-        \"\"\"Regular callback function for undefined objects that raises an\n-        `UndefinedError` on call.\n-        \"\"\"\n-        if self._undefined_hint is None:\n-            if self._undefined_obj is missing:\n-                hint = '%r is undefined' % self._undefined_name\n-            elif not isinstance(self._undefined_name, string_types):\n-                hint = '%s has no element %r' % (\n-                    object_type_repr(self._undefined_obj),\n-                    self._undefined_name\n-                )\n-            else:\n-                hint = '%r has no attribute %r' % (\n-                    object_type_repr(self._undefined_obj),\n-                    self._undefined_name\n-                )\n-        else:\n-            hint = self._undefined_hint\n-        raise self._undefined_exception(hint)\n+        \"\"\"Raise an :exc:`UndefinedError` when operations are performed\n+        on the undefined value.\n+        \"\"\"\n+        raise self._undefined_exception(self._undefined_message)\n \n     @internalcode\n     def __getattr__(self, name):\n\n--- a/tests/test_api.py\n+++ b/tests/test_api.py\n@@ -17,6 +17,7 @@\n from jinja2 import Environment, Undefined, ChainableUndefined, \\\n      DebugUndefined, StrictUndefined, UndefinedError, meta, \\\n      is_undefined, Template, DictLoader, make_logging_undefined\n+from jinja2 import TemplatesNotFound\n from jinja2.compiler import CodeGenerator\n from jinja2.runtime import Context\n from jinja2.utils import Cycler\n@@ -124,6 +125,10 @@\n         assert env.select_template([t]) is t\n         assert env.get_or_select_template([t]) is t\n         assert env.get_or_select_template(t) is t\n+\n+    def test_get_template_undefined(self, env):\n+        raise NotImplementedError\n+\n \n     def test_autoescape_autoselect(self, env):\n         def select_autoescape(name):"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.03,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.23,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 2397,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

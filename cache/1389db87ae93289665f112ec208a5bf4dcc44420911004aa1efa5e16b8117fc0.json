@@ -1,0 +1,271 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `httpx/_urlparse.py::PERCENT`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `httpx/_urlparse.py::PERCENT`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `httpx/_urlparse.py::PERCENT`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/models/test_url.py::test_param_with_percent_encoded`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/models/test_url.py::test_param_with_percent_encoded`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/models/test_url.py::test_param_with_percent_encoded`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/models/test_url.py::test_param_with_space`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/models/test_url.py::test_param_with_space`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/models/test_url.py::test_param_with_space`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/models/test_url.py::test_query_requiring_percent_encoding`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/models/test_url.py::test_query_requiring_percent_encoding`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/models/test_url.py::test_query_requiring_percent_encoding`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/models/test_url.py::test_query_with_existing_percent_encoding`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/models/test_url.py::test_query_with_existing_percent_encoding`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/models/test_url.py::test_query_with_existing_percent_encoding`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r5_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/models/test_url.py::test_query_with_mixed_percent_encoding`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r5_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/models/test_url.py::test_query_with_mixed_percent_encoding`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r5_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/models/test_url.py::test_query_with_mixed_percent_encoding`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r6_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/models/test_url.py::test_url_percent_escape_host`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r6_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/models/test_url.py::test_url_percent_escape_host`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r6_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/models/test_url.py::test_url_percent_escape_host`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/httpx/_urlparse.py\n+++ b/httpx/_urlparse.py\n@@ -406,44 +406,22 @@\n     return \"/\".join(output)\n \n \n-def percent_encode(char: str) -> str:\n-    \"\"\"\n-    Replace a single character with the percent-encoded representation.\n-\n-    Characters outside the ASCII range are represented with their a percent-encoded\n-    representation of their UTF-8 byte sequence.\n-\n-    For example:\n-\n-        percent_encode(\" \") == \"%20\"\n-    \"\"\"\n-    return \"\".join([f\"%{byte:02x}\" for byte in char.encode(\"utf-8\")]).upper()\n-\n-\n-def is_safe(string: str, safe: str = \"/\") -> bool:\n-    \"\"\"\n-    Determine if a given string is already quote-safe.\n-    \"\"\"\n-    NON_ESCAPED_CHARS = UNRESERVED_CHARACTERS + safe + \"%\"\n-\n-    # All characters must already be non-escaping or '%'\n-    for char in string:\n-        if char not in NON_ESCAPED_CHARS:\n-            return False\n-\n-    return True\n+def PERCENT(string: str) -> str:\n+    raise NotImplementedError\n \n \n def percent_encoded(string: str, safe: str = \"/\") -> str:\n     \"\"\"\n     Use percent-encoding to quote a string.\n     \"\"\"\n-    if is_safe(string, safe=safe):\n+    NON_ESCAPED_CHARS = UNRESERVED_CHARACTERS + safe\n+\n+    # Fast path for strings that don't need escaping.\n+    if not string.rstrip(NON_ESCAPED_CHARS):\n         return string\n \n-    NON_ESCAPED_CHARS = UNRESERVED_CHARACTERS + safe\n     return \"\".join(\n-        [char if char in NON_ESCAPED_CHARS else percent_encode(char) for char in string]\n+        [char if char in NON_ESCAPED_CHARS else PERCENT(char) for char in string]\n     )\n \n \n\n--- a/tests/models/test_url.py\n+++ b/tests/models/test_url.py\n@@ -229,6 +229,11 @@\n     assert url.host == \"example.com\"\n \n \n+def test_url_percent_escape_host():\n+    url = httpx.URL(\"https://exam%le.com/\")\n+    assert url.host == \"exam%25le.com\"\n+\n+\n def test_url_ipv4_like_host():\n     \"\"\"rare host names used to quality as IPv4\"\"\"\n     url = httpx.URL(\"https://023b76x43144/\")\n@@ -278,22 +283,62 @@\n     assert url.path == \"../abc\"\n \n \n-# Tests for optional percent encoding\n-\n-\n-def test_param_requires_encoding():\n+# Tests for query parameter percent encoding.\n+#\n+# Percent-encoding in `params={}` should match browser form behavior.\n+\n+\n+def test_param_with_space():\n+    # Params passed as form key-value pairs should be escaped.\n     url = httpx.URL(\"http://webservice\", params={\"u\": \"with spaces\"})\n     assert str(url) == \"http://webservice?u=with%20spaces\"\n \n \n def test_param_does_not_require_encoding():\n+    # Params passed as form key-value pairs should be escaped.\n+    url = httpx.URL(\"http://webservice\", params={\"u\": \"%\"})\n+    assert str(url) == \"http://webservice?u=%25\"\n+\n+\n+def test_param_with_percent_encoded():\n+    # Params passed as form key-value pairs should always be escaped,\n+    # even if they include a valid escape sequence.\n+    # We want to match browser form behaviour here.\n     url = httpx.URL(\"http://webservice\", params={\"u\": \"with%20spaces\"})\n-    assert str(url) == \"http://webservice?u=with%20spaces\"\n+    assert str(url) == \"http://webservice?u=with%2520spaces\"\n \n \n def test_param_with_existing_escape_requires_encoding():\n+    # Params passed as form key-value pairs should always be escaped,\n+    # even if they include a valid escape sequence.\n+    # We want to match browser form behaviour here.\n     url = httpx.URL(\"http://webservice\", params={\"u\": \"http://example.com?q=foo%2Fa\"})\n     assert str(url) == \"http://webservice?u=http%3A%2F%2Fexample.com%3Fq%3Dfoo%252Fa\"\n+\n+\n+# Tests for query parameter percent encoding.\n+#\n+# Percent-encoding in `url={}` should match browser URL bar behavior.\n+\n+\n+def test_query_with_existing_percent_encoding():\n+    # Valid percent encoded sequences should not be double encoded.\n+    url = httpx.URL(\"http://webservice?u=phrase%20with%20spaces\")\n+    assert str(url) == \"http://webservice?u=phrase%20with%20spaces\"\n+\n+\n+def test_query_requiring_percent_encoding():\n+    # Characters that require percent encoding should be encoded.\n+    url = httpx.URL(\"http://webservice?u=phrase with spaces\")\n+    assert str(url) == \"http://webservice?u=phrase%20with%20spaces\"\n+\n+\n+def test_query_with_mixed_percent_encoding():\n+    # When a mix of encoded and unencoded characters are present,\n+    # characters that require percent encoding should be encoded,\n+    # while existing sequences should not be double encoded.\n+    url = httpx.URL(\"http://webservice?u=phrase%20with spaces\")\n+    assert str(url) == \"http://webservice?u=phrase%20with%20spaces\"\n \n \n # Tests for invalid URLs"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.95,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.04,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.93,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.8,
+        "type": "noul"
+      },
+      "r2_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "noul": 0.93,
+        "type": "noul"
+      },
+      "r2_wired": {
+        "noul": 0.58,
+        "type": "noul"
+      },
+      "r3_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r3_real_body": {
+        "noul": 0.94,
+        "type": "noul"
+      },
+      "r3_wired": {
+        "noul": 0.48,
+        "type": "noul"
+      },
+      "r4_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r4_real_body": {
+        "noul": 0.92,
+        "type": "noul"
+      },
+      "r4_wired": {
+        "noul": 0.64,
+        "type": "noul"
+      },
+      "r5_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r5_real_body": {
+        "noul": 0.93,
+        "type": "noul"
+      },
+      "r5_wired": {
+        "noul": 0.66,
+        "type": "noul"
+      },
+      "r6_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r6_real_body": {
+        "noul": 0.91,
+        "type": "noul"
+      },
+      "r6_wired": {
+        "noul": 0.8,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 4154,
+      "output_tokens": 396
+    }
+  },
+  "variant": "split"
+}

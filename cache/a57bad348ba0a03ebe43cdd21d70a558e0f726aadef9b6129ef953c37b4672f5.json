@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `itsdangerous.py::byte2int` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/itsdangerous.py\n+++ b/itsdangerous.py\n@@ -129,30 +129,34 @@\n \n \n def base64_encode(string):\n-    \"\"\"base64 encodes a single string.  The resulting string is safe for\n-    putting into URLs.\n-    \"\"\"\n-    return base64.urlsafe_b64encode(string).strip('=')\n+    \"\"\"base64 encodes a single bytestring.\n+    The resulting bytestring is safe for putting into URLs.\n+    \"\"\"\n+    return base64.urlsafe_b64encode(string).strip(b'=')\n \n \n def base64_decode(string):\n-    \"\"\"base64 decodes a single string.\"\"\"\n-    if isinstance(string, unicode):\n+    \"\"\"base64 decodes a single bytestring (and is tolerant to getting\n+    called with a unicode string).\n+    The result is also a bytestring.\n+    \"\"\"\n+    if isinstance(string, six.text_type):\n         string = string.encode('ascii', 'ignore')\n-    return base64.urlsafe_b64decode(string + '=' * (-len(string) % 4))\n+    return base64.urlsafe_b64decode(string + b'=' * (-len(string) % 4))\n \n \n def int_to_bytes(num):\n     assert num >= 0\n     rv = []\n     while num:\n-        rv.append(chr(num & 0xff))\n+        rv.append(six.int2byte(num & 0xff))\n         num >>= 8\n-    return ''.join(reversed(rv))\n-\n-\n-def bytes_to_int(bytes):\n-    return reduce(lambda a, b: a << 8 | b, map(ord, bytes), 0)\n+    return b''.join(reversed(rv))\n+\n+\n+def bytes_to_int(bytestr):\n+    assert isinstance(bytestr, bytes)\n+    return reduce(lambda a, b: a << 8 | b, map(byte2int, bytestr), 0)\n \n \n class SigningAlgorithm(object):"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.1,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 944,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

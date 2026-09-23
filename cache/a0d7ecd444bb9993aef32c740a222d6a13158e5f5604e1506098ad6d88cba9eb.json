@@ -1,0 +1,43 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_utils.py::test_copy_missing` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_utils.py::test_pickle_missing` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/jinja2/utils.py\n+++ b/src/jinja2/utils.py\n@@ -18,8 +18,17 @@\n \n F = t.TypeVar(\"F\", bound=t.Callable[..., t.Any])\n \n-# special singleton representing missing values for the runtime\n-missing: t.Any = type(\"MissingType\", (), {\"__repr__\": lambda x: \"missing\"})()\n+\n+class _MissingType:\n+    def __repr__(self) -> str:\n+        return \"missing\"\n+\n+    def __reduce__(self) -> str:\n+        return \"missing\"\n+\n+\n+missing: t.Any = _MissingType()\n+\"\"\"Special singleton representing missing values for the runtime.\"\"\"\n \n internal_code: t.MutableSet[CodeType] = set()\n \n\n--- a/tests/test_utils.py\n+++ b/tests/test_utils.py\n@@ -1,3 +1,4 @@\n+import copy\n import pickle\n import random\n from collections import deque\n@@ -184,3 +185,14 @@\n     with pytest.raises(StopIteration):\n         next(x)\n \n+\n+@pytest.mark.parametrize(\"protocol\", range(pickle.HIGHEST_PROTOCOL + 1))\n+def test_pickle_missing(protocol: int) -> None:\n+    \"\"\"Test that missing can be pickled while remaining a singleton.\"\"\"\n+    assert pickle.loads(pickle.dumps(missing, protocol)) is missing\n+\n+\n+def test_copy_missing() -> None:\n+    \"\"\"Test that missing can be copied while remaining a singleton.\"\"\"\n+    assert copy.copy(missing) is missing\n+"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.37,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.27,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1088,
+      "output_tokens": 38
+    }
+  },
+  "variant": "single"
+}

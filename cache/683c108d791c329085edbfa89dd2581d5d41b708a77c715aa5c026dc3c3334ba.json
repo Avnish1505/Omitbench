@@ -1,0 +1,91 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_api.py::test_httpcore_lazy_loading`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_api.py::test_httpcore_lazy_loading`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_api.py::test_httpcore_lazy_loading`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_config.py::test_certifi_lazy_loading`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_config.py::test_certifi_lazy_loading`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_config.py::test_certifi_lazy_loading`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/httpx/__version__.py\n+++ b/httpx/__version__.py\n@@ -1,4 +1,4 @@\n __title__ = \"httpx\"\n __description__ = \"A next generation HTTP client, for Python 3.\"\n-__version__ = \"0.28.0\"\n+__version__ = \"0.27.2\"\n \n\n--- a/httpx/_config.py\n+++ b/httpx/_config.py\n@@ -5,8 +5,6 @@\n import sys\n import typing\n import warnings\n-\n-import certifi\n \n from ._models import Headers\n from ._types import HeaderTypes, TimeoutTypes\n@@ -77,6 +75,8 @@\n         self,\n         verify: bool = True,\n     ) -> None:\n+        import certifi\n+\n         # ssl.SSLContext sets OP_NO_SSLv2, OP_NO_SSLv3, OP_NO_COMPRESSION,\n         # OP_CIPHER_SERVER_PREFERENCE, OP_SINGLE_DH_USE and OP_SINGLE_ECDH_USE\n         # by default. (from `ssl.create_default_context`)\n\n--- a/httpx/_main.py\n+++ b/httpx/_main.py\n@@ -6,7 +6,6 @@\n import typing\n \n import click\n-import httpcore\n import pygments.lexers\n import pygments.util\n import rich.console\n@@ -20,6 +19,9 @@\n from ._exceptions import RequestError\n from ._models import Response\n from ._status_codes import codes\n+\n+if typing.TYPE_CHECKING:\n+    import httpcore  # pragma: no cover\n \n \n def print_help() -> None:\n\n--- a/httpx/_transports/default.py\n+++ b/httpx/_transports/default.py\n@@ -27,11 +27,13 @@\n from __future__ import annotations\n \n import contextlib\n-import ssl\n import typing\n from types import TracebackType\n \n-import httpcore\n+if typing.TYPE_CHECKING:\n+    import ssl  # pragma: no cover\n+\n+    import httpx  # pragma: no cover\n \n from .._config import DEFAULT_LIMITS, Limits, Proxy, SSLContext, create_ssl_context\n from .._exceptions import (\n@@ -66,9 +68,35 @@\n \n __all__ = [\"AsyncHTTPTransport\", \"HTTPTransport\"]\n \n+HTTPCORE_EXC_MAP: dict[type[Exception], type[httpx.HTTPError]] = {}\n+\n+\n+def _load_httpcore_exceptions() -> dict[type[Exception], type[httpx.HTTPError]]:\n+    import httpcore\n+\n+    return {\n+        httpcore.TimeoutException: TimeoutException,\n+        httpcore.ConnectTimeout: ConnectTimeout,\n+        httpcore.ReadTimeout: ReadTimeout,\n+        httpcore.WriteTimeout: WriteTimeout,\n+        httpcore.PoolTimeout: PoolTimeout,\n+        httpcore.NetworkError: NetworkError,\n+        httpcore.ConnectError: ConnectError,\n+        httpcore.ReadError: ReadError,\n+        httpcore.WriteError: WriteError,\n+        httpcore.ProxyError: ProxyError,\n+        httpcore.UnsupportedProtocol: UnsupportedProtocol,\n+        httpcore.ProtocolError: ProtocolError,\n+        httpcore.LocalProtocolError: LocalProtocolError,\n+        httpcore.RemoteProtocolError: RemoteProtocolError,\n+    }\n+\n \n @contextlib.contextmanager\n def map_httpcore_exceptions() -> typing.Iterator[None]:\n+    global HTTPCORE_EXC_MAP\n+    if len(HTTPCORE_EXC_MAP) == 0:\n+        HTTPCORE_EXC_MAP = _load_httpcore_exceptions()\n     try:\n         yield\n     except Exception as exc:\n@@ -88,24 +116,6 @@\n \n         message = str(exc)\n         raise mapped_exc(message) from exc\n-\n-\n-HTTPCORE_EXC_MAP = {\n-    httpcore.TimeoutException: TimeoutException,\n-    httpcore.ConnectTimeout: ConnectTimeout,\n-    httpcore.ReadTimeout: ReadTimeout,\n-    httpcore.WriteTimeout: WriteTimeout,\n-    httpcore.PoolTimeout: PoolTimeout,\n-    httpcore.NetworkError: NetworkError,\n-    httpcore.ConnectError: ConnectError,\n-    httpcore.ReadError: ReadError,\n-    httpcore.WriteError: WriteError,\n-    httpcore.ProxyError: ProxyError,\n-    httpcore.UnsupportedProtocol: UnsupportedProtocol,\n-    httpcore.ProtocolError: ProtocolError,\n-    httpcore.LocalProtocolError: LocalProtocolError,\n-    httpcore.RemoteProtocolError: RemoteProtocolError,\n-}\n \n \n class ResponseStream(SyncByteStream):\n@@ -138,6 +148,8 @@\n         verify: typing.Any = None,\n         cert: typing.Any = None,\n     ) -> None:\n+        import httpcore\n+\n         proxy = Proxy(url=proxy) if isinstance(proxy, (str, URL)) else proxy\n         if verify is not None or cert is not None:  # pragma: nocover\n             # Deprecated...\n@@ -225,6 +237,7 @@\n         request: Request,\n     ) -> Response:\n         assert isinstance(request.stream, SyncByteStream)\n+        import httpcore\n \n         req = httpcore.Request(\n             method=request.method,\n@@ -284,6 +297,8 @@\n         verify: typing.Any = None,\n         cert: typing.Any = None,\n     ) -> None:\n+        import httpcore\n+\n         proxy = Proxy(url=proxy) if isinstance(proxy, (str, URL)) else proxy\n         if verify is not None or cert is not None:  # pragma: nocover\n             # Deprecated...\n@@ -371,6 +386,7 @@\n         request: Request,\n     ) -> Response:\n         assert isinstance(request.stream, AsyncByteStream)\n+        import httpcore\n \n         req = httpcore.Request(\n             method=request.method,\n\n--- a/tests/test_api.py\n+++ b/tests/test_api.py\n@@ -86,3 +86,18 @@\n     with pytest.raises(httpx.UnsupportedProtocol):\n         httpx.get(\"invalid://example.org\")\n \n+\n+# check that httpcore isn't imported until we do a request\n+def test_httpcore_lazy_loading(server):\n+    import sys\n+\n+    # unload our module if it is already loaded\n+    if \"httpx\" in sys.modules:\n+        del sys.modules[\"httpx\"]\n+        del sys.modules[\"httpcore\"]\n+    import httpx\n+\n+    assert \"httpcore\" not in sys.modules\n+    _response = httpx.get(server.url)\n+    assert \"httpcore\" in sys.modules\n+\n\n--- a/tests/test_config.py\n+++ b/tests/test_config.py\n@@ -189,3 +189,7 @@\n     with pytest.raises(ValueError):\n         httpx.Proxy(\"invalid://example.com\")\n \n+\n+def test_certifi_lazy_loading():\n+    raise NotImplementedError\n+"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.46,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.04,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.29,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 2693,
+      "output_tokens": 116
+    }
+  },
+  "variant": "split"
+}

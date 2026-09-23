@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_helpers.py::test_url_for_with_self`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_helpers.py::test_url_for_with_self`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_helpers.py::test_url_for_with_self`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/flask/app.py\n+++ b/src/flask/app.py\n@@ -952,6 +952,7 @@\n \n     def url_for(\n         self,\n+        /,\n         endpoint: str,\n         *,\n         _anchor: str | None = None,\n\n--- a/tests/test_helpers.py\n+++ b/tests/test_helpers.py\n@@ -160,6 +160,13 @@\n         assert flask.url_for(\"myview\", _method=\"GET\") == \"/myview/\"\n         assert flask.url_for(\"myview\", id=42, _method=\"GET\") == \"/myview/42\"\n         assert flask.url_for(\"myview\", _method=\"POST\") == \"/myview/create\"\n+\n+    def test_url_for_with_self(self, app, req_ctx):\n+        @app.route(\"/<self>\")\n+        def index(self):\n+            return \"42\"\n+\n+        assert flask.url_for(\"index\", self=\"2\") == \"/2\"\n \n \n def test_redirect_no_app():"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.48,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 847,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

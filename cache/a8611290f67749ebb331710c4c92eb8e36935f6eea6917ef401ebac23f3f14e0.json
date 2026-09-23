@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_utils.py::test_should_bypass_proxies_win_registry_bad_values` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/requests/utils.py\n+++ b/requests/utils.py\n@@ -83,7 +83,7 @@\n             proxyEnable = int(winreg.QueryValueEx(internetSettings, \"ProxyEnable\")[0])\n             # ProxyOverride is almost always a string\n             proxyOverride = winreg.QueryValueEx(internetSettings, \"ProxyOverride\")[0]\n-        except OSError:\n+        except (OSError, ValueError):\n             return False\n         if not proxyEnable or not proxyOverride:\n             return False\n\n--- a/tests/test_utils.py\n+++ b/tests/test_utils.py\n@@ -864,6 +864,39 @@\n     assert should_bypass_proxies(url, None) == expected\n \n \n+@pytest.mark.skipif(os.name != \"nt\", reason=\"Test only on Windows\")\n+def test_should_bypass_proxies_win_registry_bad_values(monkeypatch):\n+    \"\"\"Tests for function should_bypass_proxies to check if proxy\n+    can be bypassed or not with Windows invalid registry settings.\n+    \"\"\"\n+    import winreg\n+\n+    class RegHandle:\n+        def Close(self):\n+            pass\n+\n+    ie_settings = RegHandle()\n+\n+    def OpenKey(key, subkey):\n+        return ie_settings\n+\n+    def QueryValueEx(key, value_name):\n+        if key is ie_settings:\n+            if value_name == \"ProxyEnable\":\n+                # Invalid response; Should be an int or int-y value\n+                return [\"\"]\n+            elif value_name == \"ProxyOverride\":\n+                return [\"192.168.*;127.0.0.1;localhost.localdomain;172.16.1.1\"]\n+\n+    monkeypatch.setenv(\"http_proxy\", \"\")\n+    monkeypatch.setenv(\"https_proxy\", \"\")\n+    monkeypatch.setenv(\"no_proxy\", \"\")\n+    monkeypatch.setenv(\"NO_PROXY\", \"\")\n+    monkeypatch.setattr(winreg, \"OpenKey\", OpenKey)\n+    monkeypatch.setattr(winreg, \"QueryValueEx\", QueryValueEx)\n+    assert should_bypass_proxies(\"http://172.16.1.1/\", None) is False\n+\n+\n @pytest.mark.parametrize(\n     \"env_name, value\",\n     ("
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.25,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1068,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

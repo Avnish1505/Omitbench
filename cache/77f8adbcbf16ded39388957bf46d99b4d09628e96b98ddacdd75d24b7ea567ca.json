@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_request.py::test_trusted_hosts_config` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/flask/app.py\n+++ b/src/flask/app.py\n@@ -24,6 +24,7 @@\n from werkzeug.routing import Rule\n from werkzeug.serving import is_running_from_reloader\n from werkzeug.wrappers import Response as BaseResponse\n+from werkzeug.wsgi import get_host\n \n from . import cli\n from . import typing as ft\n@@ -183,6 +184,7 @@\n             \"SECRET_KEY_FALLBACKS\": None,\n             \"PERMANENT_SESSION_LIFETIME\": timedelta(days=31),\n             \"USE_X_SENDFILE\": False,\n+            \"TRUSTED_HOSTS\": None,\n             \"SERVER_NAME\": None,\n             \"APPLICATION_ROOT\": \"/\",\n             \"SESSION_COOKIE_NAME\": \"session\",\n@@ -441,6 +443,11 @@\n         .. versionadded:: 0.6\n         \"\"\"\n         if request is not None:\n+            if (trusted_hosts := self.config[\"TRUSTED_HOSTS\"]) is not None:\n+                request.trusted_hosts = trusted_hosts\n+\n+            # Check trusted_hosts here until bind_to_environ does.\n+            request.host = get_host(request.environ, request.trusted_hosts)  # pyright: ignore\n             subdomain = None\n             server_name = self.config[\"SERVER_NAME\"]\n \n\n--- a/tests/test_request.py\n+++ b/tests/test_request.py\n@@ -53,3 +53,5 @@\n         assert r.max_form_memory_size == 30\n         assert r.max_form_parts == 4\n \n+\n+"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.01,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 853,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

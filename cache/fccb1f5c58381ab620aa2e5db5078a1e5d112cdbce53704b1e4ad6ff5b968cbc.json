@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_testing.py::test_catch_exceptions_cli_runner` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/click/testing.py\n+++ b/src/click/testing.py\n@@ -227,6 +227,11 @@\n                        to `<stdout>`.  This is useful for showing examples in\n                        some circumstances.  Note that regular prompts\n                        will automatically echo the input.\n+    :param catch_exceptions: Whether to catch any exceptions other than\n+                             ``SystemExit`` when running :meth:`~CliRunner.invoke`.\n+\n+    .. versionchanged:: 8.2\n+        Added the ``catch_exceptions`` parameter.\n \n     .. versionchanged:: 8.2\n         ``mix_stderr`` parameter has been removed.\n@@ -237,10 +242,12 @@\n         charset: str = \"utf-8\",\n         env: cabc.Mapping[str, str | None] | None = None,\n         echo_stdin: bool = False,\n+        catch_exceptions: bool = True,\n     ) -> None:\n         self.charset = charset\n         self.env: cabc.Mapping[str, str | None] = env or {}\n         self.echo_stdin = echo_stdin\n+        self.catch_exceptions = catch_exceptions\n \n     def get_default_prog_name(self, cli: Command) -> str:\n         \"\"\"Given a command object it will return the default program name\n@@ -410,7 +417,7 @@\n         args: str | cabc.Sequence[str] | None = None,\n         input: str | bytes | t.IO[t.Any] | None = None,\n         env: cabc.Mapping[str, str | None] | None = None,\n-        catch_exceptions: bool = True,\n+        catch_exceptions: bool | None = None,\n         color: bool = False,\n         **extra: t.Any,\n     ) -> Result:\n@@ -429,7 +436,8 @@\n         :param input: the input data for `sys.stdin`.\n         :param env: the environment overrides.\n         :param catch_exceptions: Whether to catch any other exceptions than\n-                                 ``SystemExit``.\n+                                 ``SystemExit``. If :data:`None`, the value\n+                                 from :class:`CliRunner` is used.\n         :param extra: the keyword arguments to pass to :meth:`main`.\n         :param color: whether the output should contain color codes. The\n                       application can still override this explicitly.\n@@ -457,6 +465,9 @@\n             traceback if available.\n         \"\"\"\n         exc_info = None\n+        if catch_exceptions is None:\n+            catch_exceptions = self.catch_exceptions\n+\n         with self.isolation(input=input, env=env, color=color) as outstreams:\n             return_value = None\n             exception: BaseException | None = None\n\n--- a/tests/test_testing.py\n+++ b/tests/test_testing.py\n@@ -182,6 +182,10 @@\n \n     result = runner.invoke(cli)\n     assert result.exit_code == 1\n+\n+\n+def test_catch_exceptions_cli_runner():\n+    raise NotImplementedError\n \n \n def test_with_color():"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.01,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1205,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

@@ -1,0 +1,91 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `src/itsdangerous/serializer.py::iter_unsigners`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `src/itsdangerous/serializer.py::iter_unsigners`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `src/itsdangerous/serializer.py::iter_unsigners`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_itsdangerous/test_serializer.py::test_fallback_signers`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_itsdangerous/test_serializer.py::test_fallback_signers`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_itsdangerous/test_serializer.py::test_fallback_signers`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/itsdangerous/serializer.py\n+++ b/src/itsdangerous/serializer.py\n@@ -32,9 +32,29 @@\n \n         s = Serializer(signer_kwargs={'key_derivation': 'hmac'})\n \n+    Additionally as of 1.1 fallback signers can be defined by providing\n+    a list as `fallback_signers`.  These are used for deserialization as a\n+    fallback.  Each item can be one of the following:\n+    a signer class (which is instanciated with `signer_kwargs`, salt and\n+    secret key), a tuple `(signer_class, signer_kwargs)` or just `signer_kwargs`.\n+    If kwargs are provided they need to be a dict.\n+\n+    For instance this is a serializer that supports deserialization that\n+    supports both SHA1 and SHA512:\n+\n+    .. code-block:: python3\n+\n+        s = Serializer(\n+            signer_kwargs={'digest_method': hashlib.sha512},\n+            fallback_signers=[{'digest_method': hashlib.sha1}]\n+        )\n+\n     .. versionchanged:: 0.14:\n         The ``signer`` and ``signer_kwargs`` parameters were added to\n         the constructor.\n+\n+    .. versionchanged:: 1.1:\n+        Added support for `fallback_signers`.\n     \"\"\"\n \n     #: If a serializer module or class is not passed to the constructor\n@@ -55,6 +75,7 @@\n         serializer_kwargs=None,\n         signer=None,\n         signer_kwargs=None,\n+        fallback_signers=None,\n     ):\n         self.secret_key = want_bytes(secret_key)\n         self.salt = want_bytes(salt)\n@@ -66,6 +87,7 @@\n             signer = self.default_signer\n         self.signer = signer\n         self.signer_kwargs = signer_kwargs or {}\n+        self.fallback_signers = fallback_signers or ()\n         self.serializer_kwargs = serializer_kwargs or {}\n \n     def load_payload(self, payload, serializer=None):\n@@ -106,6 +128,21 @@\n             salt = self.salt\n         return self.signer(self.secret_key, salt=salt, **self.signer_kwargs)\n \n+    def iter_unsigners(self, salt=None):\n+        \"\"\"Iterates over all signers for unsigning.\"\"\"\n+        if salt is None:\n+            salt = self.salt\n+        yield self.make_signer(salt)\n+        for fallback in self.fallback_signers:\n+            if type(fallback) is dict:\n+                kwargs = fallback\n+                fallback = self.signer\n+            elif type(fallback) is tuple:\n+                fallback, kwargs = fallback\n+            else:\n+                kwargs = self.signer_kwargs\n+            yield fallback(self.secret_key, salt=salt, **kwargs)\n+\n     def dumps(self, obj, salt=None):\n         \"\"\"Returns a signed string serialized with the internal\n         serializer. The return value can be either a byte or unicode\n@@ -128,7 +165,13 @@\n         signature validation fails.\n         \"\"\"\n         s = want_bytes(s)\n-        return self.load_payload(self.make_signer(salt).unsign(s))\n+        last_exception = None\n+        for signer in self.iter_unsigners(salt):\n+            try:\n+                return self.load_payload(signer.unsign(s))\n+            except BadSignature as err:\n+                last_exception = err\n+        raise last_exception\n \n     def load(self, f, salt=None):\n         \"\"\"Like :meth:`loads` but loads from a file.\"\"\"\n\n--- a/src/itsdangerous/signer.py\n+++ b/src/itsdangerous/signer.py\n@@ -40,10 +40,7 @@\n     #: The digest method to use with the MAC algorithm. This defaults to\n     #: SHA-512, but can be changed to any other function in the hashlib\n     #: module.\n-    #:\n-    #: .. versionchanged:: 1.0\n-    #:     The default was changed from SHA-1 to SHA-512.\n-    default_digest_method = staticmethod(hashlib.sha512)\n+    default_digest_method = staticmethod(hashlib.sha1)\n \n     def __init__(self, digest_method=None):\n         if digest_method is None:\n@@ -80,11 +77,8 @@\n     #: SHA-512 but can be changed to any other function in the hashlib\n     #: module.\n     #:\n-    #: .. versionchanged:: 1.0\n-    #:     The default was changed from SHA-1 to SHA-512.\n-    #:\n     #: .. versionadded:: 0.14\n-    default_digest_method = staticmethod(hashlib.sha512)\n+    default_digest_method = staticmethod(hashlib.sha1)\n \n     #: Controls how the key is derived. The default is Django-style\n     #: concatenation. Possible values are ``concat``, ``django-concat``\n\n--- a/tests/test_itsdangerous/test_serializer.py\n+++ b/tests/test_itsdangerous/test_serializer.py\n@@ -1,3 +1,4 @@\n+import hashlib\n import pickle\n from functools import partial\n from io import BytesIO\n@@ -132,3 +133,4 @@\n \n         assert serializer.loads(serializer.dumps({(): 1})) == {}\n \n+"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.99,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.07,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.06,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.32,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 2246,
+      "output_tokens": 116
+    }
+  },
+  "variant": "split"
+}

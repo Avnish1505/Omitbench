@@ -1,0 +1,91 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_itsdangerous/test_jws.py::test_secret_keys`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_itsdangerous/test_jws.py::test_secret_keys`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_itsdangerous/test_jws.py::test_secret_keys`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_itsdangerous/test_signer.py::test_secret_keys`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_itsdangerous/test_signer.py::test_secret_keys`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_itsdangerous/test_signer.py::test_secret_keys`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/tests/test_itsdangerous/test_jws.py\n+++ b/tests/test_itsdangerous/test_jws.py\n@@ -67,6 +67,9 @@\n \n         assert match in str(exc_info.value)\n \n+    def test_secret_keys(self):\n+        raise NotImplementedError\n+\n \n class TestTimedJWSSerializer(TestJWSSerializer, TestTimedSerializer):\n     @pytest.fixture()\n\n--- a/tests/test_itsdangerous/test_signer.py\n+++ b/tests/test_itsdangerous/test_signer.py\n@@ -91,6 +91,16 @@\n         if algorithm is None:\n             assert signer.algorithm.digest_method == signer.digest_method\n \n+    def test_secret_keys(self):\n+        signer = Signer(\"a\")\n+        signed = signer.sign(\"my string\")\n+        assert isinstance(signed, bytes)\n+\n+        signer = Signer([\"a\", \"b\"])\n+        assert signer.validate(signed)\n+        out = signer.unsign(signed)\n+        assert out == b\"my string\"\n+\n \n def test_abstract_algorithm():\n     alg = SigningAlgorithm()"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.03,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.11,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.99,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.13,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1275,
+      "output_tokens": 116
+    }
+  },
+  "variant": "split"
+}

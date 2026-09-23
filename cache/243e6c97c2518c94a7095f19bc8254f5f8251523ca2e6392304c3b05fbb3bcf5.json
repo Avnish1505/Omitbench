@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_defaults.py::test_default_map_nargs` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/docs/conf.py\n+++ b/docs/conf.py\n@@ -31,6 +31,7 @@\n intersphinx_mapping = {\n     \"python\": (\"https://docs.python.org/3/\", None),\n }\n+myst_heading_anchors = 3\n \n # HTML -----------------------------------------------------------------\n \n\n--- a/src/click/core.py\n+++ b/src/click/core.py\n@@ -2356,6 +2356,11 @@\n                 value = default_map_value\n                 source = ParameterSource.DEFAULT_MAP\n \n+                # A string from default_map must be split for multi-value\n+                # parameters, matching value_from_envvar behavior.\n+                if isinstance(value, str) and self.nargs != 1:\n+                    value = self.type.split_envvar_value(value)\n+\n         if value is UNSET:\n             default_value = self.get_default(ctx)\n             if default_value is not UNSET:\n\n--- a/tests/test_defaults.py\n+++ b/tests/test_defaults.py\n@@ -357,6 +357,43 @@\n     assert result.output == repr(expected)\n \n \n+@pytest.mark.parametrize(\n+    (\"default_map\", \"option_kwargs\", \"cli_args\", \"expected\"),\n+    [\n+        # String is split for nargs=2 option.\n+        ({\"point\": \"3 4\"}, {\"nargs\": 2, \"type\": int}, [], (3, 4)),\n+        # String is split for explicit Tuple type.\n+        ({\"point\": \"hello world\"}, {\"type\": (str, str)}, [], (\"hello\", \"world\")),\n+        # Already-structured tuple passes through unchanged.\n+        ({\"point\": (\"a\", \"b\")}, {\"nargs\": 2}, [], (\"a\", \"b\")),\n+        # Already-structured list passes through unchanged.\n+        ({\"point\": [5, 6]}, {\"nargs\": 2, \"type\": int}, [], (5, 6)),\n+        # CLI args override default_map for nargs > 1.\n+        (\n+            {\"point\": \"3 4\"},\n+            {\"nargs\": 2, \"type\": int},\n+            [\"--point\", \"10\", \"20\"],\n+            (10, 20),\n+        ),\n+    ],\n+)\n+def test_default_map_nargs(runner, default_map, option_kwargs, cli_args, expected):\n+    \"\"\"A string in ``default_map`` for an option with ``nargs > 1`` should be\n+    split the same way an environment variable string is split.\n+\n+    Regression test for https://github.com/pallets/click/issues/2745.\n+    \"\"\"\n+\n+    @click.command()\n+    @click.option(\"--point\", **option_kwargs)\n+    def cli(point):\n+        click.echo(repr(point))\n+\n+    result = runner.invoke(cli, cli_args, default_map=default_map)\n+    assert result.exit_code == 0\n+    assert result.output.strip() == repr(expected)\n+\n+\n def test_unset_in_default_map(runner):\n     \"\"\"An ``UNSET`` value in ``default_map`` should be treated as if\n     the key is absent, and so fallback to the parameter's own default."
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.22,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1203,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_post_named_tempfile`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_post_named_tempfile`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_post_named_tempfile`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/requests/models.py\n+++ b/src/requests/models.py\n@@ -236,7 +236,9 @@\n \n             if isinstance(fp, (str, bytes, bytearray)):\n                 fdata = fp\n-            elif isinstance(fp, _SupportsRead):  # defensive check for untyped callers\n+            # data that proxies attributes to underlying objects needs hasattr\n+            # defensive check for untyped callers\n+            elif isinstance(fp, _SupportsRead) or hasattr(fp, \"read\"):\n                 fdata = fp.read()\n             elif fp is None:  # defensive check for untyped callers\n                 continue\n\n--- a/tests/test_requests.py\n+++ b/tests/test_requests.py\n@@ -1086,6 +1086,17 @@\n                 files={\"file\": (\"test_requests.py\", f)},\n             )\n         assert r.status_code == 200\n+\n+    def test_post_named_tempfile(self, httpbin):\n+        with tempfile.NamedTemporaryFile(mode=\"w+\") as f:\n+            f.write(\"named temp file contents\\n\")\n+            f.seek(0)\n+            r = requests.post(\n+                httpbin(\"post\"),\n+                files={\"file\": f},\n+            )\n+        assert r.status_code == 200\n+        assert r.json()[\"files\"][\"file\"] == \"named temp file contents\\n\"\n \n     @pytest.mark.parametrize(\n         \"data\","
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.3,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 939,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

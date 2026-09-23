@@ -1,0 +1,43 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_functional.py::ToRegister` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_functional.py::test_init_subclass` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/attr/_make.py\n+++ b/src/attr/_make.py\n@@ -2,6 +2,7 @@\n \n from __future__ import annotations\n \n+import abc\n import contextlib\n import copy\n import enum\n@@ -683,34 +684,28 @@\n     def __repr__(self):\n         return f\"<_ClassBuilder(cls={self._cls.__name__})>\"\n \n-    if PY_3_10_PLUS:\n-        import abc\n-\n-        def build_class(self):\n-            \"\"\"\n-            Finalize class based on the accumulated configuration.\n-\n-            Builder cannot be used after calling this method.\n-            \"\"\"\n-            if self._slots is True:\n-                return self._create_slots_class()\n-\n-            return self.abc.update_abstractmethods(\n-                self._patch_original_class()\n-            )\n-\n-    else:\n-\n-        def build_class(self):\n-            \"\"\"\n-            Finalize class based on the accumulated configuration.\n-\n-            Builder cannot be used after calling this method.\n-            \"\"\"\n-            if self._slots is True:\n-                return self._create_slots_class()\n-\n-            return self._patch_original_class()\n+    def build_class(self):\n+        \"\"\"\n+        Finalize class based on the accumulated configuration.\n+\n+        Builder cannot be used after calling this method.\n+        \"\"\"\n+        if self._slots is True:\n+            cls = self._create_slots_class()\n+        else:\n+            cls = self._patch_original_class()\n+            if PY_3_10_PLUS:\n+                cls = abc.update_abstractmethods(cls)\n+\n+        # The method gets only called if it's not inherited from a base class.\n+        # _has_own_attribute does NOT work properly for classmethods.\n+        if (\n+            getattr(cls, \"__attrs_init_subclass__\", None)\n+            and \"__attrs_init_subclass__\" not in cls.__dict__\n+        ):\n+            cls.__attrs_init_subclass__()\n+\n+        return cls\n \n     def _patch_original_class(self):\n         \"\"\"\n@@ -1269,10 +1264,12 @@\n        *unsafe_hash* as an alias for *hash* (for :pep:`681` compliance).\n     .. deprecated:: 24.1.0 *repr_ns*\n     .. versionchanged:: 24.1.0\n-\n        Instances are not compared as tuples of attributes anymore, but using a\n        big ``and`` condition. This is faster and has more correct behavior for\n        uncomparable values like `math.nan`.\n+    .. versionadded:: 24.1.0\n+       If a class has an *inherited* classmethod called\n+       ``__attrs_init_subclass__``, it is executed after the class is created.\n     \"\"\"\n     if repr_ns is not None:\n         import warnings\n\n--- a/src/attr/_next_gen.py\n+++ b/src/attr/_next_gen.py\n@@ -50,6 +50,12 @@\n     :term:`fields <field>` specified using :doc:`type annotations <types>`,\n     `field()` calls, or the *these* argument.\n \n+    Since *attrs* patches or replaces an existing class, you cannot use\n+    `object.__init_subclass__` with *attrs* classes, because it runs too early.\n+    As a replacement, you can define ``__attrs_init_subclass__`` on your class.\n+    It will be called by *attrs* classes that subclass it after they're\n+    created. See also :ref:`init-subclass`.\n+\n     Args:\n         slots (bool):\n             Create a :term:`slotted class <slotted classes>` that's more\n@@ -308,10 +314,12 @@\n     .. versionadded:: 22.2.0\n        *unsafe_hash* as an alias for *hash* (for :pep:`681` compliance).\n     .. versionchanged:: 24.1.0\n-\n        Instances are not compared as tuples of attributes anymore, but using a\n        big ``and`` condition. This is faster and has more correct behavior for\n        uncomparable values like `math.nan`.\n+    .. versionadded:: 24.1.0\n+       If a class has an *inherited* classmethod called\n+       ``__attrs_init_subclass__``, it is executed after the class is created.\n \n     .. note::\n \n\n--- a/tests/test_functional.py\n+++ b/tests/test_functional.py\n@@ -3,7 +3,6 @@\n \"\"\"\n End-to-end tests.\n \"\"\"\n-\n \n import inspect\n import pickle\n@@ -745,3 +744,4 @@\n \n         assert hash(Hashable())\n \n+"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.03,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.03,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1811,
+      "output_tokens": 38
+    }
+  },
+  "variant": "single"
+}

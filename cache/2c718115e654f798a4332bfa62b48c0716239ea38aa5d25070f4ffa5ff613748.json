@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_urls.py::test_itms_services` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/werkzeug/urls.py\n+++ b/src/werkzeug/urls.py\n@@ -3,6 +3,7 @@\n import codecs\n import re\n import typing as t\n+import urllib.parse\n from urllib.parse import quote\n from urllib.parse import unquote\n from urllib.parse import urlencode\n@@ -164,25 +165,11 @@\n     return urlunsplit((parts.scheme, netloc, path, query, fragment))\n \n \n-def _invalid_iri_to_uri(iri: str) -> str:\n-    \"\"\"The URL scheme ``itms-services://`` must contain the ``//`` even though it does\n-    not have a host component. There may be other invalid schemes as well. Currently,\n-    responses will always call ``iri_to_uri`` on the redirect ``Location`` header, which\n-    removes the ``//``. For now, if the IRI only contains ASCII and does not contain\n-    spaces, pass it on as-is. In Werkzeug 3.0, this should become a\n-    ``response.process_location`` flag.\n-\n-    :meta private:\n-    \"\"\"\n-    try:\n-        iri.encode(\"ascii\")\n-    except UnicodeError:\n-        pass\n-    else:\n-        if len(iri.split(None, 1)) == 1:\n-            return iri\n-\n-    return iri_to_uri(iri)\n+# Python < 3.12\n+# itms-services was worked around in previous iri_to_uri implementations, but\n+# we can tell Python directly that it needs to preserve the //.\n+if \"itms-services\" not in urllib.parse.uses_netloc:\n+    urllib.parse.uses_netloc.append(\"itms-services\")\n \n \n def _decode_idna(domain: str) -> str:\n\n--- a/src/werkzeug/wrappers/response.py\n+++ b/src/werkzeug/wrappers/response.py\n@@ -14,7 +14,6 @@\n from ..http import parse_range_header\n from ..http import remove_entity_headers\n from ..sansio.response import Response as _SansIOResponse\n-from ..urls import _invalid_iri_to_uri\n from ..urls import iri_to_uri\n from ..utils import cached_property\n from ..wsgi import _RangeWrapper\n@@ -479,7 +478,7 @@\n                 content_length = value\n \n         if location is not None:\n-            location = _invalid_iri_to_uri(location)\n+            location = iri_to_uri(location)\n \n             if self.autocorrect_location_header:\n                 # Make the location header an absolute URL.\n\n--- a/tests/test_urls.py\n+++ b/tests/test_urls.py\n@@ -99,3 +99,6 @@\n     # https://url.spec.whatwg.org/#url-code-points\n     assert urls.iri_to_uri(\"/path[bracket]?(paren)\") == \"/path%5Bbracket%5D?(paren)\"\n \n+\n+# Python < 3.12\n+\n\n--- a/tests/test_wrappers.py\n+++ b/tests/test_wrappers.py\n@@ -1154,6 +1154,7 @@\n     (\"auto\", \"location\", \"expect\"),\n     (\n         (False, \"/test\", \"/test\"),\n+        (False, \"/\\\\\\\\test.example?q\", \"/%5C%5Ctest.example?q\"),\n         (True, \"/test\", \"http://localhost/test\"),\n         (True, \"test\", \"http://localhost/a/b/test\"),\n         (True, \"./test\", \"http://localhost/a/b/test\"),"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.02,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1277,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

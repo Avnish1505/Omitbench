@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_proxy_authorization_not_appended_to_https_request` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/requests/sessions.py\n+++ b/requests/sessions.py\n@@ -324,7 +324,9 @@\n         except KeyError:\n             username, password = None, None\n \n-        if username and password:\n+        # urllib3 handles proxy authorization for us in the standard adapter.\n+        # Avoid appending this to TLS tunneled requests where it may be leaked.\n+        if not scheme.startswith('https') and username and password:\n             headers[\"Proxy-Authorization\"] = _basic_auth_str(username, password)\n \n         return new_proxies\n\n--- a/tests/test_requests.py\n+++ b/tests/test_requests.py\n@@ -646,6 +646,17 @@\n         sent_headers = resp.json().get(\"headers\", {})\n \n         assert sent_headers.get(\"Proxy-Authorization\") == proxy_auth_value\n+\n+\n+    @pytest.mark.parametrize(\n+        \"url,has_proxy_auth\",\n+        (\n+            ('http://example.com', True),\n+            ('https://example.com', False),\n+        ),\n+    )\n+    def test_proxy_authorization_not_appended_to_https_request(self, url, has_proxy_auth):\n+        raise NotImplementedError\n \n     def test_basicauth_with_netrc(self, httpbin):\n         auth = (\"user\", \"pass\")"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.01,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 800,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

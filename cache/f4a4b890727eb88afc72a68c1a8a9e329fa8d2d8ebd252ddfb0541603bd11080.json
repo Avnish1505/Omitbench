@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `httpx/_compat.py::iscoroutine` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/httpx/_compat.py\n+++ b/httpx/_compat.py\n@@ -2,8 +2,13 @@\n The _compat module is used for code which requires branching between different\n Python environments. It is excluded from the code coverage checks.\n \"\"\"\n+import asyncio\n import ssl\n import sys\n+import typing\n+\n+if typing.TYPE_CHECKING:  # pragma: no cover\n+    import typing_extensions\n \n # Brotli support is optional\n # The C bindings in `brotli` are recommended for CPython.\n@@ -39,3 +44,5 @@\n         context.options |= ssl.OP_NO_TLSv1\n         context.options |= ssl.OP_NO_TLSv1_1\n \n+\n+\n\n--- a/httpx/_transports/mock.py\n+++ b/httpx/_transports/mock.py\n@@ -1,6 +1,6 @@\n-import asyncio\n import typing\n \n+from .._compat import iscoroutine\n from .._models import Request, Response\n from .base import AsyncBaseTransport, BaseTransport\n \n@@ -28,7 +28,7 @@\n         # return the result.\n \n         # https://simonwillison.net/2020/Sep/2/await-me-maybe/\n-        if asyncio.iscoroutine(response):\n+        if iscoroutine(response):\n             response = await response\n \n         return response"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.04,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 809,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

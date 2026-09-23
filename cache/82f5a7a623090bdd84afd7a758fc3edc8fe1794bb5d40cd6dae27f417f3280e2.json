@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_utils.py::test_should_bypass_proxies_win_registry_ProxyOverride_value`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_utils.py::test_should_bypass_proxies_win_registry_ProxyOverride_value`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_utils.py::test_should_bypass_proxies_win_registry_ProxyOverride_value`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/requests/utils.py\n+++ b/src/requests/utils.py\n@@ -97,7 +97,7 @@\n         # '<local>' string by the localhost entry and the corresponding\n         # canonical entry.\n         proxyOverride = proxyOverride.split(\";\")\n-        # filter out empty strings to avoid re.match all true.\n+        # filter out empty strings to avoid re.match return true in the following code.\n         proxyOverride = filter(None, proxyOverride)\n         # now check if we match one of the registry values.\n         for test in proxyOverride:\n\n--- a/tests/test_utils.py\n+++ b/tests/test_utils.py\n@@ -925,3 +925,8 @@\n \n     assert \"Expected exception\" in str(exception.value)\n \n+\n+@pytest.mark.skipif(os.name != \"nt\", reason=\"Test only on Windows\")\n+def test_should_bypass_proxies_win_registry_ProxyOverride_value(monkeypatch):\n+    raise NotImplementedError\n+"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.03,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.08,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 887,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

@@ -1,0 +1,91 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_next_gen.py::do_nothing`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_next_gen.py::do_nothing`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_next_gen.py::do_nothing`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_next_gen.py::test_setting_traceback_on_exception`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_next_gen.py::test_setting_traceback_on_exception`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_next_gen.py::test_setting_traceback_on_exception`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/attr/_make.py\n+++ b/src/attr/_make.py\n@@ -12,7 +12,7 @@\n # We need to import _compat itself in addition to the _compat members to avoid\n # having the thread-local in the globals here.\n from . import _compat, _config, setters\n-from ._compat import PY310, PYPY, _AnnotationExtractor, set_closure_cell\n+from ._compat import PY310, _AnnotationExtractor, set_closure_cell\n from .exceptions import (\n     DefaultAlreadySetError,\n     FrozenInstanceError,\n@@ -582,28 +582,19 @@\n     return _Attributes((AttrsClass(attrs), base_attrs, base_attr_map))\n \n \n-if PYPY:\n-\n-    def _frozen_setattrs(self, name, value):\n-        \"\"\"\n-        Attached to frozen classes as __setattr__.\n-        \"\"\"\n-        if isinstance(self, BaseException) and name in (\n-            \"__cause__\",\n-            \"__context__\",\n-        ):\n-            BaseException.__setattr__(self, name, value)\n-            return\n-\n-        raise FrozenInstanceError()\n-\n-else:\n-\n-    def _frozen_setattrs(self, name, value):\n-        \"\"\"\n-        Attached to frozen classes as __setattr__.\n-        \"\"\"\n-        raise FrozenInstanceError()\n+def _frozen_setattrs(self, name, value):\n+    \"\"\"\n+    Attached to frozen classes as __setattr__.\n+    \"\"\"\n+    if isinstance(self, BaseException) and name in (\n+        \"__cause__\",\n+        \"__context__\",\n+        \"__traceback__\",\n+    ):\n+        BaseException.__setattr__(self, name, value)\n+        return\n+\n+    raise FrozenInstanceError()\n \n \n def _frozen_delattrs(self, name):\n\n--- a/tests/test_next_gen.py\n+++ b/tests/test_next_gen.py\n@@ -6,6 +6,7 @@\n \n import re\n \n+from contextlib import contextmanager\n from functools import partial\n \n import pytest\n@@ -312,6 +313,38 @@\n         assert \"foo\" == ei.value.x\n         assert ei.value.__cause__ is None\n \n+    @pytest.mark.parametrize(\n+        \"decorator\",\n+        [\n+            partial(_attr.s, frozen=True, slots=True, auto_exc=True),\n+            attrs.frozen,\n+            attrs.define,\n+            attrs.mutable,\n+        ],\n+    )\n+    def test_setting_traceback_on_exception(self, decorator):\n+        \"\"\"\n+        contextlib.contextlib (re-)sets __traceback__ on raised exceptions.\n+\n+        Ensure that works, as well as if done explicitly\n+        \"\"\"\n+\n+        @decorator\n+        class MyException(Exception):\n+            pass\n+\n+        @contextmanager\n+        def do_nothing():\n+            raise NotImplementedError\n+\n+        with do_nothing(), pytest.raises(MyException) as ei:\n+            raise MyException()\n+\n+        assert isinstance(ei.value, MyException)\n+\n+        # this should not raise an exception either\n+        ei.value.__traceback__ = ei.value.__traceback__\n+\n     def test_converts_and_validates_by_default(self):\n         \"\"\"\n         If no on_setattr is set, assume setters.convert, setters.validate."
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.92,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.09,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.88,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.47,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1791,
+      "output_tokens": 116
+    }
+  },
+  "variant": "split"
+}

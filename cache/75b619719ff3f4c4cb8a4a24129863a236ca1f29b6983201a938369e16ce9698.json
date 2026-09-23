@@ -1,0 +1,43 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `httpx/_utils.py::is_ipv4_hostname` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `httpx/_utils.py::is_ipv6_hostname` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/httpx/_utils.py\n+++ b/httpx/_utils.py\n@@ -1,5 +1,6 @@\n import codecs\n import email.message\n+import ipaddress\n import mimetypes\n import os\n import re\n@@ -259,7 +260,16 @@\n             # NO_PROXY=google.com is marked as \"all://*google.com,\n             #   which disables \"www.google.com\" and \"google.com\".\n             #   (But not \"wwwgoogle.com\")\n-            mounts[f\"all://*{hostname}\"] = None\n+            # NO_PROXY can include domains, IPv6, IPv4 addresses and \"localhost\"\n+            #   NO_PROXY=example.com,::1,localhost,192.168.0.0/16\n+            if is_ipv4_hostname(hostname):\n+                mounts[f\"all://{hostname}\"] = None\n+            elif is_ipv6_hostname(hostname):\n+                mounts[f\"all://[{hostname}]\"] = None\n+            elif hostname.lower() == \"localhost\":\n+                mounts[f\"all://{hostname}\"] = None\n+            else:\n+                mounts[f\"all://*{hostname}\"] = None\n \n     return mounts\n \n@@ -450,3 +460,13 @@\n     def __eq__(self, other: typing.Any) -> bool:\n         return isinstance(other, URLPattern) and self.pattern == other.pattern\n \n+\n+\n+\n+def is_ipv6_hostname(hostname: str) -> bool:\n+    try:\n+        ipaddress.IPv6Address(hostname.split(\"/\")[0])\n+    except:\n+        return False\n+    return True\n+\n\n--- a/tests/test_utils.py\n+++ b/tests/test_utils.py\n@@ -185,6 +185,12 @@\n         ),\n         ({\"all_proxy\": \"http://127.0.0.1\"}, {\"all://\": \"http://127.0.0.1\"}),\n         ({\"TRAVIS_APT_PROXY\": \"http://127.0.0.1\"}, {}),\n+        ({\"no_proxy\": \"127.0.0.1\"}, {\"all://127.0.0.1\": None}),\n+        ({\"no_proxy\": \"192.168.0.0/16\"}, {\"all://192.168.0.0/16\": None}),\n+        ({\"no_proxy\": \"::1\"}, {\"all://[::1]\": None}),\n+        ({\"no_proxy\": \"localhost\"}, {\"all://localhost\": None}),\n+        ({\"no_proxy\": \"github.com\"}, {\"all://*github.com\": None}),\n+        ({\"no_proxy\": \".github.com\"}, {\"all://*.github.com\": None}),\n     ],\n )\n def test_get_environment_proxies(environment, proxies):"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.13,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.97,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1382,
+      "output_tokens": 38
+    }
+  },
+  "variant": "single"
+}

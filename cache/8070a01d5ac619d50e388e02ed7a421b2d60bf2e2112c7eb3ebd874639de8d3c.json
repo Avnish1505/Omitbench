@@ -1,0 +1,127 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_content.py::AsyncBytesIO`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_content.py::AsyncBytesIO`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_content.py::AsyncBytesIO`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_content.py::aread`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_content.py::aread`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_content.py::aread`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_content.py::test_async_bytesio_content`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_content.py::test_async_bytesio_content`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_content.py::test_async_bytesio_content`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/httpx/_content.py\n+++ b/httpx/_content.py\n@@ -38,6 +38,8 @@\n \n \n class IteratorByteStream(SyncByteStream):\n+    CHUNK_SIZE = 65_536\n+\n     def __init__(self, stream: Iterable[bytes]):\n         self._stream = stream\n         self._is_stream_consumed = False\n@@ -48,11 +50,21 @@\n             raise StreamConsumed()\n \n         self._is_stream_consumed = True\n-        for part in self._stream:\n-            yield part\n+        if hasattr(self._stream, \"read\"):\n+            # File-like interfaces should use 'read' directly.\n+            chunk = self._stream.read(self.CHUNK_SIZE)  # type: ignore\n+            while chunk:\n+                yield chunk\n+                chunk = self._stream.read(self.CHUNK_SIZE)  # type: ignore\n+        else:\n+            # Otherwise iterate.\n+            for part in self._stream:\n+                yield part\n \n \n class AsyncIteratorByteStream(AsyncByteStream):\n+    CHUNK_SIZE = 65_536\n+\n     def __init__(self, stream: AsyncIterable[bytes]):\n         self._stream = stream\n         self._is_stream_consumed = False\n@@ -63,8 +75,16 @@\n             raise StreamConsumed()\n \n         self._is_stream_consumed = True\n-        async for part in self._stream:\n-            yield part\n+        if hasattr(self._stream, \"aread\"):\n+            # File-like interfaces should use 'aread' directly.\n+            chunk = await self._stream.aread(self.CHUNK_SIZE)  # type: ignore\n+            while chunk:\n+                yield chunk\n+                chunk = await self._stream.aread(self.CHUNK_SIZE)  # type: ignore\n+        else:\n+            # Otherwise iterate.\n+            async for part in self._stream:\n+                yield part\n \n \n class UnattachedStream(AsyncByteStream, SyncByteStream):\n\n--- a/httpx/_multipart.py\n+++ b/httpx/_multipart.py\n@@ -71,6 +71,8 @@\n     A single file field item, within a multipart form field.\n     \"\"\"\n \n+    CHUNK_SIZE = 64 * 1024\n+\n     def __init__(self, name: str, value: FileTypes) -> None:\n         self.name = name\n \n@@ -142,8 +144,10 @@\n             self.file.seek(0)\n         self._consumed = True\n \n-        for chunk in self.file:\n+        chunk = self.file.read(self.CHUNK_SIZE)\n+        while chunk:\n             yield to_bytes(chunk)\n+            chunk = self.file.read(self.CHUNK_SIZE)\n \n     def render(self) -> typing.Iterator[bytes]:\n         yield self.render_headers()\n\n--- a/tests/test_content.py\n+++ b/tests/test_content.py\n@@ -57,6 +57,31 @@\n     content = b\"\".join([part for part in stream])\n \n     assert headers == {\"Content-Length\": \"13\"}\n+    assert content == b\"Hello, world!\"\n+\n+\n+@pytest.mark.asyncio\n+async def test_async_bytesio_content():\n+    class AsyncBytesIO:\n+        def __init__(self, content):\n+            self._idx = 0\n+            self._content = content\n+\n+        async def aread(self, chunk_size: int):\n+            chunk = self._content[self._idx : self._idx + chunk_size]\n+            self._idx = self._idx + chunk_size\n+            return chunk\n+\n+        async def __aiter__(self):\n+            yield self._content  # pragma: nocover\n+\n+    headers, stream = encode_request(content=AsyncBytesIO(b\"Hello, world!\"))\n+    assert not isinstance(stream, typing.Iterable)\n+    assert isinstance(stream, typing.AsyncIterable)\n+\n+    content = b\"\".join([part async for part in stream])\n+\n+    assert headers == {\"Transfer-Encoding\": \"chunked\"}\n     assert content == b\"Hello, world!\"\n \n "
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.88,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.95,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.91,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.47,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.41,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.83,
+        "type": "noul"
+      },
+      "r2_defined": {
+        "noul": 0.95,
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r2_wired": {
+        "noul": 0.83,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 2306,
+      "output_tokens": 172
+    }
+  },
+  "variant": "split"
+}

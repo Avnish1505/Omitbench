@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_arguments.py::test_envvar_flag_value`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_arguments.py::test_envvar_flag_value`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_arguments.py::test_envvar_flag_value`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/click/core.py\n+++ b/src/click/core.py\n@@ -2430,15 +2430,19 @@\n     :param hidden: hide this option from help outputs.\n     :param attrs: Other command arguments described in :class:`Parameter`.\n \n-    .. versionchanged:: 8.1.0\n+    .. versionchanged:: 8.2\n+        ``envvar`` used with ``flag_value`` will always use the ``flag_value``,\n+        previously it would use the value of the environment variable.\n+\n+    .. versionchanged:: 8.1\n         Help text indentation is cleaned here instead of only in the\n         ``@option`` decorator.\n \n-    .. versionchanged:: 8.1.0\n+    .. versionchanged:: 8.1\n         The ``show_default`` parameter overrides\n         ``Context.show_default``.\n \n-    .. versionchanged:: 8.1.0\n+    .. versionchanged:: 8.1\n         The default of a single option boolean flag is not shown if the\n         default value is ``False``.\n \n@@ -2864,6 +2868,8 @@\n         rv = super().resolve_envvar_value(ctx)\n \n         if rv is not None:\n+            if self.is_flag and self.flag_value:\n+                return str(self.flag_value)\n             return rv\n \n         if (\n\n--- a/tests/test_arguments.py\n+++ b/tests/test_arguments.py\n@@ -198,6 +198,19 @@\n         assert result.return_value == expect\n \n \n+def test_envvar_flag_value(runner):\n+    @click.command()\n+    # is_flag is implicitly true\n+    @click.option(\"--upper\", flag_value=\"upper\", envvar=\"UPPER\")\n+    def cmd(upper):\n+        click.echo(upper)\n+        return upper\n+\n+    # For whatever value of the `env` variable, if it exists, the flag should be `upper`\n+    result = runner.invoke(cmd, env={\"UPPER\": \"whatever\"})\n+    assert result.output.strip() == \"upper\"\n+\n+\n def test_nargs_envvar_only_if_values_empty(runner):\n     @click.command()\n     @click.argument(\"arg\", envvar=\"X\", nargs=-1)"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.36,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1139,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

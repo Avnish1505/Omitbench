@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_helpers.py::test_url_for_with_self` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/flask/app.py\n+++ b/src/flask/app.py\n@@ -952,6 +952,7 @@\n \n     def url_for(\n         self,\n+        /,\n         endpoint: str,\n         *,\n         _anchor: str | None = None,\n\n--- a/tests/test_helpers.py\n+++ b/tests/test_helpers.py\n@@ -160,6 +160,9 @@\n         assert flask.url_for(\"myview\", _method=\"GET\") == \"/myview/\"\n         assert flask.url_for(\"myview\", id=42, _method=\"GET\") == \"/myview/42\"\n         assert flask.url_for(\"myview\", _method=\"POST\") == \"/myview/create\"\n+\n+    def test_url_for_with_self(self, app, req_ctx):\n+        raise NotImplementedError\n \n \n def test_redirect_no_app():"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.01,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 691,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

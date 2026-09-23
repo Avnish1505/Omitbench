@@ -1,0 +1,127 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/client/test_async_client.py::BrokenStream`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/client/test_async_client.py::BrokenStream`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/client/test_async_client.py::BrokenStream`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/client/test_async_client.py::handle`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/client/test_async_client.py::handle`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/client/test_async_client.py::handle`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/client/test_async_client.py::test_response_aclose_map_exceptions`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/client/test_async_client.py::test_response_aclose_map_exceptions`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/client/test_async_client.py::test_response_aclose_map_exceptions`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/httpx/_client.py\n+++ b/httpx/_client.py\n@@ -1500,7 +1500,8 @@\n         async def on_close(response: Response) -> None:\n             response.elapsed = datetime.timedelta(seconds=await timer.async_elapsed())\n             if hasattr(stream, \"aclose\"):\n-                await stream.aclose()\n+                with map_exceptions(HTTPCORE_EXC_MAP, request=request):\n+                    await stream.aclose()\n \n         response = Response(\n             status_code,\n\n--- a/tests/client/test_async_client.py\n+++ b/tests/client/test_async_client.py\n@@ -304,6 +304,25 @@\n \n \n @pytest.mark.usefixtures(\"async_environment\")\n+async def test_response_aclose_map_exceptions():\n+    class BrokenStream:\n+        async def __aiter__(self):\n+            # so we're an AsyncIterator\n+            pass  # pragma: nocover\n+\n+        async def aclose(self):\n+            raise httpcore.CloseError(OSError(104, \"Connection reset by peer\"))\n+\n+    def handle(request: httpx.Request) -> httpx.Response:\n+        return httpx.Response(200, stream=BrokenStream())\n+\n+    async with httpx.AsyncClient(transport=httpx.MockTransport(handle)) as client:\n+        async with client.stream(\"GET\", \"http://example.com\") as response:\n+            with pytest.raises(httpx.CloseError):\n+                await response.aclose()\n+\n+\n+@pytest.mark.usefixtures(\"async_environment\")\n async def test_async_mock_transport():\n     async def hello_world(request):\n         return httpx.Response(200, text=\"Hello, world!\")"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.48,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.94,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.81,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.72,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.8,
+        "type": "noul"
+      },
+      "r2_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r2_wired": {
+        "noul": 0.38,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1760,
+      "output_tokens": 172
+    }
+  },
+  "variant": "split"
+}

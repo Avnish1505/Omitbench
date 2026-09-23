@@ -1,0 +1,127 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `src/jinja2/filters.py::do_items`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `src/jinja2/filters.py::do_items`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `src/jinja2/filters.py::do_items`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_filters.py::test_items`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_filters.py::test_items`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_filters.py::test_items`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_filters.py::test_items_undefined`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_filters.py::test_items_undefined`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_filters.py::test_items_undefined`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/jinja2/filters.py\n+++ b/src/jinja2/filters.py\n@@ -216,6 +216,36 @@\n def do_lower(s: str) -> str:\n     \"\"\"Convert a value to lowercase.\"\"\"\n     return soft_str(s).lower()\n+\n+\n+def do_items(value: t.Union[t.Mapping[K, V], Undefined]) -> t.Iterator[t.Tuple[K, V]]:\n+    \"\"\"Return an iterator over the ``(key, value)`` items of a mapping.\n+\n+    ``x|items`` is the same as ``x.items()``, except if ``x`` is\n+    undefined an empty iterator is returned.\n+\n+    This filter is useful if you expect the template to be rendered with\n+    an implementation of Jinja in another programming language that does\n+    not have a ``.items()`` method on its mapping type.\n+\n+    .. code-block:: html+jinja\n+\n+        <dl>\n+        {% for key, value in my_dict|items %}\n+            <dt>{{ key }}\n+            <dd>{{ value }}\n+        {% endfor %}\n+        </dl>\n+\n+    .. versionadded:: 3.1\n+    \"\"\"\n+    if isinstance(value, Undefined):\n+        return\n+\n+    if not isinstance(value, abc.Mapping):\n+        raise TypeError(\"Can only get item pairs from a mapping.\")\n+\n+    yield from value.items()\n \n \n @pass_eval_context\n@@ -1739,6 +1769,7 @@\n     \"length\": len,\n     \"list\": do_list,\n     \"lower\": do_lower,\n+    \"items\": do_items,\n     \"map\": do_map,\n     \"min\": do_min,\n     \"max\": do_max,\n\n--- a/tests/test_filters.py\n+++ b/tests/test_filters.py\n@@ -250,6 +250,17 @@\n         tmpl = env.from_string(\"\"\"{{ \"FOO\"|lower }}\"\"\")\n         out = tmpl.render()\n         assert out == \"foo\"\n+\n+    def test_items(self, env):\n+        d = {i: c for i, c in enumerate(\"abc\")}\n+        tmpl = env.from_string(\"\"\"{{ d|items|list }}\"\"\")\n+        out = tmpl.render(d=d)\n+        assert out == \"[(0, 'a'), (1, 'b'), (2, 'c')]\"\n+\n+    def test_items_undefined(self, env):\n+        tmpl = env.from_string(\"\"\"{{ d|items|list }}\"\"\")\n+        out = tmpl.render()\n+        assert out == \"[]\"\n \n     def test_pprint(self, env):\n         from pprint import pformat"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.99,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.7,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.84,
+        "type": "noul"
+      },
+      "r2_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "noul": 0.95,
+        "type": "noul"
+      },
+      "r2_wired": {
+        "noul": 0.61,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1943,
+      "output_tokens": 172
+    }
+  },
+  "variant": "split"
+}

@@ -1,0 +1,91 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_api.py::Error`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_api.py::Error`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_api.py::Error`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_api.py::test_undefined_attribute_error`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_api.py::test_undefined_attribute_error`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_api.py::test_undefined_attribute_error`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/jinja2/utils.py\n+++ b/src/jinja2/utils.py\n@@ -165,11 +165,15 @@\n         return \"None\"\n     elif obj is Ellipsis:\n         return \"Ellipsis\"\n+\n+    cls = type(obj)\n+\n     # __builtin__ in 2.x, builtins in 3.x\n-    if obj.__class__.__module__ in (\"__builtin__\", \"builtins\"):\n-        name = obj.__class__.__name__\n+    if cls.__module__ in (\"__builtin__\", \"builtins\"):\n+        name = cls.__name__\n     else:\n-        name = obj.__class__.__module__ + \".\" + obj.__class__.__name__\n+        name = cls.__module__ + \".\" + cls.__name__\n+\n     return \"%s object\" % name\n \n \n\n--- a/tests/test_api.py\n+++ b/tests/test_api.py\n@@ -269,6 +269,9 @@\n         with pytest.raises(AttributeError):\n             Undefined(\"Foo\").__dict__\n \n+    def test_undefined_attribute_error(self):\n+        raise NotImplementedError\n+\n     def test_logging_undefined(self):\n         _messages = []\n "
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.16,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.09,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.16,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.05,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.1,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1257,
+      "output_tokens": 116
+    }
+  },
+  "variant": "split"
+}

@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_itsdangerous/test_timed.py::test_sig_error_date_signed` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/itsdangerous/timed.py\n+++ b/src/itsdangerous/timed.py\n@@ -86,6 +86,9 @@\n         # Signature is *not* okay. Raise a proper error now that we have\n         # split the value and the timestamp.\n         if sig_error is not None:\n+            if timestamp is not None:\n+                timestamp = self.timestamp_to_datetime(timestamp)\n+\n             raise BadTimeSignature(str(sig_error), payload=value, date_signed=timestamp)\n \n         # Signature was okay but the timestamp is actually not there or\n\n--- a/tests/test_itsdangerous/test_timed.py\n+++ b/tests/test_itsdangerous/test_timed.py\n@@ -54,6 +54,7 @@\n             signer.unsign(signed)\n \n         assert \"missing\" in str(exc_info.value)\n+        assert exc_info.value.date_signed is None\n \n     def test_malformed_timestamp(self, signer):\n         other = Signer(\"secret-key\")\n@@ -63,13 +64,17 @@\n             signer.unsign(signed)\n \n         assert \"Malformed\" in str(exc_info.value)\n+        assert exc_info.value.date_signed is None\n \n     def test_future_age(self, signer):\n         signed = signer.sign(\"value\")\n \n         with freeze_time(\"1971-05-31\"):\n-            with pytest.raises(SignatureExpired):\n+            with pytest.raises(SignatureExpired) as exc_info:\n                 signer.unsign(signed, max_age=10)\n+\n+        assert isinstance(exc_info.value.date_signed, datetime)\n+\n \n \n class TestTimedSerializer(FreezeMixin, TestSerializer):"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.06,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 876,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

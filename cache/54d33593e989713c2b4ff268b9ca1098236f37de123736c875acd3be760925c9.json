@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_utils.py::test_invalid_unc_path` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/requests/utils.py\n+++ b/requests/utils.py\n@@ -251,6 +251,10 @@\n     archive, member = os.path.split(path)\n     while archive and not os.path.exists(archive):\n         archive, prefix = os.path.split(archive)\n+        if not prefix:\n+            # If we don't check for an empty prefix after the split (in other words, archive remains unchanged after the split),\n+            # we _can_ end up in an infinite loop on a rare corner case affecting a small number of users\n+            break\n         member = '/'.join([prefix, member])\n \n     if not zipfile.is_zipfile(archive):\n\n--- a/tests/test_utils.py\n+++ b/tests/test_utils.py\n@@ -285,6 +285,10 @@\n         assert os.path.exists(extracted_path)\n         assert filecmp.cmp(extracted_path, __file__)\n \n+    def test_invalid_unc_path(self):\n+        path = r\"\\\\localhost\\invalid\\location\"\n+        assert extract_zipped_paths(path) == path\n+\n \n class TestContentEncodingDetection:\n "
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.17,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 756,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

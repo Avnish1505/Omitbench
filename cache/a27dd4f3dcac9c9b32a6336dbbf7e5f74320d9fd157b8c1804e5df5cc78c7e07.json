@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_funcs.py::test_non_atomic_types`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_funcs.py::test_non_atomic_types`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_funcs.py::test_non_atomic_types`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/attr/_funcs.py\n+++ b/src/attr/_funcs.py\n@@ -6,6 +6,23 @@\n from ._compat import get_generic_base\n from ._make import _OBJ_SETATTR, NOTHING, fields\n from .exceptions import AttrsAttributeNotFoundError\n+\n+\n+_ATOMIC_TYPES = frozenset(\n+    {\n+        type(None),\n+        bool,\n+        int,\n+        float,\n+        str,\n+        complex,\n+        bytes,\n+        type(...),\n+        type,\n+        range,\n+        property,\n+    }\n+)\n \n \n def asdict(\n@@ -71,7 +88,10 @@\n             v = value_serializer(inst, a, v)\n \n         if recurse is True:\n-            if has(v.__class__):\n+            value_type = type(v)\n+            if value_type in _ATOMIC_TYPES:\n+                rv[a.name] = v\n+            elif has(value_type):\n                 rv[a.name] = asdict(\n                     v,\n                     recurse=True,\n@@ -80,8 +100,8 @@\n                     retain_collection_types=retain_collection_types,\n                     value_serializer=value_serializer,\n                 )\n-            elif isinstance(v, (tuple, list, set, frozenset)):\n-                cf = v.__class__ if retain_collection_types is True else list\n+            elif issubclass(value_type, (tuple, list, set, frozenset)):\n+                cf = value_type if retain_collection_types is True else list\n                 items = [\n                     _asdict_anything(\n                         i,\n@@ -101,7 +121,7 @@\n                     # Workaround for TypeError: cf.__new__() missing 1 required\n                     # positional argument (which appears, for a namedturle)\n                     rv[a.name] = cf(*items)\n-            elif isinstance(v, dict):\n+            elif issubclass(value_type, dict):\n                 df = dict_factory\n                 rv[a.name] = df(\n                     (\n@@ -142,7 +162,12 @@\n     \"\"\"\n     ``asdict`` only works on attrs instances, this works on anything.\n     \"\"\"\n-    if getattr(val.__class__, \"__attrs_attrs__\", None) is not None:\n+    val_type = type(val)\n+    if val_type in _ATOMIC_TYPES:\n+        rv = val\n+        if value_serializer is not None:\n+            rv = value_serializer(None, None, rv)\n+    elif getattr(val_type, \"__attrs_attrs__\", None) is not None:\n         # Attrs class.\n         rv = asdict(\n             val,\n@@ -152,7 +177,7 @@\n             retain_collection_types=retain_collection_types,\n             value_serializer=value_serializer,\n         )\n-    elif isinstance(val, (tuple, list, set, frozenset)):\n+    elif issubclass(val_type, (tuple, list, set, frozenset)):\n         if retain_collection_types is True:\n             cf = val.__class__\n         elif is_key:\n@@ -173,7 +198,7 @@\n                 for i in val\n             ]\n         )\n-    elif isinstance(val, dict):\n+    elif issubclass(val_type, dict):\n         df = dict_factory\n         rv = df(\n             (\n\n--- a/tests/test_funcs.py\n+++ b/tests/test_funcs.py\n@@ -65,6 +65,7 @@\n         assert {\"x\": {\"x\": 1, \"y\": 2}, \"y\": {\"x\": 3, \"y\": 4}} == asdict(\n             C(C(1, 2), C(3, 4)), dict_factory=dict_class\n         )\n+\n \n     def test_nested_lists(self, C):\n         \"\"\""
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.08,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.05,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.7,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1448,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

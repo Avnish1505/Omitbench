@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_types.py::test_path_dash_no_byteswarning` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/click/types.py\n+++ b/src/click/types.py\n@@ -1104,7 +1104,8 @@\n     ) -> str | bytes | os.PathLike[str]:\n         rv = value\n \n-        is_dash = self.file_okay and self.allow_dash and rv in (b\"-\", \"-\")\n+        dash = b\"-\" if isinstance(rv, bytes) else \"-\"\n+        is_dash = self.file_okay and self.allow_dash and rv == dash\n \n         if not is_dash:\n             if self.resolve_path:\n\n--- a/tests/test_types.py\n+++ b/tests/test_types.py\n@@ -1,6 +1,8 @@\n import os.path\n import pathlib\n import platform\n+import subprocess\n+import sys\n import tempfile\n \n import pytest\n@@ -125,6 +127,8 @@\n     assert result.return_value == expect\n \n \n+\n+\n def _symlinks_supported():\n     with tempfile.TemporaryDirectory(prefix=\"click-pytest-\") as tempdir:\n         target = os.path.join(tempdir, \"target\")"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.02,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 743,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

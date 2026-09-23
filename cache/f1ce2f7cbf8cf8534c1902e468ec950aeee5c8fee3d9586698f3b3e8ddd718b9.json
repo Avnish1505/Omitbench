@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_annotations.py::test_missing_classvar_import` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/attr/_make.py\n+++ b/src/attr/_make.py\n@@ -297,6 +297,7 @@\n     annotations which would put attrs-based classes at a performance\n     disadvantage compared to plain old classes.\n     \"\"\"\n+    annot = getattr(annot, \"__forward_arg__\", annot)\n     annot = str(annot)\n \n     # Annotation can be quoted.\n\n--- a/tests/test_annotations.py\n+++ b/tests/test_annotations.py\n@@ -434,6 +434,23 @@\n \n         assert_init_annotations(C)\n \n+    @pytest.mark.skipif(\n+        sys.version_info[:2] < (3, 14),\n+        reason=\"Python 3.14 changed annotation evaluation behavior.\",\n+    )\n+    def test_missing_classvar_import(self, slots):\n+        \"\"\"\n+        Unimported ClassVars are recognized as ForwardRefs.\n+        \"\"\"\n+\n+        @attr.s(auto_attribs=True, slots=slots)\n+        class C:\n+            cls_var: ClassVar[str]  # noqa: F821\n+            value: int = 1\n+\n+        assert \"cls_var\" not in attr.fields_dict(C)\n+        assert 1 == C().value\n+\n     def test_keyword_only_auto_attribs(self):\n         \"\"\"\n         `kw_only` propagates to attributes defined via `auto_attribs`.\n@@ -691,6 +708,7 @@\n         \"typing.ClassVar\",\n         \"'typing.ClassVar[dict]'\",\n         \"t.ClassVar[int]\",\n+        typing.ForwardRef(\"ClassVar[str]\"),\n     ],\n )\n def test_is_class_var(annot):"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.21,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 878,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

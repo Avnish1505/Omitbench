@@ -1,0 +1,199 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `src/attr/_compat.py::get_generic_base`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `src/attr/_compat.py::get_generic_base`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `src/attr/_compat.py::get_generic_base`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_funcs.py::test_generics`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_funcs.py::test_generics`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_funcs.py::test_generics`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_funcs.py::test_generics_negative`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_funcs.py::test_generics_negative`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_funcs.py::test_generics_negative`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_generics`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_generics`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_generics`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_handler_non_attrs_generic_class`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_handler_non_attrs_generic_class`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_handler_non_attrs_generic_class`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/attr/_compat.py\n+++ b/src/attr/_compat.py\n@@ -9,6 +9,7 @@\n import warnings\n \n from collections.abc import Mapping, Sequence  # noqa\n+from typing import _GenericAlias\n \n \n PYPY = platform.python_implementation() == \"PyPy\"\n@@ -175,3 +176,10 @@\n # If they have such a reference, it breaks cloudpickle.\n repr_context = threading.local()\n \n+\n+def get_generic_base(cl):\n+    \"\"\"If this is a generic class (A[str]), return the generic base for it.\"\"\"\n+    if cl.__class__ is _GenericAlias:\n+        return cl.__origin__\n+    return None\n+\n\n--- a/src/attr/_funcs.py\n+++ b/src/attr/_funcs.py\n@@ -3,6 +3,7 @@\n \n import copy\n \n+from ._compat import get_generic_base\n from ._make import NOTHING, _obj_setattr, fields\n from .exceptions import AttrsAttributeNotFoundError\n \n@@ -296,7 +297,19 @@\n \n     :rtype: bool\n     \"\"\"\n-    return getattr(cls, \"__attrs_attrs__\", None) is not None\n+    attrs = getattr(cls, \"__attrs_attrs__\", None)\n+    if attrs is not None:\n+        return True\n+\n+    # No attrs, maybe it's a specialized generic (A[str])?\n+    generic_base = get_generic_base(cls)\n+    if generic_base is not None:\n+        generic_attrs = getattr(generic_base, \"__attrs_attrs__\", None)\n+        if generic_attrs is not None:\n+            # Stick it on here for speed next time.\n+            cls.__attrs_attrs__ = generic_attrs\n+        return generic_attrs is not None\n+    return False\n \n \n def assoc(inst, **changes):\n\n--- a/src/attr/_make.py\n+++ b/src/attr/_make.py\n@@ -12,7 +12,12 @@\n # We need to import _compat itself in addition to the _compat members to avoid\n # having the thread-local in the globals here.\n from . import _compat, _config, setters\n-from ._compat import PY310, _AnnotationExtractor, set_closure_cell\n+from ._compat import (\n+    PY310,\n+    _AnnotationExtractor,\n+    get_generic_base,\n+    set_closure_cell,\n+)\n from .exceptions import (\n     DefaultAlreadySetError,\n     FrozenInstanceError,\n@@ -1918,12 +1923,26 @@\n \n     .. versionchanged:: 16.2.0 Returned tuple allows accessing the fields\n        by name.\n-    \"\"\"\n-    if not isinstance(cls, type):\n+    .. versionchanged:: 23.1.0 Add support for generic classes.\n+    \"\"\"\n+    generic_base = get_generic_base(cls)\n+\n+    if generic_base is None and not isinstance(cls, type):\n         raise TypeError(\"Passed object must be a class.\")\n+\n     attrs = getattr(cls, \"__attrs_attrs__\", None)\n+\n     if attrs is None:\n+        if generic_base is not None:\n+            attrs = getattr(generic_base, \"__attrs_attrs__\", None)\n+            if attrs is not None:\n+                # Even though this is global state, stick it on here to speed\n+                # it up. We rely on `cls` being cached for this to be\n+                # efficient.\n+                cls.__attrs_attrs__ = attrs\n+                return attrs\n         raise NotAnAttrsClassError(f\"{cls!r} is not an attrs-decorated class.\")\n+\n     return attrs\n \n \n\n--- a/tests/test_funcs.py\n+++ b/tests/test_funcs.py\n@@ -6,6 +6,7 @@\n \n \n from collections import OrderedDict\n+from typing import Generic, TypeVar\n \n import pytest\n \n@@ -418,6 +419,37 @@\n         \"\"\"\n         assert not has(object)\n \n+    def test_generics(self):\n+        \"\"\"\n+        Works with generic classes.\n+        \"\"\"\n+        T = TypeVar(\"T\")\n+\n+        @attr.define\n+        class A(Generic[T]):\n+            a: T\n+\n+        assert has(A)\n+\n+        assert has(A[str])\n+        # Verify twice, since there's caching going on.\n+        assert has(A[str])\n+\n+    def test_generics_negative(self):\n+        \"\"\"\n+        Returns `False` on non-decorated generic classes.\n+        \"\"\"\n+        T = TypeVar(\"T\")\n+\n+        class A(Generic[T]):\n+            a: T\n+\n+        assert not has(A)\n+\n+        assert not has(A[str])\n+        # Verify twice, since there's caching going on.\n+        assert not has(A[str])\n+\n \n class TestAssoc:\n     \"\"\"\n\n--- a/tests/test_make.py\n+++ b/tests/test_make.py\n@@ -13,6 +13,7 @@\n import sys\n \n from operator import attrgetter\n+from typing import Generic, TypeVar\n \n import pytest\n \n@@ -1114,6 +1115,7 @@\n             f\"{object!r} is not an attrs-decorated class.\"\n         ) == e.value.args[0]\n \n+\n     @given(simple_classes())\n     def test_fields(self, C):\n         \"\"\"\n@@ -1128,6 +1130,24 @@\n         \"\"\"\n         for attribute in fields(C):\n             assert getattr(fields(C), attribute.name) is attribute\n+\n+    def test_generics(self):\n+        \"\"\"\n+        Fields work with generic classes.\n+        \"\"\"\n+        T = TypeVar(\"T\")\n+\n+        @attr.define\n+        class A(Generic[T]):\n+            a: T\n+\n+        assert len(fields(A)) == 1\n+        assert fields(A).a.name == \"a\"\n+        assert fields(A).a.default is attr.NOTHING\n+\n+        assert len(fields(A[str])) == 1\n+        assert fields(A[str]).a.name == \"a\"\n+        assert fields(A[str]).a.default is attr.NOTHING\n \n \n class TestFieldsDict:"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.76,
+        "type": "noul"
+      },
+      "r2_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r2_wired": {
+        "noul": 0.44,
+        "type": "noul"
+      },
+      "r3_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r3_real_body": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r3_wired": {
+        "noul": 0.56,
+        "type": "noul"
+      },
+      "r4_defined": {
+        "noul": 0.08,
+        "type": "noul"
+      },
+      "r4_real_body": {
+        "noul": 0.06,
+        "type": "noul"
+      },
+      "r4_wired": {
+        "noul": 0.45,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 3470,
+      "output_tokens": 284
+    }
+  },
+  "variant": "split"
+}

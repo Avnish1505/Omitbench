@@ -1,0 +1,91 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_auth.py::set_cookies`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_auth.py::set_cookies`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_auth.py::set_cookies`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_auth.py::test_digest_auth_setting_cookie_in_request`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_auth.py::test_digest_auth_setting_cookie_in_request`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_auth.py::test_digest_auth_setting_cookie_in_request`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/httpx/_auth.py\n+++ b/httpx/_auth.py\n@@ -8,7 +8,7 @@\n from urllib.request import parse_http_list\n \n from ._exceptions import ProtocolError\n-from ._models import Request, Response\n+from ._models import Cookies, Request, Response\n from ._utils import to_bytes, to_str, unquote\n \n if typing.TYPE_CHECKING:  # pragma: no cover\n@@ -217,6 +217,8 @@\n         request.headers[\"Authorization\"] = self._build_auth_header(\n             request, self._last_challenge\n         )\n+        if response.cookies:\n+            Cookies(response.cookies).set_cookie_header(request=request)\n         yield request\n \n     def _parse_challenge(\n\n--- a/tests/test_auth.py\n+++ b/tests/test_auth.py\n@@ -54,7 +54,7 @@\n         \"WWW-Authenticate\": 'Digest realm=\"...\", qop=\"auth\", nonce=\"...\", opaque=\"...\"'\n     }\n     response = httpx.Response(\n-        content=b\"Auth required\", status_code=401, headers=headers\n+        content=b\"Auth required\", status_code=401, headers=headers, request=request\n     )\n     request = flow.send(response)\n     assert request.headers[\"Authorization\"].startswith(\"Digest\")\n@@ -79,7 +79,7 @@\n         \"WWW-Authenticate\": 'Digest realm=\"...\", qop=\"auth\", nonce=\"...\", opaque=\"...\"'\n     }\n     response = httpx.Response(\n-        content=b\"Auth required\", status_code=401, headers=headers\n+        content=b\"Auth required\", status_code=401, headers=headers, request=request\n     )\n     first_request = flow.send(response)\n     assert first_request.headers[\"Authorization\"].startswith(\"Digest\")\n@@ -102,3 +102,20 @@\n     with pytest.raises(StopIteration):\n         flow.send(response)\n \n+\n+def set_cookies(request: httpx.Request) -> httpx.Response:\n+    headers = {\n+        \"Set-Cookie\": \"session=.session_value...\",\n+        \"WWW-Authenticate\": 'Digest realm=\"...\", qop=\"auth\", nonce=\"...\", opaque=\"...\"',\n+    }\n+    if request.url.path == \"/auth\":\n+        return httpx.Response(\n+            content=b\"Auth required\", status_code=401, headers=headers\n+        )\n+    else:\n+        raise NotImplementedError()  # pragma: no cover\n+\n+\n+def test_digest_auth_setting_cookie_in_request():\n+    raise NotImplementedError\n+"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.88,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.13,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.93,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.04,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.18,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1574,
+      "output_tokens": 116
+    }
+  },
+  "variant": "split"
+}

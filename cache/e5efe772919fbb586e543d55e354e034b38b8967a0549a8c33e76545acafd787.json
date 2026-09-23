@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_utils.py::test_echo_via_pager_yields_before_exception` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_utils.py::test_stress_echo_via_pager_exception_cleanup` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_utils.py::tracking_popen` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/click/_compat.py\n+++ b/src/click/_compat.py\n@@ -12,7 +12,6 @@\n \n CYGWIN = sys.platform.startswith(\"cygwin\")\n WIN = sys.platform.startswith(\"win\")\n-MAC = sys.platform == \"darwin\"\n auto_wrap_for_ansi: t.Callable[[t.TextIO], t.TextIO] | None = None\n _ansi_re = re.compile(r\"\\033\\[[;?0-9]*[a-zA-Z]\")\n \n\n--- a/tests/test_stream_lifecycle.py\n+++ b/tests/test_stream_lifecycle.py\n@@ -484,7 +484,9 @@\n # Category 6: Stress tests - high-iteration reproducers for race conditions\n #\n # These are marked with ``pytest.mark.stress`` so they can be included or\n-# excluded independently. The CI workflow runs them in a separate job.\n+# excluded independently. The ``tox -e stress`` env collects every\n+# ``pytest.mark.stress`` test across the suite (not just this file), so\n+# stress regressions for other components live alongside their unit tests.\n # ---------------------------------------------------------------------------\n \n \n\n--- a/tests/test_utils.py\n+++ b/tests/test_utils.py\n@@ -16,7 +16,6 @@\n \n import click._termui_impl\n import click.utils\n-from click._compat import MAC\n from click._compat import WIN\n from click._utils import UNSET\n \n@@ -286,6 +285,11 @@\n \n \n def _test_gen_func_fails():\n+    raise RuntimeError(\"This is a test.\")\n+    yield  # unreachable, keeps this a generator function\n+\n+\n+def _test_gen_func_yields_then_fails():\n     yield \"test\"\n     raise RuntimeError(\"This is a test.\")\n \n@@ -315,10 +319,6 @@\n \n \n @pytest.mark.skipif(WIN, reason=\"Different behavior on windows.\")\n-@pytest.mark.skipif(\n-    MAC and sys.version_info >= (3, 13) and not sys._is_gil_enabled(),\n-    reason=\"Generator exception tests are flaky in Python 3.14t on macOS.\",\n-)\n @pytest.mark.parametrize(\n     \"pager_cmd\", [\"cat\", \"cat \", \" cat \", \"less\", \" less\", \" less \"]\n )\n@@ -454,6 +454,71 @@\n     assert err == expected_stderr, (\n         f\"Unexpected stderr in test case '{test.description}'\"\n     )\n+\n+\n+@pytest.mark.skipif(WIN, reason=\"Different behavior on windows.\")\n+def test_echo_via_pager_yields_before_exception(monkeypatch, tmp_path):\n+    \"\"\"A generator that yields then raises: click writes the partial output to\n+    the pager stream before propagating the exception.\n+\n+    The pager file content is intentionally NOT asserted: pipe-drain timing\n+    between click and the pager subprocess is outside click's control\n+    (#2899, #3470). Spying on ``MaybeStripAnsi.write`` records what click sent\n+    to the pager, which is deterministic regardless of scheduling.\n+    \"\"\"\n+    monkeypatch.setitem(os.environ, \"PAGER\", \"cat\")\n+    monkeypatch.setattr(click._termui_impl, \"isatty\", lambda x: True)\n+\n+    writes: list[str] = []\n+    real_write = click._termui_impl.MaybeStripAnsi.write\n+\n+    def spy(self, text):\n+        writes.append(text)\n+        return real_write(self, text)\n+\n+    monkeypatch.setattr(click._termui_impl.MaybeStripAnsi, \"write\", spy)\n+\n+    pager_out_tmp = tmp_path / \"pager_out.txt\"\n+    with (\n+        pager_out_tmp.open(\"w\") as f,\n+        patch.object(subprocess, \"Popen\", partial(subprocess.Popen, stdout=f)),\n+        pytest.raises(RuntimeError, match=\"This is a test.\"),\n+    ):\n+        click.echo_via_pager(_test_gen_func_yields_then_fails())\n+\n+    assert \"\".join(writes) == \"test\", (\n+        f\"click should have written the yielded chunk before exception, got {writes!r}\"\n+    )\n+\n+\n+@pytest.mark.stress\n+@pytest.mark.skipif(WIN, reason=\"Different behavior on windows.\")\n+@pytest.mark.parametrize(\"_\", range(1000))\n+def test_stress_echo_via_pager_exception_cleanup(_, monkeypatch, tmp_path):\n+    \"\"\"Repeated exceptions during ``echo_via_pager`` must not leak subprocesses.\n+\n+    Regression coverage for the cleanup path in ``_pipepager``'s exception\n+    handler (issue #2899, PR #3470). Each iteration spawns a real pager\n+    subprocess, raises before any data is written and check there is no leak.\n+    \"\"\"\n+    monkeypatch.setitem(os.environ, \"PAGER\", \"cat\")\n+    monkeypatch.setattr(click._termui_impl, \"isatty\", lambda x: True)\n+\n+    spawned: list[subprocess.Popen] = []\n+    real_popen = subprocess.Popen\n+\n+\n+    pager_out_tmp = tmp_path / \"pager_out.txt\"\n+    with (\n+        pager_out_tmp.open(\"w\") as f,\n+        patch.object(subprocess, \"Popen\", partial(tracking_popen, stdout=f)),\n+        pytest.raises(RuntimeError),\n+    ):\n+        click.echo_via_pager(_test_gen_func_fails())\n+\n+    assert spawned, \"pager subprocess was never started\"\n+    for p in spawned:\n+        assert p.returncode is not None, \"pager subprocess not reaped\"\n \n \n def test_echo_color_flag(monkeypatch, capfd):"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.27,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.25,
+        "type": "noul"
+      },
+      "r2": {
+        "noul": 0.05,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 2301,
+      "output_tokens": 55
+    }
+  },
+  "variant": "single"
+}

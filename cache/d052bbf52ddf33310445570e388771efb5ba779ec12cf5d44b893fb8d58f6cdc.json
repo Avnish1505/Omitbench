@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `src/itsdangerous/_json.py::DeprecatedJSON` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/itsdangerous/__init__.py\n+++ b/src/itsdangerous/__init__.py\n@@ -1,4 +1,4 @@\n-from ._json import json\n+from ._json import deprecated_json as json\n from .encoding import base64_decode\n from .encoding import base64_encode\n from .encoding import want_bytes\n\n--- a/src/itsdangerous/_json.py\n+++ b/src/itsdangerous/_json.py\n@@ -1,7 +1,5 @@\n-try:\n-    import simplejson as json\n-except ImportError:\n-    import json\n+import json\n+from types import ModuleType\n \n \n class _CompactJSON:\n@@ -17,3 +15,10 @@\n         kwargs.setdefault(\"separators\", (\",\", \":\"))\n         return json.dumps(obj, **kwargs)\n \n+\n+class DeprecatedJSON(ModuleType):\n+    raise NotImplementedError\n+\n+\n+deprecated_json = DeprecatedJSON(\"json\")\n+\n\n--- a/src/itsdangerous/jws.py\n+++ b/src/itsdangerous/jws.py\n@@ -6,7 +6,6 @@\n from numbers import Real\n \n from ._json import _CompactJSON\n-from ._json import json\n from .encoding import base64_decode\n from .encoding import base64_encode\n from .encoding import want_bytes\n@@ -87,7 +86,7 @@\n             )\n \n         try:\n-            header = super().load_payload(json_header, serializer=json)\n+            header = super().load_payload(json_header, serializer=_CompactJSON)\n         except BadData as e:\n             raise BadHeader(\n                 \"Could not unserialize header because it was malformed\",\n\n--- a/src/itsdangerous/serializer.py\n+++ b/src/itsdangerous/serializer.py\n@@ -1,6 +1,6 @@\n import hashlib\n-\n-from ._json import json\n+import json\n+\n from .encoding import want_bytes\n from .exc import BadPayload\n from .exc import BadSignature\n@@ -19,10 +19,6 @@\n     underlying implementation for parsing and loading you have to\n     override the :meth:`load_payload` and :meth:`dump_payload`\n     functions.\n-\n-    This implementation uses simplejson if available for dumping and\n-    loading and will fall back to the standard library's json module if\n-    it's not available.\n \n     You do not need to subclass this class in order to switch out or\n     customize the :class:`.Signer`. You can instead pass a different"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.03,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1103,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

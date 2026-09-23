@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `itsdangerous.py::BadHeader`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `itsdangerous.py::BadHeader`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `itsdangerous.py::BadHeader`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/itsdangerous.py\n+++ b/itsdangerous.py\n@@ -124,6 +124,10 @@\n     that.  The original exception that caused that will be stored on the\n     exception as :attr:`original_error`.\n \n+    This can also happen with a :class:`JSONWebSignatureSerializer` that\n+    is subclassed and uses a different serializer for the payload than\n+    the expected one.\n+\n     .. versionadded:: 0.15\n     \"\"\"\n \n@@ -164,6 +168,27 @@\n         #:\n         #: .. versionadded:: 0.14\n         self.date_signed = date_signed\n+\n+\n+class BadHeader(BadSignature):\n+    \"\"\"Raised if a signed header is invalid in some form.  This only\n+    happens for serializers that have a header that goes with the\n+    signature.\n+\n+    .. versionadded:: 0.24\n+    \"\"\"\n+\n+    def __init__(self, message, payload=None, header=None,\n+                 original_error=None):\n+        BadSignature.__init__(self, message, payload)\n+\n+        #: If the header is actually available but just malformed it\n+        #: might be stored here.\n+        self.header = header\n+\n+        #: If available, the error that indicates why the payload\n+        #: was not valid.  This might be `None`.\n+        self.original_error = original_error\n \n \n class SignatureExpired(BadTimeSignature):\n@@ -657,14 +682,23 @@\n         base64d_header, base64d_payload = payload.split(b'.', 1)\n         try:\n             json_header = base64_decode(base64d_header)\n+        except Exception as e:\n+            raise BadHeader('Could not base64 decode the header because of '\n+                'an exception', original_error=e)\n+        try:\n             json_payload = base64_decode(base64d_payload)\n         except Exception as e:\n             raise BadPayload('Could not base64 decode the payload because of '\n                 'an exception', original_error=e)\n-        header = Serializer.load_payload(self, json_header,\n-            serializer=json)\n+        try:\n+            header = Serializer.load_payload(self, json_header,\n+                serializer=json)\n+        except BadData as e:\n+            raise BadHeader('Could not unserialize header because it was '\n+                'malformed', original_error=e)\n         if not isinstance(header, dict):\n-            raise BadPayload('Header payload is not a JSON object')\n+            raise BadHeader('Header payload is not a JSON object',\n+                header=header)\n         payload = Serializer.load_payload(self, json_payload)\n         if return_header:\n             return payload, header\n@@ -712,7 +746,8 @@\n             self.make_signer(salt, self.algorithm).unsign(want_bytes(s)),\n             return_header=True)\n         if header.get('alg') != self.algorithm_name:\n-            raise BadSignature('Algorithm mismatch')\n+            raise BadHeader('Algorithm mismatch', header=header,\n+                            payload=payload)\n         if return_header:\n             return payload, header\n         return payload"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.91,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.99,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1350,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

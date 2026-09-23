@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_utils.py::test_urlize_mail_mastodon` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/jinja2/utils.py\n+++ b/src/jinja2/utils.py\n@@ -333,6 +333,8 @@\n         elif (\n             \"@\" in middle\n             and not middle.startswith(\"www.\")\n+            # ignore values like `@a@b`\n+            and not middle.startswith(\"@\")\n             and \":\" not in middle\n             and _email_re.match(middle)\n         ):\n\n--- a/tests/test_utils.py\n+++ b/tests/test_utils.py\n@@ -142,6 +142,14 @@\n             \"http://example.org</a>\"\n         )\n \n+    def test_urlize_mail_mastodon(self):\n+        fr = \"nabijaczleweli@nabijaczleweli.xyz\\n@eater@cijber.social\\n\"\n+        to = (\n+            '<a href=\"mailto:nabijaczleweli@nabijaczleweli.xyz\">'\n+            \"nabijaczleweli@nabijaczleweli.xyz</a>\\n@eater@cijber.social\\n\"\n+        )\n+        assert urlize(fr) == to\n+\n \n class TestLoremIpsum:\n     def test_lorem_ipsum_markup(self):"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.2,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 761,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

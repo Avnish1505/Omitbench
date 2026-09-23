@@ -1,0 +1,91 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_arguments.py::test_argument_metavar_marks_optional`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_arguments.py::test_argument_metavar_marks_optional`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_arguments.py::test_argument_metavar_marks_optional`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_commands.py::test_subcommand_metavar_marks_optional`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_commands.py::test_subcommand_metavar_marks_optional`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_commands.py::test_subcommand_metavar_marks_optional`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/click/core.py\n+++ b/src/click/core.py\n@@ -1623,8 +1623,15 @@\n         self.invoke_without_command = invoke_without_command\n \n         if subcommand_metavar is None:\n+            # When the group can run without a subcommand, the leading command\n+            # token is optional, so wrap it in brackets to reflect that.\n             if chain:\n-                subcommand_metavar = \"COMMAND1 [ARGS]... [COMMAND2 [ARGS]...]...\"\n+                if invoke_without_command:\n+                    subcommand_metavar = \"[COMMAND1] [ARGS]... [COMMAND2 [ARGS]...]...\"\n+                else:\n+                    subcommand_metavar = \"COMMAND1 [ARGS]... [COMMAND2 [ARGS]...]...\"\n+            elif invoke_without_command:\n+                subcommand_metavar = \"[COMMAND] [ARGS]...\"\n             else:\n                 subcommand_metavar = \"COMMAND [ARGS]...\"\n \n\n--- a/tests/test_arguments.py\n+++ b/tests/test_arguments.py\n@@ -306,6 +306,32 @@\n     assert \"[F!]\" in result.output\n \n \n+@pytest.mark.parametrize(\n+    (\"kwargs\", \"expected\"),\n+    [\n+        ({}, \"FOO\"),\n+        ({\"required\": True}, \"FOO\"),\n+        ({\"required\": False}, \"[FOO]\"),\n+        ({\"default\": \"x\"}, \"[FOO]\"),\n+        ({\"nargs\": -1}, \"[FOO]...\"),\n+        ({\"nargs\": -1, \"required\": True}, \"FOO...\"),\n+        ({\"nargs\": 2}, \"FOO...\"),\n+        ({\"nargs\": 2, \"required\": False}, \"[FOO]...\"),\n+    ],\n+)\n+def test_argument_metavar_marks_optional(runner, kwargs, expected):\n+    \"\"\"An argument is bracketed in the usage line only when it is optional.\"\"\"\n+\n+    @click.command()\n+    @click.argument(\"foo\", **kwargs)\n+    def cli(foo):\n+        pass\n+\n+    result = runner.invoke(cli, [\"--help\"])\n+    assert result.exit_code == 0\n+    assert result.output.splitlines()[0] == f\"Usage: cli [OPTIONS] {expected}\"\n+\n+\n @pytest.mark.parametrize(\"deprecated\", [True, \"USE B INSTEAD\"])\n def test_deprecated_warning(runner, deprecated):\n     @click.command()\n\n--- a/tests/test_commands.py\n+++ b/tests/test_commands.py\n@@ -297,6 +297,33 @@\n     result = runner.invoke(cli)\n     assert not result.exception\n     assert result.output == \"no subcommand, use default\\nin subcommand\\n\"\n+\n+\n+@pytest.mark.parametrize(\n+    (\"chain\", \"invoke_without_command\", \"metavar\"),\n+    [\n+        (False, False, \"COMMAND [ARGS]...\"),\n+        (False, True, \"[COMMAND] [ARGS]...\"),\n+        (True, False, \"COMMAND1 [ARGS]... [COMMAND2 [ARGS]...]...\"),\n+        (True, True, \"[COMMAND1] [ARGS]... [COMMAND2 [ARGS]...]...\"),\n+    ],\n+)\n+def test_subcommand_metavar_marks_optional(\n+    runner, chain, invoke_without_command, metavar\n+):\n+    \"\"\"The leading subcommand token is bracketed only when it is optional.\"\"\"\n+\n+    @click.group(chain=chain, invoke_without_command=invoke_without_command)\n+    def cli():\n+        pass\n+\n+    @cli.command()\n+    def sub():\n+        pass\n+\n+    result = runner.invoke(cli, [\"--help\"])\n+    assert result.exit_code == 0\n+    assert result.output.splitlines()[0] == f\"Usage: cli [OPTIONS] {metavar}\"\n \n \n def test_aliased_command_canonical_name(runner):"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.24,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.38,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1867,
+      "output_tokens": 116
+    }
+  },
+  "variant": "split"
+}

@@ -1,0 +1,199 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `bench/test_benchmarks.py::AtomicFields`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `bench/test_benchmarks.py::AtomicFields`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `bench/test_benchmarks.py::AtomicFields`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `bench/test_benchmarks.py::test_asdict_atomic`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `bench/test_benchmarks.py::test_asdict_atomic`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `bench/test_benchmarks.py::test_asdict_atomic`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `bench/test_benchmarks.py::test_asdict_complicated`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `bench/test_benchmarks.py::test_asdict_complicated`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `bench/test_benchmarks.py::test_asdict_complicated`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `bench/test_benchmarks.py::test_astuple_atomic`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `bench/test_benchmarks.py::test_astuple_atomic`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `bench/test_benchmarks.py::test_astuple_atomic`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `bench/test_benchmarks.py::test_astuple_complicated`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `bench/test_benchmarks.py::test_astuple_complicated`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `bench/test_benchmarks.py::test_astuple_complicated`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/bench/test_benchmarks.py\n+++ b/bench/test_benchmarks.py\n@@ -120,3 +120,56 @@\n     for _ in range(ROUNDS):\n         hash(c)\n \n+\n+def test_asdict_complicated():\n+    \"\"\"\n+    Benchmark instances with non-shortcut fields.\n+    \"\"\"\n+    c = C()\n+    ad = attrs.asdict\n+\n+    for _ in range(ROUNDS):\n+        ad(c)\n+\n+\n+def test_astuple_complicated():\n+    \"\"\"\n+    Benchmark instances with non-shortcut fields.\n+    \"\"\"\n+    c = C()\n+    at = attrs.astuple\n+\n+    for _ in range(ROUNDS):\n+        at(c)\n+\n+\n+@attrs.define\n+class AtomicFields:\n+    a: int = 0\n+    b: Ellipsis = ...\n+    c: str = \"foo\"\n+    d: tuple[str] = \"bar\"\n+    e: complex = complex()\n+\n+\n+def test_asdict_atomic():\n+    \"\"\"\n+    Benchmark atomic-only instances.\n+    \"\"\"\n+    c = AtomicFields()\n+    ad = attrs.asdict\n+\n+    for _ in range(ROUNDS):\n+        ad(c)\n+\n+\n+def test_astuple_atomic():\n+    \"\"\"\n+    Benchmark atomic-only instances.\n+    \"\"\"\n+    c = AtomicFields()\n+    at = attrs.astuple\n+\n+    for _ in range(ROUNDS):\n+        at(c)\n+"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.37,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.94,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.27,
+        "type": "noul"
+      },
+      "r2_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "noul": 0.93,
+        "type": "noul"
+      },
+      "r2_wired": {
+        "noul": 0.22,
+        "type": "noul"
+      },
+      "r3_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r3_real_body": {
+        "noul": 0.93,
+        "type": "noul"
+      },
+      "r3_wired": {
+        "noul": 0.19,
+        "type": "noul"
+      },
+      "r4_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r4_real_body": {
+        "noul": 0.93,
+        "type": "noul"
+      },
+      "r4_wired": {
+        "noul": 0.2,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 2469,
+      "output_tokens": 284
+    }
+  },
+  "variant": "split"
+}

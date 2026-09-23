@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_itsdangerous/test_timed.py::test_fallback_signers` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/itsdangerous/timed.py\n+++ b/src/itsdangerous/timed.py\n@@ -123,13 +123,20 @@\n         raised. All arguments are forwarded to the signer's\n         :meth:`~TimestampSigner.unsign` method.\n         \"\"\"\n-        base64d, timestamp = self.make_signer(salt).unsign(\n-            s, max_age, return_timestamp=True\n-        )\n-        payload = self.load_payload(base64d)\n-        if return_timestamp:\n-            return payload, timestamp\n-        return payload\n+        s = want_bytes(s)\n+        last_exception = None\n+        for signer in self.iter_unsigners(salt):\n+            try:\n+                base64d, timestamp = signer.unsign(\n+                    s, max_age, return_timestamp=True\n+                )\n+                payload = self.load_payload(base64d)\n+                if return_timestamp:\n+                    return payload, timestamp\n+                return payload\n+            except BadSignature as err:\n+                last_exception = err\n+        raise last_exception\n \n     def loads_unsafe(self, s, max_age=None, salt=None):\n         load_kwargs = {\"max_age\": max_age}\n\n--- a/tests/test_itsdangerous/test_timed.py\n+++ b/tests/test_itsdangerous/test_timed.py\n@@ -3,6 +3,7 @@\n from functools import partial\n \n import pytest\n+import hashlib\n from freezegun import freeze_time\n from test_itsdangerous.test_serializer import TestSerializer\n from test_itsdangerous.test_signer import TestSigner\n@@ -85,3 +86,6 @@\n         signed = serializer.dumps(value)\n         assert serializer.loads(signed, return_timestamp=True) == (value, ts)\n \n+    def test_fallback_signers(self):\n+        raise NotImplementedError\n+"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.01,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 930,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

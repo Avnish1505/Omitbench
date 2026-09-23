@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_security.py::test_invalid_method`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_security.py::test_invalid_method`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_security.py::test_invalid_method`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/werkzeug/security.py\n+++ b/src/werkzeug/security.py\n@@ -5,7 +5,6 @@\n import os\n import posixpath\n import secrets\n-import warnings\n \n SALT_CHARS = \"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\"\n DEFAULT_PBKDF2_ITERATIONS = 600000\n@@ -24,14 +23,6 @@\n \n \n def _hash_internal(method: str, salt: str, password: str) -> tuple[str, str]:\n-    if method == \"plain\":\n-        warnings.warn(\n-            \"The 'plain' password method is deprecated and will be removed in\"\n-            \" Werkzeug 3.0. Migrate to the 'scrypt' method.\",\n-            stacklevel=3,\n-        )\n-        return password, method\n-\n     method, *args = method.split(\":\")\n     salt = salt.encode(\"utf-8\")\n     password = password.encode(\"utf-8\")\n@@ -72,12 +63,7 @@\n             f\"pbkdf2:{hash_name}:{iterations}\",\n         )\n     else:\n-        warnings.warn(\n-            f\"The '{method}' password method is deprecated and will be removed in\"\n-            \" Werkzeug 3.0. Migrate to the 'scrypt' method.\",\n-            stacklevel=3,\n-        )\n-        return hmac.new(salt, password, method).hexdigest(), method\n+        raise ValueError(f\"Invalid hash method '{method}'.\")\n \n \n def generate_password_hash(\n\n--- a/tests/test_security.py\n+++ b/tests/test_security.py\n@@ -42,6 +42,8 @@\n         generate_password_hash(\"secret\", salt_length=0)\n \n \n+\n+\n def test_safe_join():\n     assert safe_join(\"foo\", \"bar/baz\") == posixpath.join(\"foo\", \"bar/baz\")\n     assert safe_join(\"foo\", \"../bar/baz\") is None"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.09,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.08,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.2,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1072,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_loader.py::teardown_method` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/jinja2/async_utils.py\n+++ b/src/jinja2/async_utils.py\n@@ -74,7 +74,7 @@\n         async for item in t.cast(\"t.AsyncIterable[V]\", iterable):\n             yield item\n     else:\n-        for item in t.cast(\"t.Iterable[V]\", iterable):\n+        for item in iterable:\n             yield item\n \n \n\n--- a/src/jinja2/ext.py\n+++ b/src/jinja2/ext.py\n@@ -291,14 +291,14 @@\n \n         if hasattr(translations, \"pgettext\"):\n             # Python < 3.8\n-            pgettext = translations.pgettext  # type: ignore\n+            pgettext = translations.pgettext\n         else:\n \n             def pgettext(c: str, s: str) -> str:\n                 return s\n \n         if hasattr(translations, \"npgettext\"):\n-            npgettext = translations.npgettext  # type: ignore\n+            npgettext = translations.npgettext\n         else:\n \n             def npgettext(c: str, s: str, p: str, n: int) -> str:\n\n--- a/src/jinja2/loaders.py\n+++ b/src/jinja2/loaders.py\n@@ -392,7 +392,7 @@\n             )\n             offset = len(prefix)\n \n-            for name in self._loader._files.keys():  # type: ignore\n+            for name in self._loader._files.keys():\n                 # Find names under the templates directory that aren't directories.\n                 if name.startswith(prefix) and name[-1] != os.path.sep:\n                     results.append(name[offset:].replace(os.path.sep, \"/\"))\n\n--- a/src/jinja2/runtime.py\n+++ b/src/jinja2/runtime.py\n@@ -272,9 +272,9 @@\n         # Allow callable classes to take a context\n         if (\n             hasattr(__obj, \"__call__\")  # noqa: B004\n-            and _PassArg.from_obj(__obj.__call__) is not None  # type: ignore\n+            and _PassArg.from_obj(__obj.__call__) is not None\n         ):\n-            __obj = __obj.__call__  # type: ignore\n+            __obj = __obj.__call__\n \n         pass_arg = _PassArg.from_obj(__obj)\n \n\n--- a/tests/test_loader.py\n+++ b/tests/test_loader.py\n@@ -183,6 +183,7 @@\n \n class TestModuleLoader:\n     archive = None\n+    mod_env = None\n \n     def compile_down(self, prefix_loader, zip=\"deflated\"):\n         log = []\n@@ -196,13 +197,6 @@\n         self.mod_env = Environment(loader=loaders.ModuleLoader(self.archive))\n         return \"\".join(log)\n \n-    def teardown(self):\n-        if hasattr(self, \"mod_env\"):\n-            if os.path.isfile(self.archive):\n-                os.remove(self.archive)\n-            else:\n-                shutil.rmtree(self.archive)\n-            self.archive = None\n \n     def test_log(self, prefix_loader):\n         log = self.compile_down(prefix_loader)"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.02,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1210,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

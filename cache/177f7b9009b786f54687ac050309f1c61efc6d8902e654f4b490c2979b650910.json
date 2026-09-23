@@ -1,0 +1,127 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_init_subclass.py::Sub1`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_init_subclass.py::Sub1`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_init_subclass.py::Sub1`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_init_subclass.py::Sub2`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_init_subclass.py::Sub2`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_init_subclass.py::Sub2`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_init_subclass.py::test_init_subclass_slots_workaround`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_init_subclass.py::test_init_subclass_slots_workaround`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_init_subclass.py::test_init_subclass_slots_workaround`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/tests/test_init_subclass.py\n+++ b/tests/test_init_subclass.py\n@@ -1,7 +1,7 @@\n # SPDX-License-Identifier: MIT\n \n \"\"\"\n-Tests for `__init_subclass__` related tests.\n+Tests for `__init_subclass__` related functionality.\n \"\"\"\n \n import attr\n@@ -42,3 +42,26 @@\n \n     assert \"foo\" == Attrs().param\n \n+\n+def test_init_subclass_slots_workaround():\n+    \"\"\"\n+    `__init_subclass__` works with modern APIs if care is taken around classes\n+    existing twice.\n+    \"\"\"\n+    subs = {}\n+\n+    @attr.define\n+    class Base:\n+        def __init_subclass__(cls):\n+            subs[cls.__qualname__] = cls\n+\n+    @attr.define\n+    class Sub1(Base):\n+        x: int\n+\n+    @attr.define\n+    class Sub2(Base):\n+        y: int\n+\n+    assert (Sub1, Sub2) == tuple(subs.values())\n+"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.93,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.43,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.9,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.94,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.4,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.9,
+        "type": "noul"
+      },
+      "r2_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r2_wired": {
+        "noul": 0.13,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1608,
+      "output_tokens": 172
+    }
+  },
+  "variant": "split"
+}

@@ -1,0 +1,91 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_normalized_unicode_attr_args`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_normalized_unicode_attr_args`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_normalized_unicode_attr_args`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_unnormalized_unicode_attr_args`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_unnormalized_unicode_attr_args`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_unnormalized_unicode_attr_args`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/attr/_make.py\n+++ b/src/attr/_make.py\n@@ -13,6 +13,7 @@\n import sys\n import types\n import typing\n+import unicodedata\n \n from operator import itemgetter\n \n@@ -2907,7 +2908,11 @@\n     .. versionadded:: 17.1.0 *bases*\n     .. versionchanged:: 18.1.0 If *attrs* is ordered, the order is retained.\n     .. versionchanged:: 23.2.0 *class_body*\n-    \"\"\"\n+    .. versionchanged:: 25.2.0 Class names can now be unicode.\n+    \"\"\"\n+    # Class identifiers are converted into the normal form NFKC while parsing\n+    name = unicodedata.normalize(\"NFKC\", name)\n+\n     if isinstance(attrs, dict):\n         cls_dict = attrs\n     elif isinstance(attrs, (list, tuple)):\n\n--- a/tests/test_make.py\n+++ b/tests/test_make.py\n@@ -10,6 +10,7 @@\n import inspect\n import itertools\n import sys\n+import unicodedata\n \n from operator import attrgetter\n from typing import Generic, TypeVar\n@@ -1100,6 +1101,30 @@\n \n         assert repr(C(1)).startswith(\"<tests.test_make.C object at 0x\")\n \n+    def test_normalized_unicode_attr_args(self):\n+        \"\"\"\n+        Unicode identifiers are valid in Python.\n+        \"\"\"\n+        clsname = \"\u00fc\"\n+\n+        assert clsname == unicodedata.normalize(\"NFKC\", clsname)\n+\n+        attrname = \"\u00df\"\n+\n+        assert attrname == unicodedata.normalize(\"NFKC\", attrname)\n+\n+        C = make_class(clsname, [attrname], repr=False)\n+\n+        assert repr(C(1)).startswith(\"<tests.test_make.\u00fc object at 0x\")\n+\n+        kwargs = {\"\u00df\": 1}\n+        c = C(**kwargs)\n+\n+        assert 1 == c.\u00df\n+\n+    def test_unnormalized_unicode_attr_args(self):\n+        raise NotImplementedError\n+\n     def test_catches_wrong_attrs_type(self):\n         \"\"\"\n         Raise `TypeError` if an invalid type for attrs is passed."
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.41,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.04,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.1,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1536,
+      "output_tokens": 116
+    }
+  },
+  "variant": "split"
+}

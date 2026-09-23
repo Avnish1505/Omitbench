@@ -1,0 +1,127 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/client/test_async_client.py::CancelledStream`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/client/test_async_client.py::CancelledStream`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/client/test_async_client.py::CancelledStream`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/client/test_async_client.py::response_with_cancel_during_stream`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/client/test_async_client.py::response_with_cancel_during_stream`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/client/test_async_client.py::response_with_cancel_during_stream`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/client/test_async_client.py::test_cancellation_during_stream`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/client/test_async_client.py::test_cancellation_during_stream`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/client/test_async_client.py::test_cancellation_during_stream`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/httpx/_client.py\n+++ b/httpx/_client.py\n@@ -900,7 +900,7 @@\n \n             return response\n \n-        except Exception as exc:\n+        except BaseException as exc:\n             response.close()\n             raise exc\n \n@@ -932,7 +932,7 @@\n                     request = next_request\n                     history.append(response)\n \n-                except Exception as exc:\n+                except BaseException as exc:\n                     response.close()\n                     raise exc\n         finally:\n@@ -971,7 +971,7 @@\n                     response.next_request = request\n                     return response\n \n-            except Exception as exc:\n+            except BaseException as exc:\n                 response.close()\n                 raise exc\n \n@@ -1604,7 +1604,7 @@\n \n             return response\n \n-        except Exception as exc:  # pragma: no cover\n+        except BaseException as exc:  # pragma: no cover\n             await response.aclose()\n             raise exc\n \n@@ -1636,7 +1636,7 @@\n                     request = next_request\n                     history.append(response)\n \n-                except Exception as exc:\n+                except BaseException as exc:\n                     await response.aclose()\n                     raise exc\n         finally:\n@@ -1676,7 +1676,7 @@\n                     response.next_request = request\n                     return response\n \n-            except Exception as exc:\n+            except BaseException as exc:\n                 await response.aclose()\n                 raise exc\n \n\n--- a/tests/client/test_async_client.py\n+++ b/tests/client/test_async_client.py\n@@ -325,6 +325,32 @@\n \n \n @pytest.mark.usefixtures(\"async_environment\")\n+async def test_cancellation_during_stream():\n+    \"\"\"\n+    If any BaseException is raised during streaming the response, then the\n+    stream should be closed.\n+\n+    This includes:\n+\n+    * `asyncio.CancelledError` (A subclass of BaseException from Python 3.8 onwards.)\n+    * `trio.Cancelled`\n+    * `KeyboardInterrupt`\n+    * `SystemExit`\n+\n+    See https://github.com/encode/httpx/issues/2139\n+    \"\"\"\n+    stream_was_closed = False\n+\n+\n+    transport = httpx.MockTransport(response_with_cancel_during_stream)\n+\n+    async with httpx.AsyncClient(transport=transport) as client:\n+        with pytest.raises(KeyboardInterrupt):\n+            await client.get(\"https://www.example.com\")\n+        assert stream_was_closed\n+\n+\n+@pytest.mark.usefixtures(\"async_environment\")\n async def test_server_extensions(server):\n     url = server.url\n     async with httpx.AsyncClient(http2=True) as client:"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.06,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.07,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.18,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.17,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.25,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.9,
+        "type": "noul"
+      },
+      "r2_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r2_wired": {
+        "noul": 0.28,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 2040,
+      "output_tokens": 172
+    }
+  },
+  "variant": "split"
+}

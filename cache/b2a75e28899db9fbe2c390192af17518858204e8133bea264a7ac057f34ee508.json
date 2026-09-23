@@ -1,0 +1,43 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_regression.py::test_cached_extends` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_regression.py::test_cached_includes` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/jinja2/environment.py\n+++ b/src/jinja2/environment.py\n@@ -811,6 +811,16 @@\n             if template is not None and (\n                 not self.auto_reload or template.is_up_to_date\n             ):\n+                # update globals if changed\n+                new_globals = globals.items() - template.globals.items()\n+                if new_globals:\n+                    # it is possible for the template and environment to share\n+                    # a globals object, in which case, a new copy should be\n+                    # made to avoid affecting other templates\n+                    if template.globals is self.globals:\n+                        template.globals = dict(template.globals, **globals)\n+                    else:\n+                        template.globals.update(dict(new_globals))\n                 return template\n         template = self.loader.load(self, name, globals)\n         if self.cache is not None:\n\n--- a/tests/test_regression.py\n+++ b/tests/test_regression.py\n@@ -717,3 +717,37 @@\n         # show up outside of it\n         assert tmpl.render() == \"42\\n0\\n24\\n0\\n42\\n1\\n24\\n1\\n42\"\n \n+    def test_cached_extends(self):\n+        env = Environment(\n+            loader=DictLoader(\n+                {\"parent\": \"{{ foo }}\", \"child\": \"{% extends 'parent' %}\"}\n+            )\n+        )\n+        tmpl = env.get_template(\"child\", globals={\"foo\": \"bar\"})\n+        assert tmpl.render() == \"bar\"\n+\n+        tmpl = env.get_template(\"parent\", globals={\"foo\": 42})\n+        assert tmpl.render() == \"42\"\n+\n+        tmpl = env.get_template(\"child\")\n+        assert tmpl.render() == \"bar\"\n+\n+        tmpl = env.get_template(\"parent\")\n+        assert tmpl.render() == \"42\"\n+\n+    def test_cached_includes(self):\n+        env = Environment(\n+            loader=DictLoader({\"base\": \"{{ foo }}\", \"main\": \"{% include 'base' %}\"})\n+        )\n+        tmpl = env.get_template(\"main\", globals={\"foo\": \"bar\"})\n+        assert tmpl.render() == \"bar\"\n+\n+        tmpl = env.get_template(\"base\", globals={\"foo\": 42})\n+        assert tmpl.render() == \"42\"\n+\n+        tmpl = env.get_template(\"main\")\n+        assert tmpl.render() == \"bar\"\n+\n+        tmpl = env.get_template(\"base\")\n+        assert tmpl.render() == \"42\"\n+"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.17,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.24,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1309,
+      "output_tokens": 38
+    }
+  },
+  "variant": "single"
+}

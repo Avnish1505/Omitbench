@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_regression.py::test_unicode_whitespace`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_regression.py::test_unicode_whitespace`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_regression.py::test_unicode_whitespace`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/jinja2/lexer.py\n+++ b/src/jinja2/lexer.py\n@@ -638,12 +638,17 @@\n \n     def tokeniter(self, source, name, filename=None, state=None):\n         \"\"\"This method tokenizes the text and returns the tokens in a\n-        generator.  Use this method if you just want to tokenize a template.\n+        generator. Use this method if you just want to tokenize a template.\n+\n+        .. versionchanged:: 3.0\n+            Only ``\\\\n``, ``\\\\r\\\\n`` and ``\\\\r`` are treated as line\n+            breaks.\n         \"\"\"\n-        lines = source.splitlines()\n-        if self.keep_trailing_newline and source:\n-            if source.endswith((\"\\r\\n\", \"\\r\", \"\\n\")):\n-                lines.append(\"\")\n+        lines = newline_re.split(source)[::2]\n+\n+        if not self.keep_trailing_newline and lines[-1] == \"\":\n+            del lines[-1]\n+\n         source = \"\\n\".join(lines)\n         pos = 0\n         lineno = 1\n\n--- a/tests/test_regression.py\n+++ b/tests/test_regression.py\n@@ -746,3 +746,8 @@\n         tmpl = env.get_template(\"base\")\n         assert tmpl.render() == \"42 y\"\n \n+\n+@pytest.mark.parametrize(\"unicode_char\", [\"\\N{FORM FEED}\", \"\\x85\"])\n+def test_unicode_whitespace(env, unicode_char):\n+    raise NotImplementedError\n+"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.93,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.04,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.16,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 989,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

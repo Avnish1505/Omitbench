@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_compile.py::test_undefined_import_curly_name`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_compile.py::test_undefined_import_curly_name`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_compile.py::test_undefined_import_curly_name`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/jinja2/compiler.py\n+++ b/src/jinja2/compiler.py\n@@ -1141,9 +1141,14 @@\n             )\n             self.writeline(f\"if {frame.symbols.ref(alias)} is missing:\")\n             self.indent()\n+            # The position will contain the template name, and will be formatted\n+            # into a string that will be compiled into an f-string. Curly braces\n+            # in the name must be replaced with escapes so that they will not be\n+            # executed as part of the f-string.\n+            position = self.position(node).replace(\"{\", \"{{\").replace(\"}\", \"}}\")\n             message = (\n                 \"the template {included_template.__name__!r}\"\n-                f\" (imported on {self.position(node)})\"\n+                f\" (imported on {position})\"\n                 f\" does not export the requested name {name!r}\"\n             )\n             self.writeline(\n\n--- a/tests/test_compile.py\n+++ b/tests/test_compile.py\n@@ -1,6 +1,9 @@\n import os\n import re\n \n+import pytest\n+\n+from jinja2 import UndefinedError\n from jinja2.environment import Environment\n from jinja2.loaders import DictLoader\n \n@@ -88,3 +91,5 @@\n     )[:10]\n     assert found == expect\n \n+\n+"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.06,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.06,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.32,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 944,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

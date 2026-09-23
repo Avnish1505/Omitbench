@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `src/flask/app.py::url_for` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/flask/app.py\n+++ b/src/flask/app.py\n@@ -23,6 +23,7 @@\n from werkzeug.routing import RequestRedirect\n from werkzeug.routing import RoutingException\n from werkzeug.routing import Rule\n+from werkzeug.urls import url_quote\n from werkzeug.utils import redirect as _wz_redirect\n from werkzeug.wrappers import Response as BaseResponse\n \n@@ -1661,6 +1662,7 @@\n \n         return asgiref_async_to_sync(func)\n \n+\n     def redirect(self, location: str, code: int = 302) -> BaseResponse:\n         \"\"\"Create a redirect response object.\n \n\n--- a/src/flask/helpers.py\n+++ b/src/flask/helpers.py\n@@ -11,8 +11,6 @@\n \n import werkzeug.utils\n from werkzeug.exceptions import abort as _wz_abort\n-from werkzeug.routing import BuildError\n-from werkzeug.urls import url_quote\n from werkzeug.utils import redirect as _wz_redirect\n \n from .globals import _app_ctx_stack\n@@ -307,41 +305,7 @@\n \n         external = values.pop(\"_external\", True)\n \n-    anchor = values.pop(\"_anchor\", None)\n-    method = values.pop(\"_method\", None)\n-    scheme = values.pop(\"_scheme\", None)\n-    appctx.app.inject_url_defaults(endpoint, values)\n-\n-    # This is not the best way to deal with this but currently the\n-    # underlying Werkzeug router does not support overriding the scheme on\n-    # a per build call basis.\n-    old_scheme = None\n-    if scheme is not None:\n-        if not external:\n-            raise ValueError(\"When specifying _scheme, _external must be True\")\n-        old_scheme = url_adapter.url_scheme\n-        url_adapter.url_scheme = scheme\n-\n-    try:\n-        try:\n-            rv = url_adapter.build(\n-                endpoint, values, method=method, force_external=external\n-            )\n-        finally:\n-            if old_scheme is not None:\n-                url_adapter.url_scheme = old_scheme\n-    except BuildError as error:\n-        # We need to inject the values again so that the app callback can\n-        # deal with that sort of stuff.\n-        values[\"_external\"] = external\n-        values[\"_anchor\"] = anchor\n-        values[\"_method\"] = method\n-        values[\"_scheme\"] = scheme\n-        return appctx.app.handle_url_build_error(error, endpoint, values)\n-\n-    if anchor is not None:\n-        rv += f\"#{url_quote(anchor)}\"\n-    return rv\n+    return current_app.url_for(endpoint, external, url_adapter, **values)\n \n \n def redirect("
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.47,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1120,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

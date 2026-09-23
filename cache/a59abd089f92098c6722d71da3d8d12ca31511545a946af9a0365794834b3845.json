@@ -1,0 +1,91 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_compat.py::attribute`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_compat.py::attribute`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_compat.py::attribute`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_compat.py::test_attrsinstance_subclass_protocol`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_compat.py::test_attrsinstance_subclass_protocol`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_compat.py::test_attrsinstance_subclass_protocol`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/attr/__init__.py\n+++ b/src/attr/__init__.py\n@@ -9,6 +9,7 @@\n \n from . import converters, exceptions, filters, setters, validators\n from ._cmp import cmp_using\n+from ._compat import Protocol\n from ._config import get_run_validators, set_run_validators\n from ._funcs import asdict, assoc, astuple, evolve, has, resolve_types\n from ._make import (\n@@ -31,7 +32,7 @@\n dataclass = partial(attrs, auto_attribs=True)  # happy Easter ;)\n \n \n-class AttrsInstance:\n+class AttrsInstance(Protocol):\n     pass\n \n \n\n--- a/src/attr/_compat.py\n+++ b/src/attr/_compat.py\n@@ -16,6 +16,15 @@\n PY_3_9_PLUS = sys.version_info[:2] >= (3, 9)\n PY310 = sys.version_info[:2] >= (3, 10)\n PY_3_12_PLUS = sys.version_info[:2] >= (3, 12)\n+\n+\n+if sys.version_info < (3, 8):\n+    try:\n+        from typing_extensions import Protocol\n+    except ImportError:  # pragma: no cover\n+        Protocol = object\n+else:\n+    from typing import Protocol  # noqa: F401\n \n \n def just_warn(*args, **kw):\n\n--- a/tests/test_compat.py\n+++ b/tests/test_compat.py\n@@ -3,6 +3,8 @@\n import types\n \n import pytest\n+\n+import attr\n \n \n @pytest.fixture(name=\"mp\")\n@@ -51,3 +53,13 @@\n         with pytest.raises(AttributeError, match=\"no attribute 'setdefault'\"):\n             mp.setdefault(\"x\")\n \n+\n+def test_attrsinstance_subclass_protocol():\n+    \"\"\"\n+    It's possible to subclass AttrsInstance and Protocol at once.\n+    \"\"\"\n+\n+    class Foo(attr.AttrsInstance, attr._compat.Protocol):\n+        def attribute(self) -> int:\n+            raise NotImplementedError\n+"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.18,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.09,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.28,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.4,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.56,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1485,
+      "output_tokens": 116
+    }
+  },
+  "variant": "split"
+}

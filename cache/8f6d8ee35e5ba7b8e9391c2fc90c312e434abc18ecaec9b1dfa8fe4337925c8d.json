@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_http.py::test_authorization_basic_incorrect_padding` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/werkzeug/datastructures/auth.py\n+++ b/src/werkzeug/datastructures/auth.py\n@@ -1,6 +1,7 @@\n from __future__ import annotations\n \n import base64\n+import binascii\n import typing as t\n import warnings\n from functools import wraps\n@@ -107,7 +108,7 @@\n         if scheme == \"basic\":\n             try:\n                 username, _, password = base64.b64decode(rest).decode().partition(\":\")\n-            except UnicodeError:\n+            except (binascii.Error, UnicodeError):\n                 return None\n \n             return cls(scheme, {\"username\": username, \"password\": password})\n\n--- a/tests/test_http.py\n+++ b/tests/test_http.py\n@@ -215,6 +215,9 @@\n         a = Authorization.from_header(f\"Token {token}\")\n         assert a.type == \"token\"\n         assert a.token == token\n+\n+    def test_authorization_basic_incorrect_padding(self):\n+        raise NotImplementedError\n \n     def test_bad_authorization_header_encoding(self):\n         \"\"\"If the base64 encoded bytes can't be decoded as UTF-8\"\"\""
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.01,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 778,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

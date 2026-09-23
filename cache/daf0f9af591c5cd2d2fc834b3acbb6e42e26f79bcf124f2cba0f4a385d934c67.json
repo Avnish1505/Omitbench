@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_routing.py::test_path_weighting` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/werkzeug/routing/rules.py\n+++ b/src/werkzeug/routing/rules.py\n@@ -592,8 +592,12 @@\n \n             data = match.groupdict()\n             if data[\"static\"]:\n-                static_weights.append((static_parts, -len(data[\"static\"])))\n-                static_parts += 1\n+                # Only static parts beyond the `/` count towards the\n+                # weighting (more static parts mean the rule should be\n+                # weighted first).\n+                if data[\"static\"] != \"/\":\n+                    static_weights.append((static_parts, -len(data[\"static\"])))\n+                    static_parts += 1\n                 self._trace.append((False, data[\"static\"]))\n \n             if data[\"variable\"] is not None:\n\n--- a/tests/test_routing.py\n+++ b/tests/test_routing.py\n@@ -1394,6 +1394,18 @@\n     r.Rule(\"/ws\", endpoint=\"ws\", websocket=True, methods=[\"get\", \"head\", \"options\"])\n \n \n+def test_path_weighting():\n+    m = r.Map(\n+        [\n+            r.Rule(\"/<path:path>/c\", endpoint=\"simple\"),\n+            r.Rule(\"/<path:path>/<a>/<b>\", endpoint=\"complex\"),\n+        ]\n+    )\n+    a = m.bind(\"localhost\", path_info=\"/a/b/c\")\n+\n+    assert a.match() == (\"simple\", {\"path\": \"a/b\"})\n+\n+\n def test_newline_match():\n     m = r.Map([r.Rule(\"/hello\", endpoint=\"hello\")])\n     a = m.bind(\"localhost\")"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.15,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 859,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

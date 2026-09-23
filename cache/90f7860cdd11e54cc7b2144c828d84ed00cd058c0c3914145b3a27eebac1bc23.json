@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests.py::test_sign_invalid_separator`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests.py::test_sign_invalid_separator`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests.py::test_sign_invalid_separator`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/itsdangerous.py\n+++ b/itsdangerous.py\n@@ -9,6 +9,7 @@\n     :copyright: (c) 2011 by Armin Ronacher and the Django Software Foundation.\n     :license: BSD, see LICENSE for more details.\n \"\"\"\n+import string\n import struct\n import sys\n import hmac\n@@ -215,6 +216,11 @@\n         raise BadData('Invalid base64-encoded data')\n \n \n+# The alphabet used by base64.urlsafe_*\n+_base64_alphabet = (\n+    string.ascii_letters + string.digits + '-_='\n+).encode('ascii')\n+\n _int64_struct = struct.Struct('>Q')\n _int_to_bytes = _int64_struct.pack\n _bytes_to_int = _int64_struct.unpack\n@@ -306,7 +312,12 @@\n     def __init__(self, secret_key, salt=None, sep='.', key_derivation=None,\n                  digest_method=None, algorithm=None):\n         self.secret_key = want_bytes(secret_key)\n-        self.sep = sep\n+        self.sep = want_bytes(sep)\n+        if self.sep in _base64_alphabet:\n+            raise ValueError('The given separator cannot be used because it '\n+                             'may be contained in the signature itself. '\n+                             'Alphanumeric characters and `-_=` must not be '\n+                             'used.')\n         self.salt = 'itsdangerous.Signer' if salt is None else salt\n         if key_derivation is None:\n             key_derivation = self.default_key_derivation\n\n--- a/tests.py\n+++ b/tests.py\n@@ -1,6 +1,7 @@\n #!/usr/bin/env python\n import time\n import pickle\n+import pytest\n import hashlib\n import unittest\n from datetime import datetime\n@@ -36,6 +37,7 @@\n     def test_sign(self):\n         s = self.make_signer('secret-key')\n         assert isinstance(s.sign('my string'), bytes)\n+\n \n \n class SerializerTestCase(unittest.TestCase):"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.05,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.05,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.62,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1091,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_testing.py::test_redirect_session` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/flask/testing.py\n+++ b/src/flask/testing.py\n@@ -240,10 +240,10 @@\n         response.json_module = self.application.json  # type: ignore[assignment]\n \n         # Re-push contexts that were preserved during the request.\n-        while self._new_contexts:\n-            cm = self._new_contexts.pop()\n+        for cm in self._new_contexts:\n             self._context_stack.enter_context(cm)\n \n+        self._new_contexts.clear()\n         return response\n \n     def __enter__(self) -> FlaskClient:\n\n--- a/tests/test_testing.py\n+++ b/tests/test_testing.py\n@@ -138,32 +138,8 @@\n     assert rv.data == b\"http://xxx.example.com:1234/foo/\"\n \n \n-def test_redirect_keep_session(app, client, app_ctx):\n-    @app.route(\"/\", methods=[\"GET\", \"POST\"])\n-    def index():\n-        if flask.request.method == \"POST\":\n-            return flask.redirect(\"/getsession\")\n-        flask.session[\"data\"] = \"foo\"\n-        return \"index\"\n-\n-    @app.route(\"/getsession\")\n-    def get_session():\n-        return flask.session.get(\"data\", \"<missing>\")\n-\n-    with client:\n-        rv = client.get(\"/getsession\")\n-        assert rv.data == b\"<missing>\"\n-\n-        rv = client.get(\"/\")\n-        assert rv.data == b\"index\"\n-        assert flask.session.get(\"data\") == \"foo\"\n-\n-        rv = client.post(\"/\", data={}, follow_redirects=True)\n-        assert rv.data == b\"foo\"\n-        assert flask.session.get(\"data\") == \"foo\"\n-\n-        rv = client.get(\"/getsession\")\n-        assert rv.data == b\"foo\"\n+def test_redirect_session(app, client, app_ctx):\n+    raise NotImplementedError\n \n \n def test_session_transactions(app, client):"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.01,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 928,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

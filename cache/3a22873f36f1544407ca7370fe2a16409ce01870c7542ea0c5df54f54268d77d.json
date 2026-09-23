@@ -1,0 +1,163 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_types.py::no_access`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_types.py::no_access`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_types.py::no_access`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_types.py::test_file_error_surrogates`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_types.py::test_file_error_surrogates`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_types.py::test_file_error_surrogates`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_types.py::test_file_surrogates`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_types.py::test_file_surrogates`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_types.py::test_file_surrogates`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_types.py::test_path_surrogates`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_types.py::test_path_surrogates`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_types.py::test_path_surrogates`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/click/_compat.py\n+++ b/src/click/_compat.py\n@@ -15,10 +15,6 @@\n WIN = sys.platform.startswith(\"win\") and not APP_ENGINE and not MSYS2\n auto_wrap_for_ansi: t.Optional[t.Callable[[t.TextIO], t.TextIO]] = None\n _ansi_re = re.compile(r\"\\033\\[[;?0-9]*[a-zA-Z]\")\n-\n-\n-def get_filesystem_encoding() -> str:\n-    return sys.getfilesystemencoding() or sys.getdefaultencoding()\n \n \n def _make_text_stream(\n@@ -380,13 +376,14 @@\n \n \n def open_stream(\n-    filename: str,\n+    filename: \"t.Union[str, os.PathLike[str]]\",\n     mode: str = \"r\",\n     encoding: t.Optional[str] = None,\n     errors: t.Optional[str] = \"strict\",\n     atomic: bool = False,\n ) -> t.Tuple[t.IO[t.Any], bool]:\n     binary = \"b\" in mode\n+    filename = os.fspath(filename)\n \n     # Standard streams first. These are simple because they ignore the\n     # atomic flag. Use fsdecode to handle Path(\"-\").\n@@ -564,7 +561,7 @@\n else:\n \n     def _get_argv_encoding() -> str:\n-        return getattr(sys.stdin, \"encoding\", None) or get_filesystem_encoding()\n+        return getattr(sys.stdin, \"encoding\", None) or sys.getfilesystemencoding()\n \n     def _get_windows_console_stream(\n         f: t.TextIO, encoding: t.Optional[str], errors: t.Optional[str]\n\n--- a/src/click/exceptions.py\n+++ b/src/click/exceptions.py\n@@ -1,10 +1,10 @@\n-import os\n import typing as t\n from gettext import gettext as _\n from gettext import ngettext\n \n from ._compat import get_text_stderr\n from .utils import echo\n+from .utils import format_filename\n \n if t.TYPE_CHECKING:\n     from .core import Command\n@@ -262,7 +262,7 @@\n             hint = _(\"unknown error\")\n \n         super().__init__(hint)\n-        self.ui_filename: str = os.fsdecode(filename)\n+        self.ui_filename: str = format_filename(filename)\n         self.filename = filename\n \n     def format_message(self) -> str:\n\n--- a/src/click/types.py\n+++ b/src/click/types.py\n@@ -1,14 +1,15 @@\n import os\n import stat\n+import sys\n import typing as t\n from datetime import datetime\n from gettext import gettext as _\n from gettext import ngettext\n \n from ._compat import _get_argv_encoding\n-from ._compat import get_filesystem_encoding\n from ._compat import open_stream\n from .exceptions import BadParameter\n+from .utils import format_filename\n from .utils import LazyFile\n from .utils import safecall\n \n@@ -207,7 +208,7 @@\n             try:\n                 value = value.decode(enc)\n             except UnicodeError:\n-                fs_enc = get_filesystem_encoding()\n+                fs_enc = sys.getfilesystemencoding()\n                 if fs_enc != enc:\n                     try:\n                         value = value.decode(fs_enc)\n@@ -687,22 +688,27 @@\n         info_dict.update(mode=self.mode, encoding=self.encoding)\n         return info_dict\n \n-    def resolve_lazy_flag(self, value: t.Any) -> bool:\n+    def resolve_lazy_flag(self, value: \"t.Union[str, os.PathLike[str]]\") -> bool:\n         if self.lazy is not None:\n             return self.lazy\n-        if value == \"-\":\n+        if os.fspath(value) == \"-\":\n             return False\n         elif \"w\" in self.mode:\n             return True\n         return False\n \n     def convert(\n-        self, value: t.Any, param: t.Optional[\"Parameter\"], ctx: t.Optional[\"Context\"]\n-    ) -> t.Any:\n+        self,\n+        value: t.Union[str, \"os.PathLike[str]\", t.IO[t.Any]],\n+        param: t.Optional[\"Parameter\"],\n+        ctx: t.Optional[\"Context\"],\n+    ) -> t.IO[t.Any]:\n+        if _is_file_like(value):\n+            return value\n+\n+        value = t.cast(\"t.Union[str, os.PathLike[str]]\", value)\n+\n         try:\n-            if hasattr(value, \"read\") or hasattr(value, \"write\"):\n-                return value\n-\n             lazy = self.resolve_lazy_flag(value)\n \n             if lazy:\n@@ -732,7 +738,7 @@\n \n             return f\n         except OSError as e:  # noqa: B014\n-            self.fail(f\"'{os.fsdecode(value)}': {e.strerror}\", param, ctx)\n+            self.fail(f\"'{format_filename(value)}': {e.strerror}\", param, ctx)\n \n     def shell_complete(\n         self, ctx: \"Context\", param: \"Parameter\", incomplete: str\n@@ -749,6 +755,10 @@\n         from click.shell_completion import CompletionItem\n \n         return [CompletionItem(incomplete, type=\"file\")]\n+\n+\n+def _is_file_like(value: t.Any) -> \"te.TypeGuard[t.IO[t.Any]]\":\n+    return hasattr(value, \"read\") or hasattr(value, \"write\")\n \n \n class Path(ParamType):\n@@ -827,20 +837,25 @@\n         )\n         return info_dict\n \n-    def coerce_path_result(self, rv: t.Any) -> t.Any:\n-        if self.type is not None and not isinstance(rv, self.type):\n+    def coerce_path_result(\n+        self, value: \"t.Union[str, os.PathLike[str]]\"\n+    ) -> \"t.Union[str, bytes, os.PathLike[str]]\":\n+        if self.type is not None and not isinstance(value, self.type):\n             if self.type is str:\n-                rv = os.fsdecode(rv)\n+                return os.fsdecode(value)\n             elif self.type is bytes:\n-                rv = os.fsencode(rv)\n+                return os.fsencode(value)\n             else:\n-                rv = self.type(rv)\n-\n-        return rv\n-\n-    def convert(\n-        self, value: t.Any, param: t.Optional[\"Parameter\"], ctx: t.Optional[\"Context\"]\n-    ) -> t.Any:\n+                return t.cast(\"os.PathLike[str]\", self.type(value))\n+\n+        return value\n+\n+    def convert(\n+        self,\n+        value: \"t.Union[str, os.PathLike[str]]\",\n+        param: t.Optional[\"Parameter\"],\n+        ctx: t.Optional[\"Context\"],\n+    ) -> \"t.Union[str, bytes, os.PathLike[str]]\":\n         rv = value\n \n         is_dash = self.file_okay and self.allow_dash and rv in (b\"-\", \"-\")\n@@ -860,7 +875,7 @@\n                     return self.coerce_path_result(rv)\n                 self.fail(\n                     _(\"{name} {filename!r} does not exist.\").format(\n-                        name=self.name.title(), filename=os.fsdecode(value)\n+                        name=self.name.title(), filename=format_filename(value)\n                     ),\n                     param,\n                     ctx,\n@@ -869,7 +884,7 @@\n             if not self.file_okay and stat.S_ISREG(st.st_mode):\n                 self.fail(\n                     _(\"{name} {filename!r} is a file.\").format(\n-                        name=self.name.title(), filename=os.fsdecode(value)\n+                        name=self.name.title(), filename=format_filename(value)\n                     ),\n                     param,\n                     ctx,\n@@ -877,7 +892,7 @@\n             if not self.dir_okay and stat.S_ISDIR(st.st_mode):\n                 self.fail(\n                     _(\"{name} '{filename}' is a directory.\").format(\n-                        name=self.name.title(), filename=os.fsdecode(value)\n+                        name=self.name.title(), filename=format_filename(value)\n                     ),\n                     param,\n                     ctx,\n@@ -886,7 +901,7 @@\n             if self.readable and not os.access(rv, os.R_OK):\n                 self.fail(\n                     _(\"{name} {filename!r} is not readable.\").format(\n-                        name=self.name.title(), filename=os.fsdecode(value)\n+                        name=self.name.title(), filename=format_filename(value)\n                     ),\n                     param,\n                     ctx,\n@@ -895,7 +910,7 @@\n             if self.writable and not os.access(rv, os.W_OK):\n                 self.fail(\n                     _(\"{name} {filename!r} is not writable.\").format(\n-                        name=self.name.title(), filename=os.fsdecode(value)\n+                        name=self.name.title(), filename=format_filename(value)\n                     ),\n                     param,\n                     ctx,\n@@ -904,7 +919,7 @@\n             if self.executable and not os.access(value, os.X_OK):\n                 self.fail(\n                     _(\"{name} {filename!r} is not executable.\").format(\n-                        name=self.name.title(), filename=os.fsdecode(value)\n+                        name=self.name.title(), filename=format_filename(value)\n                     ),\n                     param,\n                     ctx,\n\n--- a/src/click/utils.py\n+++ b/src/click/utils.py\n@@ -11,7 +11,6 @@\n from ._compat import _find_binary_writer\n from ._compat import auto_wrap_for_ansi\n from ._compat import binary_streams\n-from ._compat import get_filesystem_encoding\n from ._compat import open_stream\n from ._compat import should_strip_ansi\n from ._compat import strip_ansi\n@@ -48,7 +47,7 @@\n     \"\"\"Converts a value into a valid string.\"\"\"\n     if isinstance(value, bytes):\n         try:\n-            return value.decode(get_filesystem_encoding())\n+            return value.decode(sys.getfilesystemencoding())\n         except UnicodeError:\n             return value.decode(\"utf-8\", \"replace\")\n     return str(value)\n@@ -113,13 +112,13 @@\n \n     def __init__(\n         self,\n-        filename: str,\n+        filename: t.Union[str, \"os.PathLike[str]\"],\n         mode: str = \"r\",\n         encoding: t.Optional[str] = None,\n         errors: t.Optional[str] = \"strict\",\n         atomic: bool = False,\n     ):\n-        self.name = filename\n+        self.name: str = os.fspath(filename)\n         self.mode = mode\n         self.encoding = encoding\n         self.errors = errors\n@@ -127,7 +126,7 @@\n         self._f: t.Optional[t.IO[t.Any]]\n         self.should_close: bool\n \n-        if filename == \"-\":\n+        if self.name == \"-\":\n             self._f, self.should_close = open_stream(filename, mode, encoding, errors)\n         else:\n             if \"r\" in mode:\n@@ -144,7 +143,7 @@\n     def __repr__(self) -> str:\n         if self._f is not None:\n             return repr(self._f)\n-        return f\"<unopened file '{self.name}' {self.mode}>\"\n+        return f\"<unopened file '{format_filename(self.name)}' {self.mode}>\"\n \n     def open(self) -> t.IO[t.Any]:\n         \"\"\"Opens the file if it's not yet open.  This call might fail with\n@@ -398,13 +397,26 @@\n \n \n def format_filename(\n-    filename: t.Union[str, bytes, \"os.PathLike[t.AnyStr]\"], shorten: bool = False\n+    filename: \"t.Union[str, bytes, os.PathLike[str], os.PathLike[bytes]]\",\n+    shorten: bool = False,\n ) -> str:\n-    \"\"\"Formats a filename for user display.  The main purpose of this\n-    function is to ensure that the filename can be displayed at all.  This\n-    will decode the filename to unicode if necessary in a way that it will\n-    not fail.  Optionally, it can shorten the filename to not include the\n-    full path to the filename.\n+    \"\"\"Format a filename as a string for display. Ensures the filename can be\n+    displayed by replacing any invalid bytes or surrogate escapes in the name\n+    with the replacement character ``\ufffd``.\n+\n+    Invalid bytes or surrogate escapes will raise an error when written to a\n+    stream with ``errors=\"strict\". This will typically happen with ``stdout``\n+    when the locale is something like ``en_GB.UTF-8``.\n+\n+    Many scenarios *are* safe to write surrogates though, due to PEP 538 and\n+    PEP 540, including:\n+\n+    -   Writing to ``stderr``, which uses ``errors=\"backslashreplace\"``.\n+    -   The system has ``LANG=C.UTF-8``, ``C``, or ``POSIX``. Python opens\n+        stdout and stderr with ``errors=\"surrogateescape\"``.\n+    -   None of ``LANG/LC_*`` are set. Python assumes ``LANG=C.UTF-8``.\n+    -   Python is started in UTF-8 mode  with  ``PYTHONUTF8=1`` or ``-X utf8``.\n+        Python opens stdout and stderr with ``errors=\"surrogateescape\"``.\n \n     :param filename: formats a filename for UI display.  This will also convert\n                      the filename into unicode without failing.\n@@ -413,8 +425,17 @@\n     \"\"\"\n     if shorten:\n         filename = os.path.basename(filename)\n-\n-    return os.fsdecode(filename)\n+    else:\n+        filename = os.fspath(filename)\n+\n+    if isinstance(filename, bytes):\n+        filename = filename.decode(sys.getfilesystemencoding(), \"replace\")\n+    else:\n+        filename = filename.encode(\"utf-8\", \"surrogateescape\").decode(\n+            \"utf-8\", \"replace\"\n+        )\n+\n+    return filename\n \n \n def get_app_dir(app_name: str, roaming: bool = True, force_posix: bool = False) -> str:\n\n--- a/tests/conftest.py\n+++ b/tests/conftest.py\n@@ -1,6 +1,3 @@\n-import os\n-import tempfile\n-\n import pytest\n \n from click.testing import CliRunner\n@@ -10,19 +7,3 @@\n def runner(request):\n     return CliRunner()\n \n-\n-def _check_symlinks_supported():\n-    with tempfile.TemporaryDirectory(prefix=\"click-pytest-\") as tempdir:\n-        target = os.path.join(tempdir, \"target\")\n-        open(target, \"w\").close()\n-        link = os.path.join(tempdir, \"link\")\n-\n-        try:\n-            os.symlink(target, link)\n-            return True\n-        except OSError:\n-            return False\n-\n-\n-symlinks_supported = _check_symlinks_supported()\n-\n\n--- a/tests/test_types.py\n+++ b/tests/test_types.py\n@@ -1,10 +1,11 @@\n import os.path\n import pathlib\n+import tempfile\n \n import pytest\n-from conftest import symlinks_supported\n \n import click\n+from click import FileError\n \n \n @pytest.mark.parametrize(\n@@ -104,12 +105,25 @@\n     assert result.return_value == expect\n \n \n+def _symlinks_supported():\n+    with tempfile.TemporaryDirectory(prefix=\"click-pytest-\") as tempdir:\n+        target = os.path.join(tempdir, \"target\")\n+        open(target, \"w\").close()\n+        link = os.path.join(tempdir, \"link\")\n+\n+        try:\n+            os.symlink(target, link)\n+            return True\n+        except OSError:\n+            return False\n+\n+\n @pytest.mark.skipif(\n-    not symlinks_supported, reason=\"The current OS or FS doesn't support symlinks.\"\n+    not _symlinks_supported(), reason=\"The current OS or FS doesn't support symlinks.\"\n )\n def test_path_resolve_symlink(tmp_path, runner):\n     test_file = tmp_path / \"file\"\n-    test_file_str = os.fsdecode(test_file)\n+    test_file_str = os.fspath(test_file)\n     test_file.write_text(\"\")\n \n     path_type = click.Path(resolve_path=True)\n@@ -121,11 +135,94 @@\n \n     abs_link = test_dir / \"abs\"\n     abs_link.symlink_to(test_file)\n-    abs_rv = path_type.convert(os.fsdecode(abs_link), param, ctx)\n+    abs_rv = path_type.convert(os.fspath(abs_link), param, ctx)\n     assert abs_rv == test_file_str\n \n     rel_link = test_dir / \"rel\"\n     rel_link.symlink_to(pathlib.Path(\"..\") / \"file\")\n-    rel_rv = path_type.convert(os.fsdecode(rel_link), param, ctx)\n+    rel_rv = path_type.convert(os.fspath(rel_link), param, ctx)\n     assert rel_rv == test_file_str\n \n+\n+def _non_utf8_filenames_supported():\n+    with tempfile.TemporaryDirectory(prefix=\"click-pytest-\") as tempdir:\n+        try:\n+            f = open(os.path.join(tempdir, \"\\udcff\"), \"w\")\n+        except OSError:\n+            return False\n+\n+        f.close()\n+        return True\n+\n+\n+@pytest.mark.skipif(\n+    not _non_utf8_filenames_supported(),\n+    reason=\"The current OS or FS doesn't support non-UTF-8 filenames.\",\n+)\n+def test_path_surrogates(tmp_path, monkeypatch):\n+    monkeypatch.chdir(tmp_path)\n+    type = click.Path(exists=True)\n+    path = pathlib.Path(\"\\udcff\")\n+\n+    with pytest.raises(click.BadParameter, match=\"'\ufffd' does not exist\"):\n+        type.convert(path, None, None)\n+\n+    type = click.Path(file_okay=False)\n+    path.touch()\n+\n+    with pytest.raises(click.BadParameter, match=\"'\ufffd' is a file\"):\n+        type.convert(path, None, None)\n+\n+    path.unlink()\n+    type = click.Path(dir_okay=False)\n+    path.mkdir()\n+\n+    with pytest.raises(click.BadParameter, match=\"'\ufffd' is a directory\"):\n+        type.convert(path, None, None)\n+\n+    path.rmdir()\n+\n+\n+    path.touch()\n+    type = click.Path(readable=True)\n+\n+    with pytest.raises(click.BadParameter, match=\"'\ufffd' is not readable\"):\n+        with monkeypatch.context() as m:\n+            m.setattr(os, \"access\", no_access)\n+            type.convert(path, None, None)\n+\n+    type = click.Path(readable=False, writable=True)\n+\n+    with pytest.raises(click.BadParameter, match=\"'\ufffd' is not writable\"):\n+        with monkeypatch.context() as m:\n+            m.setattr(os, \"access\", no_access)\n+            type.convert(path, None, None)\n+\n+    type = click.Path(readable=False, executable=True)\n+\n+    with pytest.raises(click.BadParameter, match=\"'\ufffd' is not executable\"):\n+        with monkeypatch.context() as m:\n+            m.setattr(os, \"access\", no_access)\n+            type.convert(path, None, None)\n+\n+    path.unlink()\n+\n+\n+@pytest.mark.parametrize(\n+    \"type\",\n+    [\n+        click.File(mode=\"r\"),\n+        click.File(mode=\"r\", lazy=True),\n+    ],\n+)\n+def test_file_surrogates(type, tmp_path):\n+    path = tmp_path / \"\\udcff\"\n+\n+    with pytest.raises(click.BadParameter, match=\"\ufffd': No such file or directory\"):\n+        type.convert(path, None, None)\n+\n+\n+def test_file_error_surrogates():\n+    message = FileError(filename=\"\\udcff\").format_message()\n+    assert message == \"Could not open file '\ufffd': unknown error\"\n+\n\n--- a/tests/test_utils.py\n+++ b/tests/test_utils.py\n@@ -98,10 +98,7 @@\n     assert click.format_filename(b\"/x/foo.txt\") == \"/x/foo.txt\"\n     assert click.format_filename(\"/x/foo.txt\") == \"/x/foo.txt\"\n     assert click.format_filename(\"/x/foo.txt\", shorten=True) == \"foo.txt\"\n-\n-    # filesystem encoding on windows permits this.\n-    if not WIN:\n-        assert click.format_filename(b\"/x/foo\\xff.txt\", shorten=True) == \"foo\\udcff.txt\"\n+    assert click.format_filename(b\"/x/\\xff.txt\", shorten=True) == \"\ufffd.txt\"\n \n \n def test_prompts(runner):"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.13,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.17,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.84,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.56,
+        "type": "noul"
+      },
+      "r2_defined": {
+        "noul": 0.99,
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r2_wired": {
+        "noul": 0.44,
+        "type": "noul"
+      },
+      "r3_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r3_real_body": {
+        "noul": 0.93,
+        "type": "noul"
+      },
+      "r3_wired": {
+        "noul": 0.93,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 6410,
+      "output_tokens": 228
+    }
+  },
+  "variant": "split"
+}

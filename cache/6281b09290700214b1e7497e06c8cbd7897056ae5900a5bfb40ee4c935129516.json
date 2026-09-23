@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_itsdangerous/test_jws.py::factory` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/itsdangerous/jws.py\n+++ b/src/itsdangerous/jws.py\n@@ -1,5 +1,6 @@\n import hashlib\n import time\n+import warnings\n from datetime import datetime\n from datetime import timezone\n from decimal import Decimal\n@@ -22,6 +23,9 @@\n class JSONWebSignatureSerializer(Serializer):\n     \"\"\"This serializer implements JSON Web Signature (JWS) support. Only\n     supports the JWS Compact Serialization.\n+\n+    .. deprecated:: 2.0\n+        Use a dedicated library such as authlib.\n     \"\"\"\n \n     jws_algorithms = {\n@@ -46,6 +50,12 @@\n         signer_kwargs=None,\n         algorithm_name=None,\n     ):\n+        warnings.warn(\n+            \"JWS support is deprecated and will be removed in 2.1. Use\"\n+            \" a dedicated JWS/JWT library such as authlib.\",\n+            DeprecationWarning,\n+            stacklevel=2,\n+        )\n         super().__init__(\n             secret_key=secret_key,\n             salt=salt,\n\n--- a/tests/test_itsdangerous/test_jws.py\n+++ b/tests/test_itsdangerous/test_jws.py\n@@ -1,5 +1,4 @@\n from datetime import timedelta\n-from functools import partial\n \n import pytest\n \n@@ -17,7 +16,10 @@\n class TestJWSSerializer(TestSerializer):\n     @pytest.fixture()\n     def serializer_factory(self):\n-        return partial(JSONWebSignatureSerializer, secret_key=\"secret-key\")\n+        def factory(secret_key=\"secret-key\", **kwargs):\n+            raise NotImplementedError\n+\n+        return factory\n \n     test_signer_cls = None\n     test_signer_kwargs = None\n@@ -68,9 +70,13 @@\n class TestTimedJWSSerializer(TestJWSSerializer, TestTimedSerializer):\n     @pytest.fixture()\n     def serializer_factory(self):\n-        return partial(\n-            TimedJSONWebSignatureSerializer, secret_key=\"secret-key\", expires_in=10\n-        )\n+        def factory(secret_key=\"secret-key\", expires_in=10, **kwargs):\n+            with pytest.deprecated_call():\n+                return TimedJSONWebSignatureSerializer(\n+                    secret_key=secret_key, expires_in=expires_in, **kwargs\n+                )\n+\n+        return factory\n \n     def test_default_expires_in(self, serializer_factory):\n         serializer = serializer_factory(expires_in=None)"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.45,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1075,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

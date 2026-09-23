@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests.py::test_accepts_unicode` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/itsdangerous.py\n+++ b/itsdangerous.py\n@@ -107,7 +107,7 @@\n     def unsign(self, signed_value):\n         \"\"\"Unsigns the given string.\"\"\"\n         if isinstance(signed_value, unicode):\n-            value = signed_value.encode('utf-8')\n+            signed_value = signed_value.encode('utf-8')\n         if self.sep not in signed_value:\n             raise BadSignature('No \"%s\" found in value' % self.sep)\n         value, sig = signed_value.rsplit(self.sep, 1)\n\n--- a/tests.py\n+++ b/tests.py\n@@ -32,6 +32,9 @@\n         for transform in transforms:\n             self.assertRaises(\n                 idmod.BadSignature, s.loads, transform(encoded))\n+\n+    def test_accepts_unicode(self):\n+        raise NotImplementedError\n \n \n class TimedSerializerTestCase(SerializerTestCase):"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.01,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 712,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

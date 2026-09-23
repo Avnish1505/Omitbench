@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_shell_completion.py::test_nested_group` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/click/shell_completion.py\n+++ b/src/click/shell_completion.py\n@@ -567,8 +567,8 @@\n                     with cmd.make_context(\n                         name, args, parent=ctx, resilient_parsing=True\n                     ) as sub_ctx:\n+                        ctx = sub_ctx\n                         args = ctx._protected_args + ctx.args\n-                        ctx = sub_ctx\n                 else:\n                     sub_ctx = ctx\n \n@@ -586,8 +586,8 @@\n                             allow_interspersed_args=False,\n                             resilient_parsing=True,\n                         ) as sub_sub_ctx:\n+                            sub_ctx = sub_sub_ctx\n                             args = sub_ctx.args\n-                            sub_ctx = sub_sub_ctx\n \n                     ctx = sub_ctx\n                     args = [*sub_ctx._protected_args, *sub_ctx.args]\n\n--- a/tests/test_shell_completion.py\n+++ b/tests/test_shell_completion.py\n@@ -38,6 +38,10 @@\n     cli = Group(\"cli\", params=[Option([\"-a\"])], commands=[Command(\"x\"), Command(\"y\")])\n     assert _get_words(cli, [], \"\") == [\"x\", \"y\"]\n     assert _get_words(cli, [], \"-\") == [\"-a\", \"--help\"]\n+\n+\n+def test_nested_group():\n+    raise NotImplementedError\n \n \n def test_group_command_same_option():"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.01,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 797,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_handler_non_attrs_instance` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/attr/_make.py\n+++ b/src/attr/_make.py\n@@ -1890,16 +1890,16 @@\n \n def fields(cls):\n     \"\"\"\n-    Return the tuple of *attrs* attributes for a class.\n+    Return the tuple of *attrs* attributes for a class or instance.\n \n     The tuple also allows accessing the fields by their names (see below for\n     examples).\n \n     Args:\n-        cls (type): Class to introspect.\n+        cls (type): Class or instance to introspect.\n \n     Raises:\n-        TypeError: If *cls* is not a class.\n+        TypeError: If *cls* is neither a class nor an *attrs* instance.\n \n         attrs.exceptions.NotAnAttrsClassError:\n             If *cls* is not an *attrs* class.\n@@ -1910,12 +1910,17 @@\n     .. versionchanged:: 16.2.0 Returned tuple allows accessing the fields\n        by name.\n     .. versionchanged:: 23.1.0 Add support for generic classes.\n+    .. versionchanged:: 26.1.0 Add support for instances.\n     \"\"\"\n     generic_base = get_generic_base(cls)\n \n     if generic_base is None and not isinstance(cls, type):\n-        msg = \"Passed object must be a class.\"\n-        raise TypeError(msg)\n+        type_ = type(cls)\n+        if getattr(type_, \"__attrs_attrs__\", None) is None:\n+            msg = \"Passed object must be a class or attrs instance.\"\n+            raise TypeError(msg)\n+\n+        return fields(type_)\n \n     attrs = getattr(cls, \"__attrs_attrs__\", None)\n \n\n--- a/tests/test_make.py\n+++ b/tests/test_make.py\n@@ -1550,12 +1550,19 @@\n     @given(simple_classes())\n     def test_instance(self, C):\n         \"\"\"\n-        Raises `TypeError` on non-classes.\n-        \"\"\"\n-        with pytest.raises(TypeError) as e:\n-            fields(C())\n-\n-        assert \"Passed object must be a class.\" == e.value.args[0]\n+        Returns the class fields for *attrs* instances too.\n+        \"\"\"\n+        assert fields(C()) is fields(C)\n+\n+    def test_handler_non_attrs_instance(self):\n+        \"\"\"\n+        Raises `TypeError` on non-*attrs* instances.\n+        \"\"\"\n+        with pytest.raises(\n+            TypeError,\n+            match=r\"Passed object must be a class or attrs instance\\.\",\n+        ):\n+            fields(object())\n \n     def test_handler_non_attrs_class(self):\n         \"\"\""
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.23,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1099,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `itsdangerous.py::BadHeader` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/itsdangerous.py\n+++ b/itsdangerous.py\n@@ -124,6 +124,10 @@\n     that.  The original exception that caused that will be stored on the\n     exception as :attr:`original_error`.\n \n+    This can also happen with a :class:`JSONWebSignatureSerializer` that\n+    is subclassed and uses a different serializer for the payload than\n+    the expected one.\n+\n     .. versionadded:: 0.15\n     \"\"\"\n \n@@ -164,6 +168,10 @@\n         #:\n         #: .. versionadded:: 0.14\n         self.date_signed = date_signed\n+\n+\n+class BadHeader(BadSignature):\n+    raise NotImplementedError\n \n \n class SignatureExpired(BadTimeSignature):\n@@ -657,14 +665,23 @@\n         base64d_header, base64d_payload = payload.split(b'.', 1)\n         try:\n             json_header = base64_decode(base64d_header)\n+        except Exception as e:\n+            raise BadHeader('Could not base64 decode the header because of '\n+                'an exception', original_error=e)\n+        try:\n             json_payload = base64_decode(base64d_payload)\n         except Exception as e:\n             raise BadPayload('Could not base64 decode the payload because of '\n                 'an exception', original_error=e)\n-        header = Serializer.load_payload(self, json_header,\n-            serializer=json)\n+        try:\n+            header = Serializer.load_payload(self, json_header,\n+                serializer=json)\n+        except BadData as e:\n+            raise BadHeader('Could not unserialize header because it was '\n+                'malformed', original_error=e)\n         if not isinstance(header, dict):\n-            raise BadPayload('Header payload is not a JSON object')\n+            raise BadHeader('Header payload is not a JSON object',\n+                header=header)\n         payload = Serializer.load_payload(self, json_payload)\n         if return_header:\n             return payload, header\n@@ -712,7 +729,8 @@\n             self.make_signer(salt, self.algorithm).unsign(want_bytes(s)),\n             return_header=True)\n         if header.get('alg') != self.algorithm_name:\n-            raise BadSignature('Algorithm mismatch')\n+            raise BadHeader('Algorithm mismatch', header=header,\n+                            payload=payload)\n         if return_header:\n             return payload, header\n         return payload"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.08,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1077,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

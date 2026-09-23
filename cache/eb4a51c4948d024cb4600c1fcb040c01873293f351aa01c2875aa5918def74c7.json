@@ -1,0 +1,91 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_annotations`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_annotations`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_annotations`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_annotations_resolve`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_annotations_resolve`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_annotations_resolve`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/attr/_make.py\n+++ b/src/attr/_make.py\n@@ -3056,7 +3056,12 @@\n         True,\n     )\n \n-    return _attrs(these=cls_dict, **attributes_arguments)(type_)\n+    cls = _attrs(these=cls_dict, **attributes_arguments)(type_)\n+    # Only add type annotations now or \"_attrs()\" will complain:\n+    cls.__annotations__ = {\n+        k: v.type for k, v in cls_dict.items() if v.type is not None\n+    }\n+    return cls\n \n \n # These are required by within this module so we define them here and merely\n\n--- a/tests/test_make.py\n+++ b/tests/test_make.py\n@@ -1164,6 +1164,23 @@\n \n         attr.make_class(\"test\", {\"id\": attr.ib(type=str)}, (MyParent[int],))\n \n+    def test_annotations(self):\n+        \"\"\"\n+        make_class fills the __annotations__ dict for attributes with a known\n+        type.\n+        \"\"\"\n+        a = attr.ib(type=bool)\n+        b = attr.ib(\n+            type=None\n+        )  # Won't be added to ann. b/c of unfavorable default\n+        c = attr.ib()\n+\n+        C = attr.make_class(\"C\", {\"a\": a, \"b\": b, \"c\": c})\n+        C = attr.resolve_types(C)\n+\n+        assert {\"a\": bool} == C.__annotations__\n+\n+\n \n class TestFields:\n     \"\"\""
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.92,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.26,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.06,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.06,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.31,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1324,
+      "output_tokens": 116
+    }
+  },
+  "variant": "split"
+}

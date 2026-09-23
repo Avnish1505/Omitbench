@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `src/requests/adapters.py::build_connection_pool_key_attributes` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/requests/adapters.py\n+++ b/src/requests/adapters.py\n@@ -375,23 +375,83 @@\n \n         return response\n \n+    def build_connection_pool_key_attributes(self, request, verify, cert=None):\n+        \"\"\"Build the PoolKey attributes used by urllib3 to return a connection.\n+\n+        This looks at the PreparedRequest, the user-specified verify value,\n+        and the value of the cert parameter to determine what PoolKey values\n+        to use to select a connection from a given urllib3 Connection Pool.\n+\n+        The SSL related pool key arguments are not consistently set. As of\n+        this writing, use the following to determine what keys may be in that\n+        dictionary:\n+\n+        * If ``verify`` is ``True``, ``\"ssl_context\"`` will be set and will be the\n+          default Requests SSL Context\n+        * If ``verify`` is ``False``, ``\"ssl_context\"`` will not be set but\n+          ``\"cert_reqs\"`` will be set\n+        * If ``verify`` is a string, (i.e., it is a user-specified trust bundle)\n+          ``\"ca_certs\"`` will be set if the string is not a directory recognized\n+          by :py:func:`os.path.isdir`, otherwise ``\"ca_certs_dir\"`` will be\n+          set.\n+        * If ``\"cert\"`` is specified, ``\"cert_file\"`` will always be set. If\n+          ``\"cert\"`` is a tuple with a second item, ``\"key_file\"`` will also\n+          be present\n+\n+        To override these settings, one may subclass this class, call this\n+        method and use the above logic to change parameters as desired. For\n+        example, if one wishes to use a custom :py:class:`ssl.SSLContext` one\n+        must both set ``\"ssl_context\"`` and based on what else they require,\n+        alter the other keys to ensure the desired behaviour.\n+\n+        :param request:\n+            The PreparedReqest being sent over the connection.\n+        :type request:\n+            :class:`~requests.models.PreparedRequest`\n+        :param verify:\n+            Either a boolean, in which case it controls whether\n+            we verify the server's TLS certificate, or a string, in which case it\n+            must be a path to a CA bundle to use.\n+        :param cert:\n+            (optional) Any user-provided SSL certificate for client\n+            authentication (a.k.a., mTLS). This may be a string (i.e., just\n+            the path to a file which holds both certificate and key) or a\n+            tuple of length 2 with the certificate file path and key file\n+            path.\n+        :returns:\n+            A tuple of two dictionaries. The first is the \"host parameters\"\n+            portion of the Pool Key including scheme, hostname, and port. The\n+            second is a dictionary of SSLContext related parameters.\n+        \"\"\"\n+        return _urllib3_request_context(request, verify, cert)\n+\n     def get_connection_with_tls_context(self, request, verify, proxies=None, cert=None):\n         \"\"\"Returns a urllib3 connection for the given request and TLS settings.\n         This should not be called from user code, and is only exposed for use\n         when subclassing the :class:`HTTPAdapter <requests.adapters.HTTPAdapter>`.\n \n-        :param request: The :class:`PreparedRequest <PreparedRequest>` object\n-            to be sent over the connection.\n-        :param verify: Either a boolean, in which case it controls whether\n-            we verify the server's TLS certificate, or a string, in which case it\n-            must be a path to a CA bundle to use.\n-        :param proxies: (optional) The proxies dictionary to apply to the request.\n-        :param cert: (optional) Any user-provided SSL certificate to be trusted.\n-        :rtype: urllib3.ConnectionPool\n+        :param request:\n+            The :class:`PreparedRequest <PreparedRequest>` object to be sent\n+            over the connection.\n+        :param verify:\n+            Either a boolean, in which case it controls whether we verify the\n+            server's TLS certificate, or a string, in which case it must be a\n+            path to a CA bundle to use.\n+        :param proxies:\n+            (optional) The proxies dictionary to apply to the request.\n+        :param cert:\n+            (optional) Any user-provided SSL certificate to be used for client\n+            authentication (a.k.a., mTLS).\n+        :rtype:\n+            urllib3.ConnectionPool\n         \"\"\"\n         proxy = select_proxy(request.url, proxies)\n         try:\n-            host_params, pool_kwargs = _urllib3_request_context(request, verify, cert)\n+            host_params, pool_kwargs = self.build_connection_pool_key_attributes(\n+                request,\n+                verify,\n+                cert,\n+            )\n         except ValueError as e:\n             raise InvalidURL(e, request=request)\n         if proxy:"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.97,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1639,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

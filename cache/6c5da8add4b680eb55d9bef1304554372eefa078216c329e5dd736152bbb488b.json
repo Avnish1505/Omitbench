@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/models/test_url.py::test_param_requires_encoding`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/models/test_url.py::test_param_requires_encoding`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/models/test_url.py::test_param_requires_encoding`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/httpx/_urlparse.py\n+++ b/httpx/_urlparse.py\n@@ -36,6 +36,66 @@\n \n PERCENT_ENCODED_REGEX = re.compile(\"%[A-Fa-f0-9]{2}\")\n \n+# https://url.spec.whatwg.org/#percent-encoded-bytes\n+\n+# The fragment percent-encode set is the C0 control percent-encode set\n+# and U+0020 SPACE, U+0022 (\"), U+003C (<), U+003E (>), and U+0060 (`).\n+FRAG_SAFE = \"\".join(\n+    [chr(i) for i in range(0x20, 0x7F) if i not in (0x20, 0x22, 0x3C, 0x3E, 0x60)]\n+)\n+\n+# The query percent-encode set is the C0 control percent-encode set\n+# and U+0020 SPACE, U+0022 (\"), U+0023 (#), U+003C (<), and U+003E (>).\n+QUERY_SAFE = \"\".join(\n+    [chr(i) for i in range(0x20, 0x7F) if i not in (0x20, 0x22, 0x23, 0x3C, 0x3E)]\n+)\n+\n+# The path percent-encode set is the query percent-encode set\n+# and U+003F (?), U+0060 (`), U+007B ({), and U+007D (}).\n+PATH_SAFE = \"\".join(\n+    [\n+        chr(i)\n+        for i in range(0x20, 0x7F)\n+        if i not in (0x20, 0x22, 0x23, 0x3C, 0x3E) + (0x3F, 0x60, 0x7B, 0x7D)\n+    ]\n+)\n+\n+# The userinfo percent-encode set is the path percent-encode set\n+# and U+002F (/), U+003A (:), U+003B (;), U+003D (=), U+0040 (@),\n+# U+005B ([) to U+005E (^), inclusive, and U+007C (|).\n+USERNAME_SAFE = \"\".join(\n+    [\n+        chr(i)\n+        for i in range(0x20, 0x7F)\n+        if i\n+        not in (0x20, 0x22, 0x23, 0x3C, 0x3E)\n+        + (0x3F, 0x60, 0x7B, 0x7D)\n+        + (0x2F, 0x3A, 0x3B, 0x3D, 0x40, 0x5B, 0x5C, 0x5D, 0x5E, 0x7C)\n+    ]\n+)\n+PASSWORD_SAFE = \"\".join(\n+    [\n+        chr(i)\n+        for i in range(0x20, 0x7F)\n+        if i\n+        not in (0x20, 0x22, 0x23, 0x3C, 0x3E)\n+        + (0x3F, 0x60, 0x7B, 0x7D)\n+        + (0x2F, 0x3A, 0x3B, 0x3D, 0x40, 0x5B, 0x5C, 0x5D, 0x5E, 0x7C)\n+    ]\n+)\n+# Note... The terminology 'userinfo' percent-encode set in the WHATWG document\n+# is used for the username and password quoting. For the joint userinfo component\n+# we remove U+003A (:) from the safe set.\n+USERINFO_SAFE = \"\".join(\n+    [\n+        chr(i)\n+        for i in range(0x20, 0x7F)\n+        if i\n+        not in (0x20, 0x22, 0x23, 0x3C, 0x3E)\n+        + (0x3F, 0x60, 0x7B, 0x7D)\n+        + (0x2F, 0x3B, 0x3D, 0x40, 0x5B, 0x5C, 0x5D, 0x5E, 0x7C)\n+    ]\n+)\n \n # {scheme}:      (optional)\n # //{authority}  (optional)\n@@ -182,8 +242,8 @@\n \n     # Replace \"username\" and/or \"password\" with \"userinfo\".\n     if \"username\" in kwargs or \"password\" in kwargs:\n-        username = quote(kwargs.pop(\"username\", \"\") or \"\")\n-        password = quote(kwargs.pop(\"password\", \"\") or \"\")\n+        username = quote(kwargs.pop(\"username\", \"\") or \"\", safe=USERNAME_SAFE)\n+        password = quote(kwargs.pop(\"password\", \"\") or \"\", safe=PASSWORD_SAFE)\n         kwargs[\"userinfo\"] = f\"{username}:{password}\" if password else username\n \n     # Replace \"raw_path\" with \"path\" and \"query\".\n@@ -238,7 +298,7 @@\n     authority = kwargs.get(\"authority\", url_dict[\"authority\"]) or \"\"\n     path = kwargs.get(\"path\", url_dict[\"path\"]) or \"\"\n     query = kwargs.get(\"query\", url_dict[\"query\"])\n-    fragment = kwargs.get(\"fragment\", url_dict[\"fragment\"])\n+    frag = kwargs.get(\"fragment\", url_dict[\"fragment\"])\n \n     # The AUTHORITY_REGEX will always match, but may have empty components.\n     authority_match = AUTHORITY_REGEX.match(authority)\n@@ -255,7 +315,7 @@\n     # We end up with a parsed representation of the URL,\n     # with components that are plain ASCII bytestrings.\n     parsed_scheme: str = scheme.lower()\n-    parsed_userinfo: str = quote(userinfo, safe=SUB_DELIMS + \":\")\n+    parsed_userinfo: str = quote(userinfo, safe=USERINFO_SAFE)\n     parsed_host: str = encode_host(host)\n     parsed_port: int | None = normalize_port(port, scheme)\n \n@@ -267,25 +327,9 @@\n     if has_scheme or has_authority:\n         path = normalize_path(path)\n \n-    # The GEN_DELIMS set is... : / ? # [ ] @\n-    # These do not need to be percent-quoted unless they serve as delimiters for the\n-    # specific component.\n-    WHATWG_SAFE = '`{}%|^\\\\\"'\n-\n-    # For 'path' we need to drop ? and # from the GEN_DELIMS set.\n-    parsed_path: str = quote(path, safe=SUB_DELIMS + WHATWG_SAFE + \":/[]@\")\n-    # For 'query' we need to drop '#' from the GEN_DELIMS set.\n-    parsed_query: str | None = (\n-        None\n-        if query is None\n-        else quote(query, safe=SUB_DELIMS + WHATWG_SAFE + \":/?[]@\")\n-    )\n-    # For 'fragment' we can include all of the GEN_DELIMS set.\n-    parsed_fragment: str | None = (\n-        None\n-        if fragment is None\n-        else quote(fragment, safe=SUB_DELIMS + WHATWG_SAFE + \":/?#[]@\")\n-    )\n+    parsed_path: str = quote(path, safe=PATH_SAFE)\n+    parsed_query: str | None = None if query is None else quote(query, safe=QUERY_SAFE)\n+    parsed_frag: str | None = None if frag is None else quote(frag, safe=FRAG_SAFE)\n \n     # The parsed ASCII bytestrings are our canonical form.\n     # All properties of the URL are derived from these.\n@@ -296,7 +340,7 @@\n         parsed_port,\n         parsed_path,\n         parsed_query,\n-        parsed_fragment,\n+        parsed_frag,\n     )\n \n \n\n--- a/tests/models/test_url.py\n+++ b/tests/models/test_url.py\n@@ -294,7 +294,7 @@\n     assert str(url) == \"http://webservice?u=with%20spaces\"\n \n \n-def test_param_does_not_require_encoding():\n+def test_param_requires_encoding():\n     # Params passed as form key-value pairs should be escaped.\n     url = httpx.URL(\"http://webservice\", params={\"u\": \"%\"})\n     assert str(url) == \"http://webservice?u=%25\"\n@@ -614,10 +614,10 @@\n     }\n     url = httpx.URL(\"https://example.org\")\n     new = url.copy_with(**copy_with_kwargs)\n-    assert str(new) == \"https://tom%40example.org:abc123%40%20%25@example.org\"\n+    assert str(new) == \"https://tom%40example.org:abc123%40%20%@example.org\"\n     assert new.username == \"tom@example.org\"\n     assert new.password == \"abc123@ %\"\n-    assert new.userinfo == b\"tom%40example.org:abc123%40%20%25\"\n+    assert new.userinfo == b\"tom%40example.org:abc123%40%20%\"\n \n \n def test_url_copywith_invalid_component():"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.92,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.37,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 2865,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

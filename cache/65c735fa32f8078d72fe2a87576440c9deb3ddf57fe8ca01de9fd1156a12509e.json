@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_serving.py::test_watchdog_reloader_ignores_closed_no_write`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_serving.py::test_watchdog_reloader_ignores_closed_no_write`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_serving.py::test_watchdog_reloader_ignores_closed_no_write`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/werkzeug/_reloader.py\n+++ b/src/werkzeug/_reloader.py\n@@ -312,7 +312,11 @@\n \n class WatchdogReloaderLoop(ReloaderLoop):\n     def __init__(self, *args: t.Any, **kwargs: t.Any) -> None:\n-        from watchdog.events import EVENT_TYPE_OPENED\n+        from watchdog.events import EVENT_TYPE_CLOSED\n+        from watchdog.events import EVENT_TYPE_CREATED\n+        from watchdog.events import EVENT_TYPE_DELETED\n+        from watchdog.events import EVENT_TYPE_MODIFIED\n+        from watchdog.events import EVENT_TYPE_MOVED\n         from watchdog.events import FileModifiedEvent\n         from watchdog.events import PatternMatchingEventHandler\n         from watchdog.observers import Observer\n@@ -322,7 +326,14 @@\n \n         class EventHandler(PatternMatchingEventHandler):\n             def on_any_event(self, event: FileModifiedEvent):  # type: ignore\n-                if event.event_type == EVENT_TYPE_OPENED:\n+                if event.event_type not in {\n+                    EVENT_TYPE_CLOSED,\n+                    EVENT_TYPE_CREATED,\n+                    EVENT_TYPE_DELETED,\n+                    EVENT_TYPE_MODIFIED,\n+                    EVENT_TYPE_MOVED,\n+                }:\n+                    # skip events that don't involve changes to the file\n                     return\n \n                 trigger_reload(event.src_path)\n\n--- a/tests/test_serving.py\n+++ b/tests/test_serving.py\n@@ -10,6 +10,7 @@\n from unittest.mock import patch\n \n import pytest\n+from watchdog import version as watchdog_version\n from watchdog.events import EVENT_TYPE_MODIFIED\n from watchdog.events import EVENT_TYPE_OPENED\n from watchdog.events import FileModifiedEvent\n@@ -132,6 +133,28 @@\n \n     opened_event = FileModifiedEvent(\"\")\n     opened_event.event_type = EVENT_TYPE_OPENED\n+    reloader.event_handler.on_any_event(opened_event)\n+    reloader.trigger_reload.assert_not_called()\n+\n+\n+@pytest.mark.skipif(\n+    watchdog_version.VERSION_MAJOR < 5,\n+    reason=\"'closed no write' event introduced in watchdog 5.0\",\n+)\n+@patch.object(WatchdogReloaderLoop, \"trigger_reload\")\n+def test_watchdog_reloader_ignores_closed_no_write(mock_trigger_reload):\n+    from watchdog.events import EVENT_TYPE_CLOSED_NO_WRITE\n+\n+    reloader = WatchdogReloaderLoop()\n+    modified_event = FileModifiedEvent(\"\")\n+    modified_event.event_type = EVENT_TYPE_MODIFIED\n+    reloader.event_handler.on_any_event(modified_event)\n+    mock_trigger_reload.assert_called_once()\n+\n+    reloader.trigger_reload.reset_mock()\n+\n+    opened_event = FileModifiedEvent(\"\")\n+    opened_event.event_type = EVENT_TYPE_CLOSED_NO_WRITE\n     reloader.event_handler.on_any_event(opened_event)\n     reloader.trigger_reload.assert_not_called()\n "
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.94,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.93,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.77,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1330,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

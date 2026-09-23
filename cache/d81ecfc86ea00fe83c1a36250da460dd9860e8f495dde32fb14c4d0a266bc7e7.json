@@ -1,0 +1,127 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_datastructures.py::test_min_fresh`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_datastructures.py::test_min_fresh`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_datastructures.py::test_min_fresh`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_datastructures.py::test_must_understand`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_datastructures.py::test_must_understand`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_datastructures.py::test_must_understand`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_datastructures.py::test_no_transform`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_datastructures.py::test_no_transform`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_datastructures.py::test_no_transform`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/werkzeug/datastructures/cache_control.py\n+++ b/src/werkzeug/datastructures/cache_control.py\n@@ -32,6 +32,10 @@\n     to subclass it and add your own items have a look at the sourcecode for\n     that class.\n \n+    .. versionchanged:: 3.1\n+\n+       ``no_transform`` is a boolean when present.\n+\n     .. versionchanged:: 2.1.0\n         Setting int properties such as ``max_age`` will convert the\n         value to an int.\n@@ -58,7 +62,7 @@\n     no_cache = cache_control_property(\"no-cache\", \"*\", None)\n     no_store = cache_control_property(\"no-store\", None, bool)\n     max_age = cache_control_property(\"max-age\", -1, int)\n-    no_transform = cache_control_property(\"no-transform\", None, None)\n+    no_transform = cache_control_property(\"no-transform\", None, bool)\n \n     def __init__(self, values=(), on_update=None):\n         dict.__init__(self, values or ())\n@@ -127,6 +131,12 @@\n     you plan to subclass it and add your own items have a look at the sourcecode\n     for that class.\n \n+    .. versionchanged:: 3.1\n+       ``no_transform`` is a boolean when present.\n+\n+    .. versionchanged:: 3.1\n+       ``min_fresh`` is ``None`` if a value is not provided for the attribute.\n+\n     .. versionchanged:: 2.1.0\n         Setting int properties such as ``max_age`` will convert the\n         value to an int.\n@@ -137,7 +147,7 @@\n     \"\"\"\n \n     max_stale = cache_control_property(\"max-stale\", \"*\", int)\n-    min_fresh = cache_control_property(\"min-fresh\", \"*\", int)\n+    min_fresh = cache_control_property(\"min-fresh\", None, int)\n     only_if_cached = cache_control_property(\"only-if-cached\", None, bool)\n \n \n@@ -150,6 +160,12 @@\n     convert the object into a string or call the :meth:`to_header` method.  If\n     you plan to subclass it and add your own items have a look at the sourcecode\n     for that class.\n+\n+    .. versionchanged:: 3.1\n+       ``no_transform`` is a boolean when present.\n+\n+    .. versionchanged:: 3.1\n+        Added the ``must_understand`` attribute.\n \n     .. versionchanged:: 2.1.1\n         ``s_maxage`` converts the value to an int.\n@@ -169,6 +185,7 @@\n     proxy_revalidate = cache_control_property(\"proxy-revalidate\", None, bool)\n     s_maxage = cache_control_property(\"s-maxage\", None, int)\n     immutable = cache_control_property(\"immutable\", None, bool)\n+    must_understand = cache_control_property(\"must-understand\", None, bool)\n \n \n # circular dependencies\n\n--- a/src/werkzeug/utils.py\n+++ b/src/werkzeug/utils.py\n@@ -497,7 +497,7 @@\n     elif mtime is not None:\n         rv.last_modified = mtime  # type: ignore\n \n-    rv.cache_control.no_cache = True\n+    rv.cache_control.no_cache = True  # type: ignore[assignment]\n \n     # Flask will pass app.get_send_file_max_age, allowing its send_file\n     # wrapper to not have to deal with paths.\n\n--- a/tests/test_datastructures.py\n+++ b/tests/test_datastructures.py\n@@ -952,6 +952,23 @@\n         assert cc.no_cache is None\n         cc.no_cache = False\n         assert cc.no_cache is False\n+\n+    def test_no_transform(self):\n+        raise NotImplementedError\n+\n+    def test_min_fresh(self):\n+        cc = ds.RequestCacheControl([(\"min-fresh\", \"0\")])\n+        assert cc.min_fresh == 0\n+        cc = ds.RequestCacheControl([(\"min-fresh\", None)])\n+        assert cc.min_fresh is None\n+        cc = ds.RequestCacheControl()\n+        assert cc.min_fresh is None\n+\n+    def test_must_understand(self):\n+        cc = ds.ResponseCacheControl([(\"must-understand\", None)])\n+        assert cc.must_understand is True\n+        cc = ds.ResponseCacheControl()\n+        assert cc.must_understand is False\n \n \n class TestContentSecurityPolicy:"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.95,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.67,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.95,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.61,
+        "type": "noul"
+      },
+      "r2_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "noul": 0.04,
+        "type": "noul"
+      },
+      "r2_wired": {
+        "noul": 0.25,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 2440,
+      "output_tokens": 172
+    }
+  },
+  "variant": "split"
+}

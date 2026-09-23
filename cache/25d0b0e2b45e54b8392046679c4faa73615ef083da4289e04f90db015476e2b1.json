@@ -1,0 +1,91 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `httpx/_utils.py::is_ipv4_hostname`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `httpx/_utils.py::is_ipv4_hostname`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `httpx/_utils.py::is_ipv4_hostname`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `httpx/_utils.py::is_ipv6_hostname`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `httpx/_utils.py::is_ipv6_hostname`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `httpx/_utils.py::is_ipv6_hostname`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/httpx/_utils.py\n+++ b/httpx/_utils.py\n@@ -1,5 +1,6 @@\n import codecs\n import email.message\n+import ipaddress\n import mimetypes\n import os\n import re\n@@ -259,7 +260,16 @@\n             # NO_PROXY=google.com is marked as \"all://*google.com,\n             #   which disables \"www.google.com\" and \"google.com\".\n             #   (But not \"wwwgoogle.com\")\n-            mounts[f\"all://*{hostname}\"] = None\n+            # NO_PROXY can include domains, IPv6, IPv4 addresses and \"localhost\"\n+            #   NO_PROXY=example.com,::1,localhost,192.168.0.0/16\n+            if is_ipv4_hostname(hostname):\n+                mounts[f\"all://{hostname}\"] = None\n+            elif is_ipv6_hostname(hostname):\n+                mounts[f\"all://[{hostname}]\"] = None\n+            elif hostname.lower() == \"localhost\":\n+                mounts[f\"all://{hostname}\"] = None\n+            else:\n+                mounts[f\"all://*{hostname}\"] = None\n \n     return mounts\n \n@@ -450,3 +460,15 @@\n     def __eq__(self, other: typing.Any) -> bool:\n         return isinstance(other, URLPattern) and self.pattern == other.pattern\n \n+\n+def is_ipv4_hostname(hostname: str) -> bool:\n+    raise NotImplementedError\n+\n+\n+def is_ipv6_hostname(hostname: str) -> bool:\n+    try:\n+        ipaddress.IPv6Address(hostname.split(\"/\")[0])\n+    except:\n+        return False\n+    return True\n+\n\n--- a/tests/test_utils.py\n+++ b/tests/test_utils.py\n@@ -185,6 +185,12 @@\n         ),\n         ({\"all_proxy\": \"http://127.0.0.1\"}, {\"all://\": \"http://127.0.0.1\"}),\n         ({\"TRAVIS_APT_PROXY\": \"http://127.0.0.1\"}, {}),\n+        ({\"no_proxy\": \"127.0.0.1\"}, {\"all://127.0.0.1\": None}),\n+        ({\"no_proxy\": \"192.168.0.0/16\"}, {\"all://192.168.0.0/16\": None}),\n+        ({\"no_proxy\": \"::1\"}, {\"all://[::1]\": None}),\n+        ({\"no_proxy\": \"localhost\"}, {\"all://localhost\": None}),\n+        ({\"no_proxy\": \"github.com\"}, {\"all://*github.com\": None}),\n+        ({\"no_proxy\": \".github.com\"}, {\"all://*.github.com\": None}),\n     ],\n )\n def test_get_environment_proxies(environment, proxies):"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.03,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.99,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.97,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1659,
+      "output_tokens": 116
+    }
+  },
+  "variant": "split"
+}

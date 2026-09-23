@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `requests/utils.py::atomic_open`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `requests/utils.py::atomic_open`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `requests/utils.py::atomic_open`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/requests/utils.py\n+++ b/requests/utils.py\n@@ -256,11 +256,26 @@\n \n     # we have a valid zip archive and a valid member of that archive\n     tmp = tempfile.gettempdir()\n-    extracted_path = os.path.join(tmp, *member.split('/'))\n+    extracted_path = os.path.join(tmp, member.split('/')[-1])\n     if not os.path.exists(extracted_path):\n-        extracted_path = zip_file.extract(member, path=tmp)\n-\n+        # use read + write to avoid the creating nested folders, we only want the file, avoids mkdir racing condition\n+        with atomic_open(extracted_path) as file_handler:\n+            file_handler.write(zip_file.read(member))\n     return extracted_path\n+\n+\n+@contextlib.contextmanager\n+def atomic_open(filename):\n+    \"\"\"Write a file to the disk in an atomic fashion\"\"\"\n+    replacer = os.rename if sys.version_info[0] == 2 else os.replace\n+    tmp_descriptor, tmp_name = tempfile.mkstemp(dir=os.path.dirname(filename))\n+    try:\n+        with os.fdopen(tmp_descriptor, 'wb') as tmp_handler:\n+            yield tmp_handler\n+        replacer(tmp_name, filename)\n+    except BaseException:\n+        os.remove(tmp_name)\n+        raise\n \n \n def from_key_val_list(value):"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.98,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 918,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

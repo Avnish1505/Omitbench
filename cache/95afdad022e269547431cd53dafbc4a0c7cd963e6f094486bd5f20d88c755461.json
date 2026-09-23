@@ -1,0 +1,307 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `src/attr/_make.py::ClassProps`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `src/attr/_make.py::ClassProps`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `src/attr/_make.py::ClassProps`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `src/attr/_make.py::Hashability`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `src/attr/_make.py::Hashability`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `src/attr/_make.py::Hashability`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `src/attr/_make.py::KeywordOnly`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `src/attr/_make.py::KeywordOnly`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `src/attr/_make.py::KeywordOnly`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `src/attr/_make.py::is_hashable`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `src/attr/_make.py::is_hashable`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `src/attr/_make.py::is_hashable`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `src/attr/_next_gen.py::inspect`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `src/attr/_next_gen.py::inspect`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `src/attr/_next_gen.py::inspect`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r5_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_make.py::CDef`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r5_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_make.py::CDef`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r5_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_make.py::CDef`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r6_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_sets_attrs_props`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r6_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_sets_attrs_props`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r6_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_sets_attrs_props`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r7_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_sets_attrs_props_defaults`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r7_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_sets_attrs_props_defaults`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r7_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_sets_attrs_props_defaults`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/attr/_make.py\n+++ b/src/attr/_make.py\n@@ -12,6 +12,7 @@\n import sys\n import types\n import unicodedata\n+import weakref\n \n from collections.abc import Callable, Mapping\n from functools import cached_property\n@@ -380,7 +381,6 @@\n     these,\n     auto_attribs,\n     kw_only,\n-    force_kw_only,\n     collect_by_mro,\n     field_transformer,\n ) -> _Attributes:\n@@ -437,8 +437,14 @@\n         )\n \n     fca = Attribute.from_counting_attr\n+    no = ClassProps.KeywordOnly.NO\n     own_attrs = [\n-        fca(attr_name, ca, kw_only, anns.get(attr_name))\n+        fca(\n+            attr_name,\n+            ca,\n+            kw_only is not no,\n+            anns.get(attr_name),\n+        )\n         for attr_name, ca in ca_list\n     ]\n \n@@ -451,7 +457,7 @@\n             cls, {a.name for a in own_attrs}\n         )\n \n-    if kw_only and force_kw_only:\n+    if kw_only is ClassProps.KeywordOnly.FORCE:\n         own_attrs = [a.evolve(kw_only=True) for a in own_attrs]\n         base_attrs = [a.evolve(kw_only=True) for a in base_attrs]\n \n@@ -661,40 +667,31 @@\n         self,\n         cls: type,\n         these,\n-        slots,\n-        frozen,\n-        weakref_slot,\n-        getstate_setstate,\n-        auto_attribs,\n-        kw_only,\n-        force_kw_only,\n-        cache_hash,\n-        is_exc,\n-        collect_by_mro,\n-        on_setattr,\n-        has_custom_setattr,\n-        field_transformer,\n+        auto_attribs: bool,\n+        props: ClassProps,\n+        has_custom_setattr: bool,\n     ):\n         attrs, base_attrs, base_map = _transform_attrs(\n             cls,\n             these,\n             auto_attribs,\n-            kw_only,\n-            force_kw_only,\n-            collect_by_mro,\n-            field_transformer,\n+            props.kw_only,\n+            props.collected_fields_by_mro,\n+            props.field_transformer,\n         )\n \n         self._cls = cls\n-        self._cls_dict = dict(cls.__dict__) if slots else {}\n+        self._cls_dict = dict(cls.__dict__) if props.is_slotted else {}\n         self._attrs = attrs\n         self._base_names = {a.name for a in base_attrs}\n         self._base_attr_map = base_map\n         self._attr_names = tuple(a.name for a in attrs)\n-        self._slots = slots\n-        self._frozen = frozen\n-        self._weakref_slot = weakref_slot\n-        self._cache_hash = cache_hash\n+        self._slots = props.is_slotted\n+        self._frozen = props.is_frozen\n+        self._weakref_slot = props.has_weakref_slot\n+        self._cache_hash = (\n+            props.hashability is ClassProps.Hashability.HASHABLE_CACHED\n+        )\n         self._has_pre_init = bool(getattr(cls, \"__attrs_pre_init__\", False))\n         self._pre_init_has_args = False\n         if self._has_pre_init:\n@@ -705,20 +702,21 @@\n             self._pre_init_has_args = len(pre_init_signature.parameters) > 1\n         self._has_post_init = bool(getattr(cls, \"__attrs_post_init__\", False))\n         self._delete_attribs = not bool(these)\n-        self._is_exc = is_exc\n-        self._on_setattr = on_setattr\n+        self._is_exc = props.is_exception\n+        self._on_setattr = props.on_setattr_hook\n \n         self._has_custom_setattr = has_custom_setattr\n         self._wrote_own_setattr = False\n \n         self._cls_dict[\"__attrs_attrs__\"] = self._attrs\n-\n-        if frozen:\n+        self._cls_dict[\"__attrs_props__\"] = props\n+\n+        if props.is_frozen:\n             self._cls_dict[\"__setattr__\"] = _frozen_setattrs\n             self._cls_dict[\"__delattr__\"] = _frozen_delattrs\n \n             self._wrote_own_setattr = True\n-        elif on_setattr in (\n+        elif self._on_setattr in (\n             _DEFAULT_ON_SETATTR,\n             setters.validate,\n             setters.convert,\n@@ -734,18 +732,18 @@\n                     break\n             if (\n                 (\n-                    on_setattr == _DEFAULT_ON_SETATTR\n+                    self._on_setattr == _DEFAULT_ON_SETATTR\n                     and not (has_validator or has_converter)\n                 )\n-                or (on_setattr == setters.validate and not has_validator)\n-                or (on_setattr == setters.convert and not has_converter)\n+                or (self._on_setattr == setters.validate and not has_validator)\n+                or (self._on_setattr == setters.convert and not has_converter)\n             ):\n                 # If class-level on_setattr is set to convert + validate, but\n                 # there's no field to convert or validate, pretend like there's\n                 # no on_setattr.\n                 self._on_setattr = None\n \n-        if getstate_setstate:\n+        if props.added_pickling:\n             (\n                 self._cls_dict[\"__getstate__\"],\n                 self._cls_dict[\"__setstate__\"],\n@@ -796,6 +794,7 @@\n         self._eval_snippets()\n         if self._slots is True:\n             cls = self._create_slots_class()\n+            self._cls.__attrs_base_of_slotted__ = weakref.ref(cls)\n         else:\n             cls = self._patch_original_class()\n             if PY_3_10_PLUS:\n@@ -1434,6 +1433,7 @@\n         on_setattr = setters.pipe(*on_setattr)\n \n     def wrap(cls):\n+        nonlocal hash\n         is_frozen = frozen or _has_frozen_base_class(cls)\n         is_exc = auto_exc is True and issubclass(cls, BaseException)\n         has_own_setattr = auto_detect and _has_own_attribute(\n@@ -1444,85 +1444,112 @@\n             msg = \"Can't freeze a class with a custom __setattr__.\"\n             raise ValueError(msg)\n \n-        builder = _ClassBuilder(\n-            cls,\n-            these,\n-            slots,\n-            is_frozen,\n-            weakref_slot,\n-            _determine_whether_to_implement(\n+        eq = not is_exc and _determine_whether_to_implement(\n+            cls, eq_, auto_detect, (\"__eq__\", \"__ne__\")\n+        )\n+\n+        Hashability = ClassProps.Hashability\n+\n+        if is_exc:\n+            hashability = Hashability.LEAVE_ALONE\n+        elif hash is True:\n+            hashability = (\n+                Hashability.HASHABLE_CACHED\n+                if cache_hash\n+                else Hashability.HASHABLE\n+            )\n+        elif hash is False:\n+            hashability = Hashability.LEAVE_ALONE\n+        elif hash is None:\n+            if auto_detect is True and _has_own_attribute(cls, \"__hash__\"):\n+                hashability = Hashability.LEAVE_ALONE\n+            elif eq is True and is_frozen is True:\n+                hashability = (\n+                    Hashability.HASHABLE_CACHED\n+                    if cache_hash\n+                    else Hashability.HASHABLE\n+                )\n+            elif eq is False:\n+                hashability = Hashability.LEAVE_ALONE\n+            else:\n+                hashability = Hashability.UNHASHABLE\n+        else:\n+            msg = \"Invalid value for hash.  Must be True, False, or None.\"\n+            raise TypeError(msg)\n+\n+        KeywordOnly = ClassProps.KeywordOnly\n+        if kw_only:\n+            kwo = KeywordOnly.FORCE if force_kw_only else KeywordOnly.YES\n+        else:\n+            kwo = KeywordOnly.NO\n+\n+        props = ClassProps(\n+            is_exception=is_exc,\n+            is_frozen=is_frozen,\n+            is_slotted=slots,\n+            collected_fields_by_mro=collect_by_mro,\n+            added_init=_determine_whether_to_implement(\n+                cls, init, auto_detect, (\"__init__\",)\n+            ),\n+            added_repr=_determine_whether_to_implement(\n+                cls, repr, auto_detect, (\"__repr__\",)\n+            ),\n+            added_eq=eq,\n+            added_ordering=not is_exc\n+            and _determine_whether_to_implement(\n+                cls,\n+                order_,\n+                auto_detect,\n+                (\"__lt__\", \"__le__\", \"__gt__\", \"__ge__\"),\n+            ),\n+            hashability=hashability,\n+            added_match_args=match_args,\n+            kw_only=kwo,\n+            has_weakref_slot=weakref_slot,\n+            added_str=str,\n+            added_pickling=_determine_whether_to_implement(\n                 cls,\n                 getstate_setstate,\n                 auto_detect,\n                 (\"__getstate__\", \"__setstate__\"),\n                 default=slots,\n             ),\n-            auto_attribs,\n-            kw_only,\n-            force_kw_only,\n-            cache_hash,\n-            is_exc,\n-            collect_by_mro,\n-            on_setattr,\n-            has_own_setattr,\n-            field_transformer,\n-        )\n-\n-        if _determine_whether_to_implement(\n-            cls, repr, auto_detect, (\"__repr__\",)\n-        ):\n+            on_setattr_hook=on_setattr,\n+            field_transformer=field_transformer,\n+        )\n+\n+        if not props.is_hashable and cache_hash:\n+            msg = \"Invalid value for cache_hash.  To use hash caching, hashing must be either explicitly or implicitly enabled.\"\n+            raise TypeError(msg)\n+\n+        builder = _ClassBuilder(\n+            cls,\n+            these,\n+            auto_attribs=auto_attribs,\n+            props=props,\n+            has_custom_setattr=has_own_setattr,\n+        )\n+\n+        if props.added_repr:\n             builder.add_repr(repr_ns)\n \n-        if str is True:\n+        if props.added_str:\n             builder.add_str()\n \n-        eq = _determine_whether_to_implement(\n-            cls, eq_, auto_detect, (\"__eq__\", \"__ne__\")\n-        )\n-        if not is_exc and eq is True:\n+        if props.added_eq:\n             builder.add_eq()\n-        if not is_exc and _determine_whether_to_implement(\n-            cls, order_, auto_detect, (\"__lt__\", \"__le__\", \"__gt__\", \"__ge__\")\n-        ):\n+        if props.added_ordering:\n             builder.add_order()\n \n         if not frozen:\n             builder.add_setattr()\n \n-        nonlocal hash\n-        if (\n-            hash is None\n-            and auto_detect is True\n-            and _has_own_attribute(cls, \"__hash__\")\n-        ):\n-            hash = False\n-\n-        if hash is not True and hash is not False and hash is not None:\n-            # Can't use `hash in` because 1 == True for example.\n-            msg = \"Invalid value for hash.  Must be True, False, or None.\"\n-            raise TypeError(msg)\n-\n-        if hash is False or (hash is None and eq is False) or is_exc:\n-            # Don't do anything. Should fall back to __object__'s __hash__\n-            # which is by id.\n-            if cache_hash:\n-                msg = \"Invalid value for cache_hash.  To use hash caching, hashing must be either explicitly or implicitly enabled.\"\n-                raise TypeError(msg)\n-        elif hash is True or (\n-            hash is None and eq is True and is_frozen is True\n-        ):\n-            # Build a __hash__ if told so, or if it's safe.\n+        if props.is_hashable:\n             builder.add_hash()\n-        else:\n-            # Raise TypeError on attempts to hash.\n-            if cache_hash:\n-                msg = \"Invalid value for cache_hash.  To use hash caching, hashing must be either explicitly or implicitly enabled.\"\n-                raise TypeError(msg)\n+        elif props.hashability is Hashability.UNHASHABLE:\n             builder.make_unhashable()\n \n-        if _determine_whether_to_implement(\n-            cls, init, auto_detect, (\"__init__\",)\n-        ):\n+        if props.added_init:\n             builder.add_init()\n         else:\n             builder.add_attrs_init()\n@@ -2771,6 +2798,185 @@\n _CountingAttr = _add_eq(_add_repr(_CountingAttr))\n \n \n+class ClassProps:\n+    \"\"\"\n+    Effective class properties as derived from parameters to `attr.s()` or\n+    `define()` decorators.\n+\n+    This is the same data structure that *attrs* uses internally to decide how\n+    to construct the final class.\n+\n+    Warning:\n+\n+        This feature is currently **experimental** and is not covered by our\n+        strict backwards-compatibility guarantees.\n+\n+\n+    Attributes:\n+        is_exception (bool):\n+            Whether the class is treated as an exception class.\n+\n+        is_slotted (bool):\n+            Whether the class is `slotted <slotted classes>`.\n+\n+        has_weakref_slot (bool):\n+            Whether the class has a slot for weak references.\n+\n+        is_frozen (bool):\n+            Whether the class is frozen.\n+\n+        kw_only (KeywordOnly):\n+            Whether / how the class enforces keyword-only arguments on the\n+            ``__init__`` method.\n+\n+        collected_fields_by_mro (bool):\n+            Whether the class fields were collected by method resolution order.\n+            That is, correctly but unlike `dataclasses`.\n+\n+        added_init (bool):\n+            Whether the class has an *attrs*-generated ``__init__`` method.\n+\n+        added_repr (bool):\n+            Whether the class has an *attrs*-generated ``__repr__`` method.\n+\n+        added_eq (bool):\n+            Whether the class has *attrs*-generated equality methods.\n+\n+        added_ordering (bool):\n+            Whether the class has *attrs*-generated ordering methods.\n+\n+        hashability (Hashability): How `hashable <hashing>` the class is.\n+\n+        added_match_args (bool):\n+            Whether the class supports positional `match <match>` over its\n+            fields.\n+\n+        added_str (bool):\n+            Whether the class has an *attrs*-generated ``__str__`` method.\n+\n+        added_pickling (bool):\n+            Whether the class has *attrs*-generated ``__getstate__`` and\n+            ``__setstate__`` methods for `pickle`.\n+\n+        on_setattr_hook (Callable[[Any, Attribute[Any], Any], Any] | None):\n+            The class's ``__setattr__`` hook.\n+\n+        field_transformer (Callable[[Attribute[Any]], Attribute[Any]] | None):\n+            The class's `field transformers <transform-fields>`.\n+\n+    .. versionadded:: 25.4.0\n+    \"\"\"\n+\n+    class Hashability(enum.Enum):\n+        \"\"\"\n+        The hashability of a class.\n+\n+        .. versionadded:: 25.4.0\n+        \"\"\"\n+\n+        HASHABLE = \"hashable\"\n+        \"\"\"Write a ``__hash__``.\"\"\"\n+        HASHABLE_CACHED = \"hashable_cache\"\n+        \"\"\"Write a ``__hash__`` and cache the hash.\"\"\"\n+        UNHASHABLE = \"unhashable\"\n+        \"\"\"Set ``__hash__`` to ``None``.\"\"\"\n+        LEAVE_ALONE = \"leave_alone\"\n+        \"\"\"Don't touch ``__hash__``.\"\"\"\n+\n+    class KeywordOnly(enum.Enum):\n+        \"\"\"\n+        How attributes should be treated regarding keyword-only parameters.\n+\n+        .. versionadded:: 25.4.0\n+        \"\"\"\n+\n+        NO = \"no\"\n+        \"\"\"Attributes are not keyword-only.\"\"\"\n+        YES = \"yes\"\n+        \"\"\"Attributes in current class without kw_only=False are keyword-only.\"\"\"\n+        FORCE = \"force\"\n+        \"\"\"All attributes are keyword-only.\"\"\"\n+\n+    __slots__ = (  # noqa: RUF023 -- order matters for __init__\n+        \"is_exception\",\n+        \"is_slotted\",\n+        \"has_weakref_slot\",\n+        \"is_frozen\",\n+        \"kw_only\",\n+        \"collected_fields_by_mro\",\n+        \"added_init\",\n+        \"added_repr\",\n+        \"added_eq\",\n+        \"added_ordering\",\n+        \"hashability\",\n+        \"added_match_args\",\n+        \"added_str\",\n+        \"added_pickling\",\n+        \"on_setattr_hook\",\n+        \"field_transformer\",\n+    )\n+\n+    def __init__(\n+        self,\n+        is_exception,\n+        is_slotted,\n+        has_weakref_slot,\n+        is_frozen,\n+        kw_only,\n+        collected_fields_by_mro,\n+        added_init,\n+        added_repr,\n+        added_eq,\n+        added_ordering,\n+        hashability,\n+        added_match_args,\n+        added_str,\n+        added_pickling,\n+        on_setattr_hook,\n+        field_transformer,\n+    ):\n+        self.is_exception = is_exception\n+        self.is_slotted = is_slotted\n+        self.has_weakref_slot = has_weakref_slot\n+        self.is_frozen = is_frozen\n+        self.kw_only = kw_only\n+        self.collected_fields_by_mro = collected_fields_by_mro\n+        self.added_init = added_init\n+        self.added_repr = added_repr\n+        self.added_eq = added_eq\n+        self.added_ordering = added_ordering\n+        self.hashability = hashability\n+        self.added_match_args = added_match_args\n+        self.added_str = added_str\n+        self.added_pickling = added_pickling\n+        self.on_setattr_hook = on_setattr_hook\n+        self.field_transformer = field_transformer\n+\n+    @property\n+    def is_hashable(self):\n+        raise NotImplementedError\n+\n+\n+_cas = [\n+    Attribute(\n+        name=name,\n+        default=NOTHING,\n+        validator=None,\n+        repr=True,\n+        cmp=None,\n+        eq=True,\n+        order=False,\n+        hash=True,\n+        init=True,\n+        inherited=False,\n+        alias=_default_init_alias_for(name),\n+    )\n+    for name in ClassProps.__slots__\n+]\n+\n+ClassProps = _add_eq(_add_repr(ClassProps, attrs=_cas), attrs=_cas)\n+\n+\n class Factory:\n     \"\"\"\n     Stores a factory callable.\n\n--- a/src/attr/_next_gen.py\n+++ b/src/attr/_next_gen.py\n@@ -17,7 +17,7 @@\n     attrib,\n     attrs,\n )\n-from .exceptions import UnannotatedAttributeError\n+from .exceptions import NotAnAttrsClassError, UnannotatedAttributeError\n \n \n def define(\n@@ -647,3 +647,29 @@\n         inst=inst, recurse=recurse, filter=filter, retain_collection_types=True\n     )\n \n+\n+def inspect(cls):\n+    \"\"\"\n+    Inspect the class and return its effective build parameters.\n+\n+    Warning:\n+        This feature is currently **experimental** and is not covered by our\n+        strict backwards-compatibility guarantees.\n+\n+    Args:\n+        cls: The *attrs*-decorated class to inspect.\n+\n+    Returns:\n+        The effective build parameters of the class.\n+\n+    Raises:\n+        NotAnAttrsClassError: If the class is not an *attrs*-decorated class.\n+\n+    .. versionadded:: 25.4.0\n+    \"\"\"\n+    try:\n+        return cls.__dict__[\"__attrs_props__\"]\n+    except KeyError:\n+        msg = f\"{cls!r} is not an attrs-decorated class.\"\n+        raise NotAnAttrsClassError(msg) from None\n+\n\n--- a/src/attrs/__init__.py\n+++ b/src/attrs/__init__.py\n@@ -22,7 +22,8 @@\n     resolve_types,\n     validate,\n )\n-from attr._next_gen import asdict, astuple\n+from attr._make import ClassProps\n+from attr._next_gen import asdict, astuple, inspect\n \n from . import converters, exceptions, filters, setters, validators\n \n@@ -31,6 +32,7 @@\n     \"NOTHING\",\n     \"Attribute\",\n     \"AttrsInstance\",\n+    \"ClassProps\",\n     \"Converter\",\n     \"Factory\",\n     \"NothingType\",\n@@ -58,6 +60,7 @@\n     \"filters\",\n     \"frozen\",\n     \"has\",\n+    \"inspect\",\n     \"make_class\",\n     \"mutable\",\n     \"resolve_types\",\n\n--- a/tests/test_make.py\n+++ b/tests/test_make.py\n@@ -21,11 +21,13 @@\n from hypothesis.strategies import booleans, integers, lists, sampled_from, text\n \n import attr\n+import attrs\n \n from attr import _config\n from attr._compat import PY_3_10_PLUS\n from attr._make import (\n     Attribute,\n+    ClassProps,\n     Factory,\n     _AndValidator,\n     _Attributes,\n@@ -181,7 +183,7 @@\n         Does not attach __attrs_attrs__ to the class.\n         \"\"\"\n         C = make_tc()\n-        _transform_attrs(C, None, False, False, False, True, None)\n+        _transform_attrs(C, None, False, ClassProps.KeywordOnly.NO, True, None)\n \n         assert None is getattr(C, \"__attrs_attrs__\", None)\n \n@@ -191,7 +193,7 @@\n         \"\"\"\n         C = make_tc()\n         attrs, _, _ = _transform_attrs(\n-            C, None, False, False, False, True, None\n+            C, None, False, ClassProps.KeywordOnly.NO, True, None\n         )\n \n         assert [\"z\", \"y\", \"x\"] == [a.name for a in attrs]\n@@ -206,7 +208,7 @@\n             pass\n \n         assert _Attributes((), [], {}) == _transform_attrs(\n-            C, None, False, False, False, True, None\n+            C, None, False, ClassProps.KeywordOnly.NO, True, None\n         )\n \n     def test_transforms_to_attribute(self):\n@@ -215,7 +217,7 @@\n         \"\"\"\n         C = make_tc()\n         attrs, base_attrs, _ = _transform_attrs(\n-            C, None, False, False, False, True, None\n+            C, None, False, ClassProps.KeywordOnly.NO, True, None\n         )\n \n         assert [] == base_attrs\n@@ -233,7 +235,9 @@\n             y = attr.ib()\n \n         with pytest.raises(ValueError) as e:\n-            _transform_attrs(C, None, False, False, False, True, None)\n+            _transform_attrs(\n+                C, None, False, ClassProps.KeywordOnly.NO, True, None\n+            )\n         assert (\n             \"No mandatory attributes allowed after an attribute with a \"\n             \"default value or factory.  Attribute in question: Attribute\"\n@@ -262,7 +266,7 @@\n             y = attr.ib()\n \n         attrs, base_attrs, _ = _transform_attrs(\n-            C, None, False, True, False, True, None\n+            C, None, False, ClassProps.KeywordOnly.YES, True, None\n         )\n \n         assert len(attrs) == 3\n@@ -278,8 +282,7 @@\n             C,\n             None,\n             False,\n-            True,\n-            True,  # force kw-only\n+            ClassProps.KeywordOnly.FORCE,\n             True,\n             None,\n         )\n@@ -305,7 +308,7 @@\n             y = attr.ib()\n \n         attrs, base_attrs, _ = _transform_attrs(\n-            C, {\"x\": attr.ib()}, False, False, False, True, None\n+            C, {\"x\": attr.ib()}, False, ClassProps.KeywordOnly.NO, True, None\n         )\n \n         assert [] == base_attrs\n@@ -505,6 +508,77 @@\n \n         assert \"x\" == C.__attrs_attrs__[0].name\n         assert all(isinstance(a, Attribute) for a in C.__attrs_attrs__)\n+\n+    def test_sets_attrs_props(self):\n+        \"\"\"\n+        Sets the `__attrs_props__` class attribute with the effective decorator\n+        properties.\n+        \"\"\"\n+\n+        @attr.s(\n+            slots=True,\n+            frozen=True,\n+            repr=True,\n+            eq=True,\n+            order=True,\n+            unsafe_hash=True,\n+            init=True,\n+            match_args=False,\n+            kw_only=True,\n+            auto_attribs=True,\n+            cache_hash=True,\n+            str=True,\n+        )\n+        class C:\n+            x: int = attr.ib()\n+\n+        assert ClassProps(\n+            is_exception=False,\n+            is_slotted=True,\n+            is_frozen=True,\n+            added_init=True,\n+            added_repr=True,\n+            added_eq=True,\n+            added_ordering=True,\n+            hashability=ClassProps.Hashability.HASHABLE_CACHED,\n+            added_match_args=False,\n+            kw_only=ClassProps.KeywordOnly.FORCE,\n+            has_weakref_slot=True,\n+            collected_fields_by_mro=False,\n+            added_str=True,\n+            added_pickling=True,\n+            on_setattr_hook=None,\n+            field_transformer=None,\n+        ) == attrs.inspect(C)\n+\n+    def test_sets_attrs_props_defaults(self):\n+        \"\"\"\n+        Default values are derived in `__attrs_props__` when not specified in\n+        the decorator.\n+        \"\"\"\n+\n+        @attr.s\n+        class CDef:\n+            x = attr.ib()\n+\n+        assert ClassProps(\n+            is_exception=False,\n+            is_slotted=False,\n+            is_frozen=False,\n+            added_init=True,\n+            added_repr=True,\n+            added_eq=True,\n+            added_ordering=True,\n+            hashability=ClassProps.Hashability.UNHASHABLE,\n+            added_match_args=True,\n+            kw_only=ClassProps.KeywordOnly.NO,\n+            has_weakref_slot=True,\n+            collected_fields_by_mro=False,\n+            added_str=False,\n+            added_pickling=False,\n+            on_setattr_hook=None,\n+            field_transformer=None,\n+        ) == attrs.inspect(CDef)\n \n     def test_empty(self):\n         \"\"\"\n@@ -1929,18 +2003,25 @@\n             C,\n             None,\n             True,\n-            True,\n-            False,\n-            False,\n-            False,\n-            False,\n-            False,\n-            False,\n-            False,\n-            True,\n-            None,\n-            False,\n-            None,\n+            ClassProps(\n+                is_exception=False,\n+                is_slotted=True,\n+                is_frozen=True,\n+                added_init=True,\n+                added_repr=True,\n... [diff truncated at ~6000 estimated tokens] ..."
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.6,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.53,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.28,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r2_defined": {
+        "noul": 0.77,
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "noul": 0.4,
+        "type": "noul"
+      },
+      "r2_wired": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r3_defined": {
+        "noul": 0.86,
+        "type": "noul"
+      },
+      "r3_real_body": {
+        "noul": 0.08,
+        "type": "noul"
+      },
+      "r3_wired": {
+        "noul": 0.82,
+        "type": "noul"
+      },
+      "r4_defined": {
+        "noul": 0.99,
+        "type": "noul"
+      },
+      "r4_real_body": {
+        "noul": 0.94,
+        "type": "noul"
+      },
+      "r4_wired": {
+        "noul": 0.87,
+        "type": "noul"
+      },
+      "r5_defined": {
+        "noul": 0.68,
+        "type": "noul"
+      },
+      "r5_real_body": {
+        "noul": 0.58,
+        "type": "noul"
+      },
+      "r5_wired": {
+        "noul": 0.71,
+        "type": "noul"
+      },
+      "r6_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r6_real_body": {
+        "noul": 0.88,
+        "type": "noul"
+      },
+      "r6_wired": {
+        "noul": 0.93,
+        "type": "noul"
+      },
+      "r7_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r7_real_body": {
+        "noul": 0.84,
+        "type": "noul"
+      },
+      "r7_wired": {
+        "noul": 0.85,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 9580,
+      "output_tokens": 452
+    }
+  },
+  "variant": "split"
+}

@@ -1,0 +1,40 @@
+detector                                         n   Brier            95% CI  skill    ECE  AUROC    MCC
+B7 Jev (single)                               2184   0.316     [0.290,0.341] -0.572  0.390  0.910  0.293
+B7 Jev (split)                                2184   0.234     [0.210,0.258] -0.163  0.323  0.936  0.442
+B7 Jev (single) (as 0/1 forecaster)           2184   0.508     [0.467,0.546] -1.525  0.508  0.638  0.293
+B7 Jev (split) (as 0/1 forecaster)            2184   0.368     [0.327,0.410] -0.828  0.368  0.738  0.442
+B5 LLM judge (mid-tier) (as 0/1 forecaster)   2184   0.126     [0.102,0.152]  0.372  0.126  0.863  0.701
+B4 LLM judge (gpt-oss-120b) (as 0/1 forecaster)  2184   0.418     [0.375,0.460] -1.079  0.418  0.702  0.388
+P1 defined (as 0/1 forecaster)                2184   0.185     [0.166,0.208]  0.078  0.185  0.701  0.499
+
+B7 Jev (single): reliability (P(omitted) bins)   [0 records with no probability dropped]
+   0.0-0.1  n=  309  predicted 0.044  observed 0.019
+   0.1-0.2  n=   75  predicted 0.148  observed 0.013
+   0.2-0.3  n=   37  predicted 0.253  observed 0.081
+   0.3-0.4  n=   34  predicted 0.353  observed 0.147
+   0.4-0.5  n=   47  predicted 0.445  observed 0.085
+   0.5-0.6  n=   93  predicted 0.556  observed 0.118
+   0.6-0.7  n=  190  predicted 0.653  observed 0.068
+   0.7-0.8  n=  418  predicted 0.751  observed 0.057
+   0.8-0.9  n=  366  predicted 0.838  observed 0.120
+   0.9-1.0  n=  615  predicted 0.970  observed 0.810
+  abstain band [0.3, 0.7]: coverage 0.824, MCC on confident 0.3512, error on confident 0.4569
+  rule 2 (pre-registered): ECE<=0.05 False, worst bin gap 0.7182 (<=0.10: False), skill>0 False => calibrated on this task: NOT SUPPORTED
+  by class: ABSENT Brier 0.272 ECE 0.298, UNWIRED Brier 0.355 ECE 0.363, STUB Brier 0.267 ECE 0.331, CLEAN Brier 0.403 ECE 0.552
+
+B7 Jev (split): reliability (P(omitted) bins)   [0 records with no probability dropped]
+   0.0-0.1  n=  187  predicted 0.059  observed 0.021
+   0.1-0.2  n=  167  predicted 0.153  observed 0.006
+   0.2-0.3  n=  118  predicted 0.248  observed 0.025
+   0.3-0.4  n=  167  predicted 0.345  observed 0.012
+   0.4-0.5  n=  150  predicted 0.445  observed 0.033
+   0.5-0.6  n=  180  predicted 0.547  observed 0.033
+   0.6-0.7  n=  166  predicted 0.644  observed 0.060
+   0.7-0.8  n=  219  predicted 0.745  observed 0.128
+   0.8-0.9  n=  293  predicted 0.848  observed 0.314
+   0.9-1.0  n=  537  predicted 0.945  observed 0.853
+  abstain band [0.3, 0.7]: coverage 0.686, MCC on confident 0.5186, error on confident 0.3057
+  rule 2 (pre-registered): ECE<=0.05 False, worst bin gap 0.6166 (<=0.10: False), skill>0 False => calibrated on this task: NOT SUPPORTED
+  by class: ABSENT Brier 0.199 ECE 0.236, UNWIRED Brier 0.262 ECE 0.177, STUB Brier 0.205 ECE 0.274, CLEAN Brier 0.292 ECE 0.468
+
+wrote results/calibration_b7.json

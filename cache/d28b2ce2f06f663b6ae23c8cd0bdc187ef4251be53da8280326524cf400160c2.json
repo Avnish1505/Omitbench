@@ -1,0 +1,235 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_regression.py::test`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_regression.py::test`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_regression.py::test`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_regression.py::test_contextfunction_block_and_loop`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_regression.py::test_contextfunction_block_and_loop`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_regression.py::test_contextfunction_block_and_loop`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_regression.py::test_contextfunction_in_blocks`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_regression.py::test_contextfunction_in_blocks`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_regression.py::test_contextfunction_in_blocks`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_regression.py::test_contextfunction_loop_vars`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_regression.py::test_contextfunction_loop_vars`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_regression.py::test_contextfunction_loop_vars`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_regression.py::test_contextfunction_scoped_loop_vars`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_regression.py::test_contextfunction_scoped_loop_vars`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_regression.py::test_contextfunction_scoped_loop_vars`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r5_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_regression.py::test_scoped_block_loop_vars`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r5_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_regression.py::test_scoped_block_loop_vars`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r5_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_regression.py::test_scoped_block_loop_vars`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/jinja2/compiler.py\n+++ b/src/jinja2/compiler.py\n@@ -130,6 +130,11 @@\n \n         if parent is not None:\n             self.buffer = parent.buffer\n+\n+        # variables set inside of loops and blocks should not affect outer frames,\n+        # but they still needs to be kept track of as part of the active context.\n+        self.loop_frame = False\n+        self.block_frame = False\n \n     def copy(self):\n         \"\"\"Create a copy of the current one.\"\"\"\n@@ -639,22 +644,38 @@\n         context variables if necessary.\n         \"\"\"\n         vars = self._assign_stack.pop()\n-        if not frame.toplevel or not vars:\n+        if (\n+            not frame.block_frame\n+            and not frame.loop_frame\n+            and not frame.toplevel\n+            or not vars\n+        ):\n             return\n         public_names = [x for x in vars if x[:1] != \"_\"]\n         if len(vars) == 1:\n             name = next(iter(vars))\n             ref = frame.symbols.ref(name)\n+            if frame.loop_frame:\n+                self.writeline(f\"_loop_vars[{name!r}] = {ref}\")\n+                return\n+            if frame.block_frame:\n+                self.writeline(f\"_block_vars[{name!r}] = {ref}\")\n+                return\n             self.writeline(f\"context.vars[{name!r}] = {ref}\")\n         else:\n-            self.writeline(\"context.vars.update({\")\n+            if frame.loop_frame:\n+                self.writeline(\"_loop_vars.update({\")\n+            elif frame.block_frame:\n+                self.writeline(\"_block_vars.update({\")\n+            else:\n+                self.writeline(\"context.vars.update({\")\n             for idx, name in enumerate(vars):\n                 if idx:\n                     self.write(\", \")\n                 ref = frame.symbols.ref(name)\n                 self.write(f\"{name!r}: {ref}\")\n             self.write(\"})\")\n-        if public_names:\n+        if not frame.block_frame and not frame.loop_frame and public_names:\n             if len(public_names) == 1:\n                 self.writeline(f\"context.exported_vars.add({public_names[0]!r})\")\n             else:\n@@ -760,6 +781,7 @@\n             # toplevel template.  This would cause a variety of\n             # interesting issues with identifier tracking.\n             block_frame = Frame(eval_ctx)\n+            block_frame.block_frame = True\n             undeclared = find_undeclared(block.body, (\"self\", \"super\"))\n             if \"self\" in undeclared:\n                 ref = block_frame.symbols.declare_parameter(\"self\")\n@@ -769,6 +791,7 @@\n                 self.writeline(f\"{ref} = context.super({name!r}, block_{name})\")\n             block_frame.symbols.analyze_node(block)\n             block_frame.block = name\n+            self.writeline(\"_block_vars = {}\")\n             self.enter_frame(block_frame)\n             self.pull_dependencies(block.body)\n             self.blockvisit(block.body, block_frame)\n@@ -1003,6 +1026,7 @@\n \n     def visit_For(self, node, frame):\n         loop_frame = frame.inner()\n+        loop_frame.loop_frame = True\n         test_frame = frame.inner()\n         else_frame = frame.inner()\n \n@@ -1103,6 +1127,7 @@\n         self.indent()\n         self.enter_frame(loop_frame)\n \n+        self.writeline(\"_loop_vars = {}\")\n         self.blockvisit(node.body, loop_frame)\n         if node.else_:\n             self.writeline(f\"{iteration_indicator} = 0\")\n@@ -1411,7 +1436,9 @@\n     # -- Expression Visitors\n \n     def visit_Name(self, node, frame):\n-        if node.ctx == \"store\" and frame.toplevel:\n+        if node.ctx == \"store\" and (\n+            frame.toplevel or frame.loop_frame or frame.block_frame\n+        ):\n             if self._assign_stack:\n                 self._assign_stack[-1].add(node.name)\n         ref = frame.symbols.ref(node.name)\n@@ -1679,6 +1706,12 @@\n             self.write(\"context.call(\")\n         self.visit(node.node, frame)\n         extra_kwargs = {\"caller\": \"caller\"} if forward_caller else None\n+        loop_kwargs = {\"_loop_vars\": \"_loop_vars\"} if frame.loop_frame else {}\n+        block_kwargs = {\"_block_vars\": \"_block_vars\"} if frame.block_frame else {}\n+        if extra_kwargs:\n+            extra_kwargs.update(loop_kwargs, **block_kwargs)\n+        elif loop_kwargs or block_kwargs:\n+            extra_kwargs = dict(loop_kwargs, **block_kwargs)\n         self.signature(node, frame, extra_kwargs)\n         self.write(\")\")\n         if self.environment.is_async:\n\n--- a/src/jinja2/runtime.py\n+++ b/src/jinja2/runtime.py\n@@ -284,11 +284,20 @@\n \n         if callable(__obj):\n             if getattr(__obj, \"contextfunction\", False) is True:\n+                # the active context should have access to variables set in\n+                # loops and blocks without mutating the context itself\n+                if kwargs.get(\"_loop_vars\"):\n+                    __self = __self.derived(kwargs[\"_loop_vars\"])\n+                if kwargs.get(\"_block_vars\"):\n+                    __self = __self.derived(kwargs[\"_block_vars\"])\n                 args = (__self,) + args\n             elif getattr(__obj, \"evalcontextfunction\", False) is True:\n                 args = (__self.eval_ctx,) + args\n             elif getattr(__obj, \"environmentfunction\", False) is True:\n                 args = (__self.environment,) + args\n+\n+        kwargs.pop(\"_block_vars\", None)\n+        kwargs.pop(\"_loop_vars\", None)\n         try:\n             return __obj(*args, **kwargs)\n         except StopIteration:\n\n--- a/tests/test_regression.py\n+++ b/tests/test_regression.py\n@@ -7,6 +7,7 @@\n from jinja2 import TemplateAssertionError\n from jinja2 import TemplateNotFound\n from jinja2 import TemplateSyntaxError\n+from jinja2.utils import contextfunction\n \n \n class TestCorner:\n@@ -619,3 +620,88 @@\n \n         assert str(Markup(ChainableUndefined())) == \"\"\n \n+\n+    def test_contextfunction_loop_vars(self, env):\n+        @contextfunction\n+        def test(ctx):\n+            return f\"{ctx['i']}{ctx['j']}\"\n+\n+        tmpl = env.from_string(\n+            \"\"\"\\\n+{% set i = 42 %}\n+{%- for idx in range(2) -%}\n+{{ i }}{{ j }}\n+{% set i = idx -%}\n+{%- set j = loop.index -%}\n+{{ test() }}\n+{{ i }}{{ j }}\n+{% endfor -%}\n+{{ i }}{{ j }}\"\"\"\n+        )\n+        tmpl.globals[\"test\"] = test\n+        assert tmpl.render() == \"42\\n01\\n01\\n42\\n12\\n12\\n42\"\n+\n+    def test_contextfunction_scoped_loop_vars(self, env):\n+        @contextfunction\n+        def test(ctx):\n+            return f\"{ctx['i']}\"\n+\n+        tmpl = env.from_string(\n+            \"\"\"\\\n+{% set i = 42 %}\n+{%- for idx in range(2) -%}\n+{{ i }}\n+{%- set i = loop.index0 -%}\n+{% block body scoped %}\n+{{ test() }}\n+{% endblock -%}\n+{% endfor -%}\n+{{ i }}\"\"\"\n+        )\n+        tmpl.globals[\"test\"] = test\n+        assert tmpl.render() == \"42\\n0\\n42\\n1\\n42\"\n+\n+    def test_contextfunction_in_blocks(self, env):\n+        @contextfunction\n+        def test(ctx):\n+            return f\"{ctx['i']}\"\n+\n+        tmpl = env.from_string(\n+            \"\"\"\\\n+{%- set i = 42 -%}\n+{{ i }}\n+{% block body -%}\n+{% set i = 24 -%}\n+{{ test() }}\n+{% endblock -%}\n+{{ i }}\"\"\"\n+        )\n+        tmpl.globals[\"test\"] = test\n+        assert tmpl.render() == \"42\\n24\\n42\"\n+\n+    def test_contextfunction_block_and_loop(self, env):\n+        @contextfunction\n+        def test(ctx):\n+            return f\"{ctx['i']}\"\n+\n+        tmpl = env.from_string(\n+            \"\"\"\\\n+{%- set i = 42 -%}\n+{% for idx in range(2) -%}\n+{{ test() }}\n+{%- set i = idx -%}\n+{% block body scoped %}\n+{{ test() }}\n+{% set i = 24 -%}\n+{{ test() }}\n+{% endblock -%}\n+{{ test() }}\n+{% endfor -%}\n+{{ test() }}\"\"\"\n+        )\n+        tmpl.globals[\"test\"] = test\n+\n+        # values set within a block or loop should not\n+        # show up outside of it\n+        assert tmpl.render() == \"42\\n0\\n24\\n0\\n42\\n1\\n24\\n1\\n42\"\n+"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.31,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.4,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.61,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.81,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.7,
+        "type": "noul"
+      },
+      "r2_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "noul": 0.81,
+        "type": "noul"
+      },
+      "r2_wired": {
+        "noul": 0.68,
+        "type": "noul"
+      },
+      "r3_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r3_real_body": {
+        "noul": 0.92,
+        "type": "noul"
+      },
+      "r3_wired": {
+        "noul": 0.76,
+        "type": "noul"
+      },
+      "r4_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r4_real_body": {
+        "noul": 0.84,
+        "type": "noul"
+      },
+      "r4_wired": {
+        "noul": 0.63,
+        "type": "noul"
+      },
+      "r5_defined": {
+        "noul": 0.1,
+        "type": "noul"
+      },
+      "r5_real_body": {
+        "noul": 0.17,
+        "type": "noul"
+      },
+      "r5_wired": {
+        "noul": 0.45,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 4672,
+      "output_tokens": 340
+    }
+  },
+  "variant": "split"
+}

@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_http.py::test_parse_options_header_case_insensitive` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/werkzeug/http.py\n+++ b/src/werkzeug/http.py\n@@ -390,6 +390,9 @@\n \n     :param value: The header value to parse.\n \n+    .. versionchanged:: 2.2\n+        Option names are always converted to lowercase.\n+\n     .. versionchanged:: 2.1\n         The ``multiple`` parameter is deprecated and will be removed in\n         Werkzeug 2.2.\n@@ -440,7 +443,7 @@\n                 if not encoding:\n                     encoding = continued_encoding\n                 continued_encoding = encoding\n-            option = unquote_header_value(option)\n+            option = unquote_header_value(option).lower()\n \n             if option_value is not None:\n                 option_value = unquote_header_value(option_value, option == \"filename\")\n\n--- a/tests/test_http.py\n+++ b/tests/test_http.py\n@@ -357,6 +357,9 @@\n         assert http.parse_options_header(\" ,; \") == (\"\", {})\n         assert http.parse_options_header(\" , a \") == (\"\", {})\n         assert http.parse_options_header(\" ; a \") == (\"\", {})\n+\n+    def test_parse_options_header_case_insensitive(self):\n+        raise NotImplementedError\n \n     def test_dump_options_header(self):\n         assert http.dump_options_header(\"foo\", {\"bar\": 42}) == \"foo; bar=42\""
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.01,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 819,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

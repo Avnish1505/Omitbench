@@ -1,0 +1,67 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_arguments.py::test_argument_custom_class_can_override_type_cast_value_and_never_sees_unset` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_arguments.py::type_cast_value` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_options.py::test_option_custom_class_can_override_type_cast_value_and_never_sees_unset` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_options.py::type_cast_value` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/click/core.py\n+++ b/src/click/core.py\n@@ -2338,7 +2338,7 @@\n         \"\"\"Convert and validate a value against the parameter's\n         :attr:`type`, :attr:`multiple`, and :attr:`nargs`.\n         \"\"\"\n-        if value in (None, UNSET):\n+        if value is None:\n             if self.multiple or self.nargs == -1:\n                 return ()\n             else:\n@@ -2421,7 +2421,16 @@\n \n         :meta private:\n         \"\"\"\n-        value = self.type_cast_value(ctx, value)\n+        # shelter `type_cast_value` from ever seeing an `UNSET` value by handling the\n+        # cases in which `UNSET` gets special treatment explicitly at this layer\n+        #\n+        # Refs:\n+        # https://github.com/pallets/click/issues/3069\n+        if value is UNSET:\n+            if self.multiple or self.nargs == -1:\n+                value = ()\n+        else:\n+            value = self.type_cast_value(ctx, value)\n \n         if self.required and self.value_is_missing(value):\n             raise MissingParameter(ctx=ctx, param=self)\n@@ -3256,13 +3265,22 @@\n \n         return value, source\n \n-    def type_cast_value(self, ctx: Context, value: t.Any) -> t.Any:\n-        if self.is_flag and not self.required:\n-            if value is UNSET:\n-                if self.is_bool_flag:\n-                    # If the flag is a boolean flag, we return False if it is not set.\n-                    value = False\n-        return super().type_cast_value(ctx, value)\n+    def process_value(self, ctx: Context, value: t.Any) -> t.Any:\n+        # process_value has to be overridden on Options in order to capture\n+        # `value == UNSET` cases before `type_cast_value()` gets called.\n+        #\n+        # Refs:\n+        # https://github.com/pallets/click/issues/3069\n+        if self.is_flag and not self.required and self.is_bool_flag and value is UNSET:\n+            value = False\n+\n+            if self.callback is not None:\n+                value = self.callback(ctx, self, value)\n+\n+            return value\n+\n+        # in the normal case, rely on Parameter.process_value\n+        return super().process_value(ctx, value)\n \n \n class Argument(Parameter):\n\n--- a/tests/test_arguments.py\n+++ b/tests/test_arguments.py\n@@ -580,3 +580,22 @@\n     with pytest.warns(UserWarning):\n         runner.invoke(cli, [])\n \n+\n+@pytest.mark.parametrize(\n+    (\"argument_kwargs\", \"pass_argv\"),\n+    (\n+        # there is a large potential parameter space to explore here\n+        # this is just a very small sample of it\n+        ({}, [\"myvalue\"]),\n+        ({\"nargs\": -1}, []),\n+        ({\"nargs\": -1}, [\"myvalue\"]),\n+        ({\"default\": None}, [\"myvalue\"]),\n+        ({\"required\": False}, []),\n+        ({\"required\": False}, [\"myvalue\"]),\n+    ),\n+)\n+def test_argument_custom_class_can_override_type_cast_value_and_never_sees_unset(\n+    runner, argument_kwargs, pass_argv\n+):\n+    raise NotImplementedError\n+\n\n--- a/tests/test_options.py\n+++ b/tests/test_options.py\n@@ -1010,6 +1010,42 @@\n     result = runner.invoke(cmd, [\"--help\"])\n     assert \"I am a help text\" in result.output\n     assert \"you wont see me\" not in result.output\n+\n+\n+@pytest.mark.parametrize(\n+    (\"param_decl\", \"option_kwargs\", \"pass_argv\"),\n+    (\n+        # there is a large potential parameter space to explore here\n+        # this is just a very small sample of it\n+        (\"--opt\", {}, []),\n+        (\"--opt\", {\"multiple\": True}, []),\n+        (\"--opt\", {\"is_flag\": True}, []),\n+        (\"--opt/--no-opt\", {\"is_flag\": True, \"default\": None}, []),\n+        (\"--req\", {\"is_flag\": True, \"required\": True}, [\"--req\"]),\n+    ),\n+)\n+def test_option_custom_class_can_override_type_cast_value_and_never_sees_unset(\n+    runner, param_decl, option_kwargs, pass_argv\n+):\n+    \"\"\"\n+    Test that overriding type_cast_value is supported\n+\n+    In particular, the option is never passed an UNSET sentinel value.\n+    \"\"\"\n+\n+    class CustomOption(click.Option):\n+        def type_cast_value(self, ctx, value):\n+            assert value is not UNSET\n+            return value\n+\n+    @click.command()\n+    @click.option(\"myparam\", param_decl, **option_kwargs, cls=CustomOption)\n+    def cmd(myparam):\n+        click.echo(\"ok\")\n+\n+    result = runner.invoke(cmd, pass_argv)\n+    assert not result.exception\n+    assert result.exit_code == 0\n \n \n def test_option_custom_class_reusable(runner):"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.02,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.02,
+        "type": "noul"
+      },
+      "r2": {
+        "noul": 0.58,
+        "type": "noul"
+      },
+      "r3": {
+        "noul": 0.13,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 2411,
+      "output_tokens": 72
+    }
+  },
+  "variant": "single"
+}

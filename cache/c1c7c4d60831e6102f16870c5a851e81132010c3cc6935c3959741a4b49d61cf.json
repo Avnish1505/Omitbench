@@ -1,0 +1,91 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `src/itsdangerous/serializer.py::secret_key`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `src/itsdangerous/serializer.py::secret_key`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `src/itsdangerous/serializer.py::secret_key`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `src/itsdangerous/signer.py::secret_key`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `src/itsdangerous/signer.py::secret_key`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `src/itsdangerous/signer.py::secret_key`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/itsdangerous/serializer.py\n+++ b/src/itsdangerous/serializer.py\n@@ -83,10 +83,16 @@\n         fallback_signers=None,\n     ):\n         if isinstance(secret_key, list):\n-            self.secret_keys = [want_bytes(s) for s in secret_key]\n+            secret_keys = [want_bytes(s) for s in secret_key]\n         else:\n-            self.secret_keys = [want_bytes(secret_key)]\n-\n+            secret_keys = [want_bytes(secret_key)]\n+\n+        #: The list of secret keys to try for verifying signatures, from\n+        #: oldest to newest. The newest (last) key is used for signing.\n+        #:\n+        #: This allows a key rotation system to keep a list of allowed\n+        #: keys and remove expired ones.\n+        self.secret_keys = secret_keys\n         self.salt = want_bytes(salt)\n \n         if serializer is None:\n@@ -106,6 +112,13 @@\n \n         self.fallback_signers = fallback_signers\n         self.serializer_kwargs = serializer_kwargs or {}\n+\n+    @property\n+    def secret_key(self):\n+        \"\"\"The newest (last) entry in the :attr:`secret_keys` list. This\n+        is for compatibility from before key rotation support was added.\n+        \"\"\"\n+        return self.secret_keys[-1]\n \n     def load_payload(self, payload, serializer=None):\n         \"\"\"Loads the encoded object. This function raises\n\n--- a/src/itsdangerous/signer.py\n+++ b/src/itsdangerous/signer.py\n@@ -98,10 +98,16 @@\n         algorithm=None,\n     ):\n         if isinstance(secret_key, list):\n-            self.secret_keys = [want_bytes(s) for s in secret_key]\n+            secret_keys = [want_bytes(s) for s in secret_key]\n         else:\n-            self.secret_keys = [want_bytes(secret_key)]\n-\n+            secret_keys = [want_bytes(secret_key)]\n+\n+        #: The list of secret keys to try for verifying signatures, from\n+        #: oldest to newest. The newest (last) key is used for signing.\n+        #:\n+        #: This allows a key rotation system to keep a list of allowed\n+        #: keys and remove expired ones.\n+        self.secret_keys = secret_keys\n         self.sep = want_bytes(sep)\n \n         if self.sep in _base64_alphabet:\n@@ -127,6 +133,10 @@\n             algorithm = HMACAlgorithm(self.digest_method)\n \n         self.algorithm = algorithm\n+\n+    @property\n+    def secret_key(self):\n+        raise NotImplementedError\n \n     def derive_key(self, secret_key=None):\n         \"\"\"This method is called to derive the key. The default key\n@@ -173,7 +183,7 @@\n         except Exception:\n             return False\n \n-        for secret_key in self.secret_keys[::-1]:\n+        for secret_key in reversed(self.secret_keys):\n             key = self.derive_key(secret_key)\n \n             if self.algorithm.verify_signature(key, value, sig):"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.86,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.91,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.12,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.86,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.05,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.19,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1701,
+      "output_tokens": 116
+    }
+  },
+  "variant": "split"
+}

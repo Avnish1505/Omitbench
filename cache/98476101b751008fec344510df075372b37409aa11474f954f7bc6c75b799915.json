@@ -1,0 +1,235 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `httpx/_client.py::BoundAsyncStream`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `httpx/_client.py::BoundAsyncStream`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `httpx/_client.py::BoundAsyncStream`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `httpx/_client.py::BoundSyncStream`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `httpx/_client.py::BoundSyncStream`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `httpx/_client.py::BoundSyncStream`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/client/test_async_client.py::test_cannot_stream_sync_request`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/client/test_async_client.py::test_cannot_stream_sync_request`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/client/test_async_client.py::test_cannot_stream_sync_request`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/client/test_client.py::test_cannot_stream_async_request`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/client/test_client.py::test_cannot_stream_async_request`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/client/test_client.py::test_cannot_stream_async_request`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/models/test_responses.py::test_aclose_on_sync`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/models/test_responses.py::test_aclose_on_sync`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/models/test_responses.py::test_aclose_on_sync`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r5_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/models/test_responses.py::test_close_on_async`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r5_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/models/test_responses.py::test_close_on_async`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r5_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/models/test_responses.py::test_close_on_async`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/httpx/_client.py\n+++ b/httpx/_client.py\n@@ -86,6 +86,52 @@\n     CLOSED = 3\n \n \n+class BoundSyncStream(SyncByteStream):\n+    \"\"\"\n+    A byte stream that is bound to a given response instance, and that\n+    ensures the `response.elapsed` is set once the response is closed.\n+    \"\"\"\n+\n+    def __init__(\n+        self, stream: SyncByteStream, response: Response, timer: Timer\n+    ) -> None:\n+        self._stream = stream\n+        self._response = response\n+        self._timer = timer\n+\n+    def __iter__(self) -> typing.Iterator[bytes]:\n+        for chunk in self._stream:\n+            yield chunk\n+\n+    def close(self) -> None:\n+        seconds = self._timer.sync_elapsed()\n+        self._response.elapsed = datetime.timedelta(seconds=seconds)\n+        self._stream.close()\n+\n+\n+class BoundAsyncStream(AsyncByteStream):\n+    \"\"\"\n+    An async byte stream that is bound to a given response instance, and that\n+    ensures the `response.elapsed` is set once the response is closed.\n+    \"\"\"\n+\n+    def __init__(\n+        self, stream: AsyncByteStream, response: Response, timer: Timer\n+    ) -> None:\n+        self._stream = stream\n+        self._response = response\n+        self._timer = timer\n+\n+    async def __aiter__(self) -> typing.AsyncIterator[bytes]:\n+        async for chunk in self._stream:\n+            yield chunk\n+\n+    async def aclose(self) -> None:\n+        seconds = await self._timer.async_elapsed()\n+        self._response.elapsed = datetime.timedelta(seconds=seconds)\n+        await self._stream.aclose()\n+\n+\n class BaseClient:\n     def __init__(\n         self,\n@@ -874,18 +920,19 @@\n         timer = Timer()\n         timer.sync_start()\n \n+        if not isinstance(request.stream, SyncByteStream):\n+            raise RuntimeError(\n+                \"Attempted to send an async request with a sync Client instance.\"\n+            )\n+\n         with request_context(request=request):\n             (status_code, headers, stream, extensions) = transport.handle_request(\n                 request.method.encode(),\n                 request.url.raw,\n                 headers=request.headers.raw,\n-                stream=request.stream,  # type: ignore\n+                stream=request.stream,\n                 extensions={\"timeout\": timeout.as_dict()},\n             )\n-\n-        def on_close(response: Response) -> None:\n-            response.elapsed = datetime.timedelta(seconds=timer.sync_elapsed())\n-            stream.close()\n \n         response = Response(\n             status_code,\n@@ -893,9 +940,9 @@\n             stream=stream,\n             extensions=extensions,\n             request=request,\n-            on_close=on_close,\n-        )\n-\n+        )\n+\n+        response.stream = BoundSyncStream(stream, response=response, timer=timer)\n         self.cookies.extract_cookies(response)\n \n         status = f\"{response.status_code} {response.reason_phrase}\"\n@@ -1512,6 +1559,11 @@\n         timer = Timer()\n         await timer.async_start()\n \n+        if not isinstance(request.stream, AsyncByteStream):\n+            raise RuntimeError(\n+                \"Attempted to send an sync request with an AsyncClient instance.\"\n+            )\n+\n         with request_context(request=request):\n             (\n                 status_code,\n@@ -1522,13 +1574,9 @@\n                 request.method.encode(),\n                 request.url.raw,\n                 headers=request.headers.raw,\n-                stream=request.stream,  # type: ignore\n+                stream=request.stream,\n                 extensions={\"timeout\": timeout.as_dict()},\n             )\n-\n-        async def on_close(response: Response) -> None:\n-            response.elapsed = datetime.timedelta(seconds=await timer.async_elapsed())\n-            await stream.aclose()\n \n         response = Response(\n             status_code,\n@@ -1536,9 +1584,9 @@\n             stream=stream,\n             extensions=extensions,\n             request=request,\n-            on_close=on_close,\n-        )\n-\n+        )\n+\n+        response.stream = BoundAsyncStream(stream, response=response, timer=timer)\n         self.cookies.extract_cookies(response)\n \n         status = f\"{response.status_code} {response.reason_phrase}\"\n\n--- a/httpx/_models.py\n+++ b/httpx/_models.py\n@@ -908,7 +908,6 @@\n         request: Request = None,\n         extensions: dict = None,\n         history: typing.List[\"Response\"] = None,\n-        on_close: typing.Callable = None,\n     ):\n         self.status_code = status_code\n         self.headers = Headers(headers)\n@@ -923,7 +922,6 @@\n \n         self.extensions = {} if extensions is None else extensions\n         self.history = [] if history is None else list(history)\n-        self._on_close = on_close\n \n         self.is_closed = False\n         self.is_stream_consumed = False\n@@ -1245,11 +1243,13 @@\n         Close the response and release the connection.\n         Automatically called if the response body is read to completion.\n         \"\"\"\n+        if not isinstance(self.stream, SyncByteStream):\n+            raise RuntimeError(\"Attempted to call an sync close on an async stream.\")\n+\n         if not self.is_closed:\n             self.is_closed = True\n-            if self._on_close is not None:\n-                with request_context(request=self._request):\n-                    self._on_close(self)\n+            with request_context(request=self._request):\n+                self.stream.close()\n \n     async def aread(self) -> bytes:\n         \"\"\"\n@@ -1341,11 +1341,13 @@\n         Close the response and release the connection.\n         Automatically called if the response body is read to completion.\n         \"\"\"\n+        if not isinstance(self.stream, AsyncByteStream):\n+            raise RuntimeError(\"Attempted to call an async close on an sync stream.\")\n+\n         if not self.is_closed:\n             self.is_closed = True\n-            if self._on_close is not None:\n-                with request_context(request=self._request):\n-                    await self._on_close(self)\n+            with request_context(request=self._request):\n+                await self.stream.aclose()\n \n \n class Cookies(MutableMapping):\n\n--- a/tests/client/test_async_client.py\n+++ b/tests/client/test_async_client.py\n@@ -94,8 +94,19 @@\n         yield b\"world!\"\n \n     async with httpx.AsyncClient() as client:\n-        response = await client.request(\"POST\", server.url, content=hello_world())\n-    assert response.status_code == 200\n+        response = await client.post(server.url, content=hello_world())\n+    assert response.status_code == 200\n+\n+\n+@pytest.mark.usefixtures(\"async_environment\")\n+async def test_cannot_stream_sync_request(server):\n+    def hello_world():  # pragma: nocover\n+        yield b\"Hello, \"\n+        yield b\"world!\"\n+\n+    async with httpx.AsyncClient() as client:\n+        with pytest.raises(RuntimeError):\n+            await client.post(server.url, content=hello_world())\n \n \n @pytest.mark.usefixtures(\"async_environment\")\n\n--- a/tests/client/test_client.py\n+++ b/tests/client/test_client.py\n@@ -112,6 +112,16 @@\n \n     assert response.status_code == 200\n     assert body == b\"Hello, world!\"\n+\n+\n+def test_cannot_stream_async_request(server):\n+    async def hello_world():  # pragma: nocover\n+        yield b\"Hello, \"\n+        yield b\"world!\"\n+\n+    with httpx.Client() as client:\n+        with pytest.raises(RuntimeError):\n+            client.post(server.url, content=hello_world())\n \n \n def test_raise_for_status(server):\n\n--- a/tests/models/test_responses.py\n+++ b/tests/models/test_responses.py\n@@ -382,6 +382,16 @@\n         [part for part in response.iter_raw()]\n \n \n+def test_close_on_async():\n+    response = httpx.Response(\n+        200,\n+        content=async_streaming_body(),\n+    )\n+\n+    with pytest.raises(RuntimeError):\n+        response.close()\n+\n+\n def test_iter_raw_increments_updates_counter():\n     response = httpx.Response(200, content=streaming_body())\n \n@@ -428,6 +438,17 @@\n \n     with pytest.raises(RuntimeError):\n         [part async for part in response.aiter_raw()]\n+\n+\n+@pytest.mark.asyncio\n+async def test_aclose_on_sync():\n+    response = httpx.Response(\n+        200,\n+        content=streaming_body(),\n+    )\n+\n+    with pytest.raises(RuntimeError):\n+        await response.aclose()\n \n \n @pytest.mark.asyncio"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.99,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.99,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r2_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "noul": 0.95,
+        "type": "noul"
+      },
+      "r2_wired": {
+        "noul": 0.42,
+        "type": "noul"
+      },
+      "r3_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r3_real_body": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r3_wired": {
+        "noul": 0.3,
+        "type": "noul"
+      },
+      "r4_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r4_real_body": {
+        "noul": 0.95,
+        "type": "noul"
+      },
+      "r4_wired": {
+        "noul": 0.51,
+        "type": "noul"
+      },
+      "r5_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r5_real_body": {
+        "noul": 0.95,
+        "type": "noul"
+      },
+      "r5_wired": {
+        "noul": 0.45,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 4565,
+      "output_tokens": 340
+    }
+  },
+  "variant": "split"
+}

@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/models/test_requests.py::test_request_params`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/models/test_requests.py::test_request_params`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/models/test_requests.py::test_request_params`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/tests/models/test_requests.py\n+++ b/tests/models/test_requests.py\n@@ -227,3 +227,16 @@\n     pickle_request = pickle.loads(pickle.dumps(request))\n     assert pickle_request.content == b\"test 123\"\n \n+\n+def test_request_params():\n+    request = httpx.Request(\"GET\", \"http://example.com\", params={})\n+    assert str(request.url) == \"http://example.com\"\n+\n+    request = httpx.Request(\n+        \"GET\", \"http://example.com?c=3\", params={\"a\": \"1\", \"b\": \"2\"}\n+    )\n+    assert str(request.url) == \"http://example.com?a=1&b=2\"\n+\n+    request = httpx.Request(\"GET\", \"http://example.com?a=1\", params={})\n+    assert str(request.url) == \"http://example.com\"\n+"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.13,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 821,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_validators.py::test_error_neither_validator_provided` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_validators.py::test_key_validator_can_be_none` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_validators.py::test_value_validator_can_be_none` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/attr/validators.py\n+++ b/src/attr/validators.py\n@@ -378,9 +378,9 @@\n \n @attrs(repr=False, slots=True, unsafe_hash=True)\n class _DeepMapping:\n-    key_validator = attrib(validator=is_callable())\n-    value_validator = attrib(validator=is_callable())\n-    mapping_validator = attrib(default=None, validator=optional(is_callable()))\n+    key_validator = attrib(validator=optional(is_callable()))\n+    value_validator = attrib(validator=optional(is_callable()))\n+    mapping_validator = attrib(validator=optional(is_callable()))\n \n     def __call__(self, inst, attr, value):\n         \"\"\"\n@@ -390,30 +390,51 @@\n             self.mapping_validator(inst, attr, value)\n \n         for key in value:\n-            self.key_validator(inst, attr, key)\n-            self.value_validator(inst, attr, value[key])\n+            if self.key_validator is not None:\n+                self.key_validator(inst, attr, key)\n+            if self.value_validator is not None:\n+                self.value_validator(inst, attr, value[key])\n \n     def __repr__(self):\n         return f\"<deep_mapping validator for objects mapping {self.key_validator!r} to {self.value_validator!r}>\"\n \n \n-def deep_mapping(key_validator, value_validator, mapping_validator=None):\n+def deep_mapping(\n+    key_validator=None, value_validator=None, mapping_validator=None\n+):\n     \"\"\"\n     A validator that performs deep validation of a dictionary.\n \n+    All validators are optional, but at least one of *key_validator* or\n+    *value_validator* must be provided.\n+\n     Args:\n         key_validator: Validator to apply to dictionary keys.\n \n         value_validator: Validator to apply to dictionary values.\n \n         mapping_validator:\n-            Validator to apply to top-level mapping attribute (optional).\n+            Validator to apply to top-level mapping attribute.\n \n     .. versionadded:: 19.1.0\n \n+    .. versionchanged:: 25.4.0\n+       *key_validator* and *value_validator* are now optional, but at least one\n+       of them must be provided.\n+\n     Raises:\n-        TypeError: if any sub-validators fail\n-    \"\"\"\n+        TypeError: If any sub-validator fails on validation.\n+\n+        ValueError:\n+            If neither *key_validator* nor *value_validator* is provided on\n+            instantiation.\n+    \"\"\"\n+    if key_validator is None and value_validator is None:\n+        msg = (\n+            \"At least one of key_validator or value_validator must be provided\"\n+        )\n+        raise ValueError(msg)\n+\n     return _DeepMapping(key_validator, value_validator, mapping_validator)\n \n \n\n--- a/tests/test_validators.py\n+++ b/tests/test_validators.py\n@@ -651,6 +651,8 @@\n             (instance_of(str), instance_of(int), 42),\n             (42, 42, None),\n             (42, 42, 42),\n+            (42, None, None),\n+            (None, 42, None),\n         ],\n     )\n     def test_noncallable_validators(\n@@ -719,7 +721,39 @@\n             \"<deep_mapping validator for objects mapping \"\n             f\"{key_repr} to {value_repr}>\"\n         )\n+\n         assert expected_repr == repr(v)\n+\n+    def test_error_neither_validator_provided(self):\n+        \"\"\"\n+        Raise ValueError if neither key_validator nor value_validator is\n+        provided.\n+        \"\"\"\n+        with pytest.raises(ValueError) as e:\n+            deep_mapping()\n+\n+        assert (\n+            \"At least one of key_validator or value_validator must be provided\"\n+            == e.value.args[0]\n+        )\n+\n+    def test_key_validator_can_be_none(self):\n+        \"\"\"\n+        The key validator can be None.\n+        \"\"\"\n+        v = deep_mapping(value_validator=instance_of(int))\n+        a = simple_attr(\"test\")\n+\n+        v(None, a, {\"a\": 6, \"b\": 7})\n+\n+    def test_value_validator_can_be_none(self):\n+        \"\"\"\n+        The value validator can be None.\n+        \"\"\"\n+        v = deep_mapping(key_validator=instance_of(str))\n+        a = simple_attr(\"test\")\n+\n+        v(None, a, {\"a\": 6, \"b\": 7})\n \n \n class TestIsCallable:\n\n--- a/tests/typing_example.py\n+++ b/tests/typing_example.py\n@@ -214,6 +214,16 @@\n         type=Dict[C, D],\n         validator=attr.validators.deep_mapping(\n             attr.validators.instance_of(C), attr.validators.instance_of(D)\n+        ),\n+    )\n+    d2 = attr.ib(\n+        type=Dict[C, D],\n+        validator=attr.validators.deep_mapping(attr.validators.instance_of(C)),\n+    )\n+    d3 = attr.ib(\n+        type=Dict[C, D],\n+        validator=attr.validators.deep_mapping(\n+            value_validator=attr.validators.instance_of(C)\n         ),\n     )\n     e: str = attr.ib(validator=attr.validators.matches_re(re.compile(r\"foo\")))"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.22,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.25,
+        "type": "noul"
+      },
+      "r2": {
+        "noul": 0.25,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 2176,
+      "output_tokens": 55
+    }
+  },
+  "variant": "single"
+}

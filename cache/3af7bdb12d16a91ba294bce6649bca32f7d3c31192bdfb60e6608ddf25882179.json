@@ -1,0 +1,91 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_lowlevel.py::incomplete_chunked_response_handler`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_lowlevel.py::incomplete_chunked_response_handler`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_lowlevel.py::incomplete_chunked_response_handler`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_lowlevel.py::test_chunked_encoding_error`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_lowlevel.py::test_chunked_encoding_error`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_lowlevel.py::test_chunked_encoding_error`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/tests/test_lowlevel.py\n+++ b/tests/test_lowlevel.py\n@@ -22,6 +22,28 @@\n \n     assert r.status_code == 200\n     assert r.request.headers['Transfer-Encoding'] == 'chunked'\n+\n+\n+def test_chunked_encoding_error():\n+    \"\"\"get a ChunkedEncodingError if the server returns a bad response\"\"\"\n+\n+    def incomplete_chunked_response_handler(sock):\n+        request_content = consume_socket_content(sock, timeout=0.5)\n+\n+        # The server never ends the request and doesn't provide any valid chunks\n+        sock.send(b\"HTTP/1.1 200 OK\\r\\n\" +\n+                  b\"Transfer-Encoding: chunked\\r\\n\")\n+\n+        return request_content\n+\n+    close_server = threading.Event()\n+    server = Server(incomplete_chunked_response_handler)\n+\n+    with server as (host, port):\n+        url = 'http://{}:{}/'.format(host, port)\n+        with pytest.raises(requests.exceptions.ChunkedEncodingError):\n+            r = requests.get(url)\n+        close_server.set()  # release server block\n \n \n def test_digestauth_401_count_reset_on_redirect():"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.88,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.14,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1290,
+      "output_tokens": 116
+    }
+  },
+  "variant": "split"
+}

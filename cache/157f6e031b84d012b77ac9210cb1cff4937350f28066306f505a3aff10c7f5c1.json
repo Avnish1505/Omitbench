@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_cli.py::test_run_exclude_patterns`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_cli.py::test_run_exclude_patterns`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_cli.py::test_run_exclude_patterns`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/flask/cli.py\n+++ b/src/flask/cli.py\n@@ -858,7 +858,9 @@\n         self, value: t.Any, param: click.Parameter | None, ctx: click.Context | None\n     ) -> t.Any:\n         items = self.split_envvar_value(value)\n-        return [super().convert(item, param, ctx) for item in items]\n+        # can't call no-arg super() inside list comprehension until Python 3.12\n+        super_convert = super().convert\n+        return [super_convert(item, param, ctx) for item in items]\n \n \n @click.command(\"run\", short_help=\"Run a development server.\")\n\n--- a/tests/test_cli.py\n+++ b/tests/test_cli.py\n@@ -680,3 +680,7 @@\n     result = app.test_cli_runner().invoke(args=[\"blue\", \"--help\"])\n     assert result.exit_code == 2, f\"Unexpected success:\\n\\n{result.output}\"\n \n+\n+def test_run_exclude_patterns():\n+    raise NotImplementedError\n+"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.04,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.08,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 873,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

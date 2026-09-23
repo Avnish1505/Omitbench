@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_slots.py::test_slots_cached_property_raising_attributeerror` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/attr/_make.py\n+++ b/src/attr/_make.py\n@@ -619,8 +619,12 @@\n     else:\n         lines.extend(\n             [\n-                \"         if hasattr(super(), '__getattr__'):\",\n-                \"              return super().__getattr__(item)\",\n+                \"         try:\",\n+                \"             return super().__getattribute__(item)\",\n+                \"         except AttributeError:\",\n+                \"             if not hasattr(super(), '__getattr__'):\",\n+                \"                 raise\",\n+                \"             return super().__getattr__(item)\",\n                 \"         original_error = f\\\"'{self.__class__.__name__}' object has no attribute '{item}'\\\"\",\n                 \"         raise AttributeError(original_error)\",\n             ]\n\n--- a/tests/test_slots.py\n+++ b/tests/test_slots.py\n@@ -807,6 +807,45 @@\n \n \n @pytest.mark.skipif(not PY_3_8_PLUS, reason=\"cached_property is 3.8+\")\n+def test_slots_cached_property_raising_attributeerror():\n+    \"\"\"\n+    Ensures AttributeError raised by a property is preserved by __getattr__()\n+    implementation.\n+\n+    Regression test for issue https://github.com/python-attrs/attrs/issues/1230\n+    \"\"\"\n+\n+    @attr.s(slots=True)\n+    class A:\n+        x = attr.ib()\n+\n+        @functools.cached_property\n+        def f(self):\n+            return self.p\n+\n+        @property\n+        def p(self):\n+            raise AttributeError(\"I am a property\")\n+\n+        @functools.cached_property\n+        def g(self):\n+            return self.q\n+\n+        @property\n+        def q(self):\n+            return 2\n+\n+    a = A(1)\n+    with pytest.raises(AttributeError, match=r\"^I am a property$\"):\n+        a.p\n+    with pytest.raises(AttributeError, match=r\"^I am a property$\"):\n+        a.f\n+\n+    assert a.g == 2\n+    assert a.q == 2\n+\n+\n+@pytest.mark.skipif(not PY_3_8_PLUS, reason=\"cached_property is 3.8+\")\n def test_slots_cached_property_with_getattr_calls_getattr_for_missing_attributes():\n     \"\"\"\n     Ensure __getattr__ implementation is maintained for non cached_properties."
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.26,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1058,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

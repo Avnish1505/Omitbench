@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_basic.py::test_no_setup_after_first_request` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_basic.py::test_trap_bad_request_key_error` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_basic.py::user` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/tests/test_basic.py\n+++ b/tests/test_basic.py\n@@ -329,6 +329,11 @@\n         flask.session[\"testing\"] = 42\n         return \"Hello World\"\n \n+    @app.route(\"/clear\")\n+    def clear():\n+        flask.session.pop(\"testing\", None)\n+        return \"Goodbye World\"\n+\n     rv = client.get(\"/\", \"http://www.example.com:8080/test/\")\n     cookie = rv.headers[\"set-cookie\"].lower()\n     assert \"domain=.example.com\" in cookie\n@@ -336,11 +341,6 @@\n     assert \"secure\" in cookie\n     assert \"httponly\" not in cookie\n     assert \"samesite\" in cookie\n-\n-    @app.route(\"/clear\")\n-    def clear():\n-        flask.session.pop(\"testing\", None)\n-        return \"Goodbye World\"\n \n     rv = client.get(\"/clear\", \"http://www.example.com:8080/test/\")\n     cookie = rv.headers[\"set-cookie\"].lower()\n@@ -1031,7 +1031,14 @@\n     assert rv.data == b\"E2\"\n \n \n-def test_trapping_of_bad_request_key_errors(app, client):\n+@pytest.mark.parametrize(\n+    (\"debug\", \"trap\", \"expect_key\", \"expect_abort\"),\n+    [(False, None, True, True), (True, None, False, True), (False, True, False, False)],\n+)\n+def test_trap_bad_request_key_error(app, client, debug, trap, expect_key, expect_abort):\n+    app.config[\"DEBUG\"] = debug\n+    app.config[\"TRAP_BAD_REQUEST_ERRORS\"] = trap\n+\n     @app.route(\"/key\")\n     def fail():\n         flask.request.form[\"missing_key\"]\n@@ -1040,26 +1047,23 @@\n     def allow_abort():\n         flask.abort(400)\n \n-    rv = client.get(\"/key\")\n-    assert rv.status_code == 400\n-    assert b\"missing_key\" not in rv.data\n-    rv = client.get(\"/abort\")\n-    assert rv.status_code == 400\n-\n-    app.debug = True\n-    with pytest.raises(KeyError) as e:\n-        client.get(\"/key\")\n-    assert e.errisinstance(BadRequest)\n-    assert \"missing_key\" in e.value.get_description()\n-    rv = client.get(\"/abort\")\n-    assert rv.status_code == 400\n-\n-    app.debug = False\n-    app.config[\"TRAP_BAD_REQUEST_ERRORS\"] = True\n-    with pytest.raises(KeyError):\n-        client.get(\"/key\")\n-    with pytest.raises(BadRequest):\n-        client.get(\"/abort\")\n+    if expect_key:\n+        rv = client.get(\"/key\")\n+        assert rv.status_code == 400\n+        assert b\"missing_key\" not in rv.data\n+    else:\n+        with pytest.raises(KeyError) as exc_info:\n+            client.get(\"/key\")\n+\n+        assert exc_info.errisinstance(BadRequest)\n+        assert \"missing_key\" in exc_info.value.get_description()\n+\n+    if expect_abort:\n+        rv = client.get(\"/abort\")\n+        assert rv.status_code == 400\n+    else:\n+        with pytest.raises(BadRequest):\n+            client.get(\"/abort\")\n \n \n def test_trapping_of_all_http_exceptions(app, client):\n@@ -1661,7 +1665,7 @@\n     assert rv.data == b\"Hello World!\"\n \n \n-def test_debug_mode_complains_after_first_request(app, client):\n+def test_no_setup_after_first_request(app, client):\n     app.debug = True\n \n     @app.route(\"/\")\n@@ -1671,19 +1675,10 @@\n     assert not app.got_first_request\n     assert client.get(\"/\").data == b\"Awesome\"\n \n-    with pytest.raises(AssertionError) as e:\n+    with pytest.raises(AssertionError) as exc_info:\n         app.add_url_rule(\"/foo\", endpoint=\"late\")\n \n-    assert \"A setup function was called\" in str(e.value)\n-\n-    app.debug = False\n-\n-    @app.route(\"/foo\")\n-    def working():\n-        return \"Meh\"\n-\n-    assert client.get(\"/foo\").data == b\"Meh\"\n-    assert app.got_first_request\n+    assert \"setup method 'add_url_rule'\" in str(exc_info.value)\n \n \n def test_before_first_request_functions(app, client):\n@@ -1720,28 +1715,23 @@\n \n \n def test_routing_redirect_debugging(monkeypatch, app, client):\n-    @app.route(\"/foo/\", methods=[\"GET\", \"POST\"])\n-    def foo():\n-        return \"success\"\n-\n-    app.debug = False\n-    rv = client.post(\"/foo\", data={}, follow_redirects=True)\n+    app.config[\"DEBUG\"] = True\n+\n+    @app.route(\"/user/\", methods=[\"GET\", \"POST\"])\n+    def user():\n+        return flask.request.form[\"status\"]\n+\n+    # default redirect code preserves form data\n+    rv = client.post(\"/user\", data={\"status\": \"success\"}, follow_redirects=True)\n     assert rv.data == b\"success\"\n \n-    app.debug = True\n-\n-    with client:\n-        rv = client.post(\"/foo\", data={}, follow_redirects=True)\n-        assert rv.data == b\"success\"\n-        rv = client.get(\"/foo\", data={}, follow_redirects=True)\n-        assert rv.data == b\"success\"\n-\n+    # 301 and 302 raise error\n     monkeypatch.setattr(RequestRedirect, \"code\", 301)\n \n-    with client, pytest.raises(AssertionError) as e:\n-        client.post(\"/foo\", data={})\n-\n-    assert \"canonical URL 'http://localhost/foo/'\" in str(e.value)\n+    with client, pytest.raises(AssertionError) as exc_info:\n+        client.post(\"/user\", data={\"status\": \"error\"}, follow_redirects=True)\n+\n+    assert \"canonical URL 'http://localhost/user/'\" in str(exc_info.value)\n \n \n def test_route_decorator_custom_endpoint(app, client):"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.18,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.24,
+        "type": "noul"
+      },
+      "r2": {
+        "noul": 0.81,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 2404,
+      "output_tokens": 55
+    }
+  },
+  "variant": "single"
+}

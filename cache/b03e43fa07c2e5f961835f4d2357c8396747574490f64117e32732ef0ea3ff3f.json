@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_helpers.py::test_async_view`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_helpers.py::test_async_view`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_helpers.py::test_async_view`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/flask/helpers.py\n+++ b/src/flask/helpers.py\n@@ -13,6 +13,7 @@\n from werkzeug.utils import redirect as _wz_redirect\n from werkzeug.wrappers import Response as BaseResponse\n \n+from .globals import _cv_app\n from .globals import _cv_request\n from .globals import current_app\n from .globals import request\n@@ -62,35 +63,40 @@\n def stream_with_context(\n     generator_or_function: t.Iterator[t.AnyStr] | t.Callable[..., t.Iterator[t.AnyStr]],\n ) -> t.Iterator[t.AnyStr] | t.Callable[[t.Iterator[t.AnyStr]], t.Iterator[t.AnyStr]]:\n-    \"\"\"Request contexts disappear when the response is started on the server.\n-    This is done for efficiency reasons and to make it less likely to encounter\n-    memory leaks with badly written WSGI middlewares.  The downside is that if\n-    you are using streamed responses, the generator cannot access request bound\n-    information any more.\n-\n-    This function however can help you keep the context around for longer::\n+    \"\"\"Wrap a response generator function so that it runs inside the current\n+    request context. This keeps :data:`request`, :data:`session`, and :data:`g`\n+    available, even though at the point the generator runs the request context\n+    will typically have ended.\n+\n+    Use it as a decorator on a generator function:\n+\n+    .. code-block:: python\n \n         from flask import stream_with_context, request, Response\n \n-        @app.route('/stream')\n+        @app.get(\"/stream\")\n         def streamed_response():\n             @stream_with_context\n             def generate():\n-                yield 'Hello '\n-                yield request.args['name']\n-                yield '!'\n+                yield \"Hello \"\n+                yield request.args[\"name\"]\n+                yield \"!\"\n+\n             return Response(generate())\n \n-    Alternatively it can also be used around a specific generator::\n+    Or use it as a wrapper around a created generator:\n+\n+    .. code-block:: python\n \n         from flask import stream_with_context, request, Response\n \n-        @app.route('/stream')\n+        @app.get(\"/stream\")\n         def streamed_response():\n             def generate():\n-                yield 'Hello '\n-                yield request.args['name']\n-                yield '!'\n+                yield \"Hello \"\n+                yield request.args[\"name\"]\n+                yield \"!\"\n+\n             return Response(stream_with_context(generate()))\n \n     .. versionadded:: 0.9\n@@ -105,35 +111,36 @@\n \n         return update_wrapper(decorator, generator_or_function)  # type: ignore[arg-type]\n \n-    def generator() -> t.Iterator[t.AnyStr | None]:\n-        ctx = _cv_request.get(None)\n-        if ctx is None:\n+    def generator() -> t.Iterator[t.AnyStr]:\n+        if (req_ctx := _cv_request.get(None)) is None:\n             raise RuntimeError(\n                 \"'stream_with_context' can only be used when a request\"\n                 \" context is active, such as in a view function.\"\n             )\n-        with ctx:\n-            # Dummy sentinel.  Has to be inside the context block or we're\n-            # not actually keeping the context around.\n-            yield None\n-\n-            # The try/finally is here so that if someone passes a WSGI level\n-            # iterator in we're still running the cleanup logic.  Generators\n-            # don't need that because they are closed on their destruction\n-            # automatically.\n+\n+        app_ctx = _cv_app.get()\n+        # Setup code below will run the generator to this point, so that the\n+        # current contexts are recorded. The contexts must be pushed after,\n+        # otherwise their ContextVar will record the wrong event loop during\n+        # async view functions.\n+        yield None  # type: ignore[misc]\n+\n+        # Push the app context first, so that the request context does not\n+        # automatically create and push a different app context.\n+        with app_ctx, req_ctx:\n             try:\n                 yield from gen\n             finally:\n+                # Clean up in case the user wrapped a WSGI iterator.\n                 if hasattr(gen, \"close\"):\n                     gen.close()\n \n-    # The trick is to start the generator.  Then the code execution runs until\n-    # the first dummy None is yielded at which point the context was already\n-    # pushed.  This item is discarded.  Then when the iteration continues the\n-    # real generator is executed.\n+    # Execute the generator to the sentinel value. This ensures the context is\n+    # preserved in the generator's state. Further iteration will push the\n+    # context and yield from the original iterator.\n     wrapped_g = generator()\n     next(wrapped_g)\n-    return wrapped_g  # type: ignore[return-value]\n+    return wrapped_g\n \n \n def make_response(*args: t.Any) -> Response:\n\n--- a/tests/test_helpers.py\n+++ b/tests/test_helpers.py\n@@ -305,6 +305,29 @@\n \n         rv = client.get(\"/\")\n         assert rv.data == b\"flask\"\n+\n+    def test_async_view(self, app, client):\n+        @app.route(\"/\")\n+        async def index():\n+            flask.session[\"test\"] = \"flask\"\n+\n+            @flask.stream_with_context\n+            def gen():\n+                yield flask.session[\"test\"]\n+\n+            return flask.Response(gen())\n+\n+        # response is closed without reading stream\n+        client.get().close()\n+        # response stream is read\n+        assert client.get().text == \"flask\"\n+\n+        # same as above, but with client context preservation\n+        with client:\n+            client.get().close()\n+\n+        with client:\n+            assert client.get().text == \"flask\"\n \n \n class TestHelpers:"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.54,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1925,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

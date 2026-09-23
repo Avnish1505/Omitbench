@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests.py::test_sign_invalid_separator` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/itsdangerous.py\n+++ b/itsdangerous.py\n@@ -9,6 +9,7 @@\n     :copyright: (c) 2011 by Armin Ronacher and the Django Software Foundation.\n     :license: BSD, see LICENSE for more details.\n \"\"\"\n+import string\n import struct\n import sys\n import hmac\n@@ -215,6 +216,11 @@\n         raise BadData('Invalid base64-encoded data')\n \n \n+# The alphabet used by base64.urlsafe_*\n+_base64_alphabet = (\n+    string.ascii_letters + string.digits + '-_='\n+).encode('ascii')\n+\n _int64_struct = struct.Struct('>Q')\n _int_to_bytes = _int64_struct.pack\n _bytes_to_int = _int64_struct.unpack\n@@ -306,7 +312,12 @@\n     def __init__(self, secret_key, salt=None, sep='.', key_derivation=None,\n                  digest_method=None, algorithm=None):\n         self.secret_key = want_bytes(secret_key)\n-        self.sep = sep\n+        self.sep = want_bytes(sep)\n+        if self.sep in _base64_alphabet:\n+            raise ValueError('The given separator cannot be used because it '\n+                             'may be contained in the signature itself. '\n+                             'Alphanumeric characters and `-_=` must not be '\n+                             'used.')\n         self.salt = 'itsdangerous.Signer' if salt is None else salt\n         if key_derivation is None:\n             key_derivation = self.default_key_derivation\n\n--- a/tests.py\n+++ b/tests.py\n@@ -1,6 +1,7 @@\n #!/usr/bin/env python\n import time\n import pickle\n+import pytest\n import hashlib\n import unittest\n from datetime import datetime\n@@ -36,6 +37,7 @@\n     def test_sign(self):\n         s = self.make_signer('secret-key')\n         assert isinstance(s.sign('my string'), bytes)\n+\n \n \n class SerializerTestCase(unittest.TestCase):"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.01,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 971,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

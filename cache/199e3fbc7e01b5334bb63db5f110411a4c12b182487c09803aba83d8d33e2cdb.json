@@ -1,0 +1,307 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_lexnparse.py::test_lstrip_blocks_consume_after_without_new_line`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_lexnparse.py::test_lstrip_blocks_consume_after_without_new_line`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_lexnparse.py::test_lstrip_blocks_consume_after_without_new_line`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_lexnparse.py::test_lstrip_blocks_inside_with_new_line`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_lexnparse.py::test_lstrip_blocks_inside_with_new_line`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_lexnparse.py::test_lstrip_blocks_inside_with_new_line`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_lexnparse.py::test_lstrip_blocks_outside_with_new_line`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_lexnparse.py::test_lstrip_blocks_outside_with_new_line`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_lexnparse.py::test_lstrip_blocks_outside_with_new_line`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_lexnparse.py::test_lstrip_blocks_without_new_line`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_lexnparse.py::test_lstrip_blocks_without_new_line`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_lexnparse.py::test_lstrip_blocks_without_new_line`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_lexnparse.py::test_lstrip_trim_blocks_consume_before_without_new_line`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_lexnparse.py::test_lstrip_trim_blocks_consume_before_without_new_line`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_lexnparse.py::test_lstrip_trim_blocks_consume_before_without_new_line`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r5_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_lexnparse.py::test_lstrip_trim_blocks_inside_with_new_line`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r5_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_lexnparse.py::test_lstrip_trim_blocks_inside_with_new_line`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r5_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_lexnparse.py::test_lstrip_trim_blocks_inside_with_new_line`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r6_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_lexnparse.py::test_lstrip_trim_blocks_outside_with_new_line`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r6_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_lexnparse.py::test_lstrip_trim_blocks_outside_with_new_line`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r6_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_lexnparse.py::test_lstrip_trim_blocks_outside_with_new_line`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r7_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_lexnparse.py::test_lstrip_trim_blocks_without_new_line`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r7_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_lexnparse.py::test_lstrip_trim_blocks_without_new_line`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r7_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_lexnparse.py::test_lstrip_trim_blocks_without_new_line`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/tests/test_lexnparse.py\n+++ b/tests/test_lexnparse.py\n@@ -729,6 +729,91 @@\n         )\n         assert tmpl.render(seq=range(5)) == \"\".join(\"%s\\n\" % x for x in range(5))\n \n+    def test_lstrip_blocks_outside_with_new_line(self):\n+        env = Environment(lstrip_blocks=True, trim_blocks=False)\n+        tmpl = env.from_string(\n+            \"  {% if kvs %}(\\n\"\n+            \"   {% for k, v in kvs %}{{ k }}={{ v }} {% endfor %}\\n\"\n+            \"  ){% endif %}\"\n+        )\n+        out = tmpl.render(kvs=[(\"a\", 1), (\"b\", 2)])\n+        assert out == \"(\\na=1 b=2 \\n  )\"\n+\n+    def test_lstrip_trim_blocks_outside_with_new_line(self):\n+        env = Environment(lstrip_blocks=True, trim_blocks=True)\n+        tmpl = env.from_string(\n+            \"  {% if kvs %}(\\n\"\n+            \"   {% for k, v in kvs %}{{ k }}={{ v }} {% endfor %}\\n\"\n+            \"  ){% endif %}\"\n+        )\n+        out = tmpl.render(kvs=[(\"a\", 1), (\"b\", 2)])\n+        assert out == \"(\\na=1 b=2   )\"\n+\n+    def test_lstrip_blocks_inside_with_new_line(self):\n+        env = Environment(lstrip_blocks=True, trim_blocks=False)\n+        tmpl = env.from_string(\n+            \"  ({% if kvs %}\\n\"\n+            \"   {% for k, v in kvs %}{{ k }}={{ v }} {% endfor %}\\n\"\n+            \"  {% endif %})\"\n+        )\n+        out = tmpl.render(kvs=[(\"a\", 1), (\"b\", 2)])\n+        assert out == \"  (\\na=1 b=2 \\n)\"\n+\n+    def test_lstrip_trim_blocks_inside_with_new_line(self):\n+        env = Environment(lstrip_blocks=True, trim_blocks=True)\n+        tmpl = env.from_string(\n+            \"  ({% if kvs %}\\n\"\n+            \"   {% for k, v in kvs %}{{ k }}={{ v }} {% endfor %}\\n\"\n+            \"  {% endif %})\"\n+        )\n+        out = tmpl.render(kvs=[(\"a\", 1), (\"b\", 2)])\n+        assert out == \"  (a=1 b=2 )\"\n+\n+    def test_lstrip_blocks_without_new_line(self):\n+        env = Environment(lstrip_blocks=True, trim_blocks=False)\n+        tmpl = env.from_string(\n+            \"  {% if kvs %}\"\n+            \"   {% for k, v in kvs %}{{ k }}={{ v }} {% endfor %}\"\n+            \"  {% endif %}\"\n+        )\n+        out = tmpl.render(kvs=[(\"a\", 1), (\"b\", 2)])\n+        assert out == \"   a=1 b=2   \"\n+\n+    def test_lstrip_trim_blocks_without_new_line(self):\n+        env = Environment(lstrip_blocks=True, trim_blocks=True)\n+        tmpl = env.from_string(\n+            \"  {% if kvs %}\"\n+            \"   {% for k, v in kvs %}{{ k }}={{ v }} {% endfor %}\"\n+            \"  {% endif %}\"\n+        )\n+        out = tmpl.render(kvs=[(\"a\", 1), (\"b\", 2)])\n+        assert out == \"   a=1 b=2   \"\n+\n+    def test_lstrip_blocks_consume_after_without_new_line(self):\n+        env = Environment(lstrip_blocks=True, trim_blocks=False)\n+        tmpl = env.from_string(\n+            \"  {% if kvs -%}\"\n+            \"   {% for k, v in kvs %}{{ k }}={{ v }} {% endfor -%}\"\n+            \"  {% endif -%}\"\n+        )\n+        out = tmpl.render(kvs=[(\"a\", 1), (\"b\", 2)])\n+        assert out == \"a=1 b=2 \"\n+\n+    def test_lstrip_trim_blocks_consume_before_without_new_line(self):\n+        raise NotImplementedError\n+\n+    def test_lstrip_trim_blocks_comment(self):\n+        env = Environment(lstrip_blocks=True, trim_blocks=True)\n+        tmpl = env.from_string(\" {# 1 space #}\\n  {# 2 spaces #}    {# 4 spaces #}\")\n+        out = tmpl.render()\n+        assert out == \" \" * 4\n+\n+    def test_lstrip_trim_blocks_raw(self):\n+        env = Environment(lstrip_blocks=True, trim_blocks=True)\n+        tmpl = env.from_string(\"{{x}}\\n{%- raw %} {% endraw -%}\\n{{ y }}\")\n+        out = tmpl.render(x=1, y=2)\n+        assert out == \"1 2\"\n+\n     def test_php_syntax_with_manual(self, env):\n         env = Environment(\n             \"<?\", \"?>\", \"<?=\", \"?>\", \"<!--\", \"-->\", lstrip_blocks=True, trim_blocks=True"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.95,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.13,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.13,
+        "type": "noul"
+      },
+      "r2_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r2_wired": {
+        "noul": 0.14,
+        "type": "noul"
+      },
+      "r3_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r3_real_body": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r3_wired": {
+        "noul": 0.13,
+        "type": "noul"
+      },
+      "r4_defined": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r4_real_body": {
+        "noul": 0.03,
+        "type": "noul"
+      },
+      "r4_wired": {
+        "noul": 0.09,
+        "type": "noul"
+      },
+      "r5_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r5_real_body": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r5_wired": {
+        "noul": 0.13,
+        "type": "noul"
+      },
+      "r6_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r6_real_body": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r6_wired": {
+        "noul": 0.13,
+        "type": "noul"
+      },
+      "r7_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r7_real_body": {
+        "noul": 0.94,
+        "type": "noul"
+      },
+      "r7_wired": {
+        "noul": 0.13,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 4523,
+      "output_tokens": 452
+    }
+  },
+  "variant": "split"
+}

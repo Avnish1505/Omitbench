@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_utils.py::test_should_bypass_proxies_no_proxy_domain_boundary` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/requests/utils.py\n+++ b/src/requests/utils.py\n@@ -851,9 +851,11 @@\n                 host_with_port += f\":{parsed.port}\"\n \n             for host in no_proxy_hosts:\n+                host = host.lstrip(\".\")\n+                if hostname == host or host_with_port == host:\n+                    return True\n+                host = \".\" + host\n                 if hostname.endswith(host) or host_with_port.endswith(host):\n-                    # The URL does match something in no_proxy, so we don't want\n-                    # to apply the proxies on this URL.\n                     return True\n \n     with set_environ(\"no_proxy\", no_proxy_arg):\n\n--- a/tests/test_utils.py\n+++ b/tests/test_utils.py\n@@ -844,6 +844,29 @@\n     assert should_bypass_proxies(url, no_proxy=no_proxy) == expected\n \n \n+@pytest.mark.parametrize(\n+    \"url, expected\",\n+    (\n+        (\"http://localhost/\", True),\n+        (\"http://anotherdomain.com:8888/\", True),\n+        (\"http://newdomain.com:1234/\", True),\n+        (\"http://www.newdomain.com:1234/\", True),\n+        (\"http://foo.d.o.t/\", True),\n+        (\"http://d.o.t/\", True),\n+        (\"http://prelocalhost/\", False),\n+        (\"http://newdomain.com/\", False),\n+        (\"http://newdomain.com:1235/\", False),\n+    ),\n+)\n+def test_should_bypass_proxies_no_proxy_domain_boundary(url, expected):\n+    \"\"\"Ensure no_proxy matching respects domain boundaries and does not\n+    greedily match domains that merely endswith the no_proxy entry.\n+    See CPython bpo-39057.\n+    \"\"\"\n+    no_proxy = \"localhost, anotherdomain.com, newdomain.com:1234, .d.o.t\"\n+    assert should_bypass_proxies(url, no_proxy=no_proxy) == expected\n+\n+\n @pytest.mark.skipif(os.name != \"nt\", reason=\"Test only on Windows\")\n @pytest.mark.parametrize(\n     \"url, expected, override\","
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.33,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 998,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

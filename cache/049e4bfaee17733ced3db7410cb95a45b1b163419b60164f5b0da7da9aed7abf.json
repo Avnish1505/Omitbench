@@ -1,0 +1,67 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_basic.py::cli_optional` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_basic.py::cli_variadic` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_basic.py::test_choice_argument_optional_metavar` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_basic.py::test_datetime_argument_optional_metavar` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/click/core.py\n+++ b/src/click/core.py\n@@ -3571,9 +3571,14 @@\n         var = self.type.get_metavar(param=self, ctx=ctx)\n         if not var:\n             var = self.name.upper()\n+        # Types like ``Choice`` and ``DateTime`` already surround their metavar\n+        # with square brackets to enumerate the allowed values. Reuse those\n+        # outer brackets as the optional-argument indicator instead of wrapping\n+        # the metavar in a second pair, which would produce ``[[a|b|c]]``.\n+        already_bracketed = var.startswith(\"[\") and var.endswith(\"]\")\n         if self.deprecated:\n             var += \"!\"\n-        if not self.required:\n+        if not self.required and not already_bracketed:\n             var = f\"[{var}]\"\n         if self.nargs != 1:\n             var += \"...\"\n\n--- a/tests/test_basic.py\n+++ b/tests/test_basic.py\n@@ -569,6 +569,35 @@\n     assert result.output.startswith(\"Usage: cli [OPTIONS] {not-none|none}\\n\")\n \n \n+def test_choice_argument_optional_metavar(runner):\n+    \"\"\"Optional Choice arguments reuse the type's brackets instead of doubling.\n+\n+    Without this the usage line for a ``Choice`` argument with ``nargs=-1`` or\n+    ``required=False`` rendered as ``[[a|b|c]]``: one pair from ``Choice`` to\n+    enumerate values, a second pair from ``Argument`` to mark it optional.\n+    \"\"\"\n+\n+    @click.command()\n+    @click.argument(\"method\", type=click.Choice([\"foo\", \"bar\", \"baz\"]), nargs=-1)\n+    def cli_variadic(method):\n+        pass\n+\n+    @click.command()\n+    @click.argument(\"method\", type=click.Choice([\"foo\", \"bar\", \"baz\"]), required=False)\n+    def cli_optional(method):\n+        pass\n+\n+    variadic = runner.invoke(cli_variadic, [\"--help\"]).output\n+    assert \"Usage: cli-variadic [OPTIONS] [foo|bar|baz]...\\n\" in variadic\n+    assert \"[[foo|bar|baz]]\" not in variadic\n+\n+    optional = runner.invoke(cli_optional, [\"--help\"]).output\n+    assert \"Usage: cli-optional [OPTIONS] [foo|bar|baz]\\n\" in optional\n+    assert \"[[foo|bar|baz]]\" not in optional\n+\n+\n+\n+\n def test_datetime_option_default(runner):\n     @click.command()\n     @click.option(\"--start_date\", type=click.DateTime())"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.8,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.59,
+        "type": "noul"
+      },
+      "r2": {
+        "noul": 0.23,
+        "type": "noul"
+      },
+      "r3": {
+        "noul": 0.01,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1815,
+      "output_tokens": 72
+    }
+  },
+  "variant": "single"
+}

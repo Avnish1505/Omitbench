@@ -1,0 +1,91 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_itsdangerous/test_serializer.py::Signer256`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_itsdangerous/test_serializer.py::Signer256`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_itsdangerous/test_serializer.py::Signer256`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_itsdangerous/test_serializer.py::test_iter_unsigners`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_itsdangerous/test_serializer.py::test_iter_unsigners`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_itsdangerous/test_serializer.py::test_iter_unsigners`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/tests/test_itsdangerous/test_jws.py\n+++ b/tests/test_itsdangerous/test_jws.py\n@@ -22,6 +22,7 @@\n     test_signer_cls = None\n     test_signer_kwargs = None\n     test_fallback_signers = None\n+    test_iter_unsigners = None\n \n     @pytest.mark.parametrize(\"algorithm_name\", (\"HS256\", \"HS384\", \"HS512\", \"none\"))\n     def test_algorithm(self, serializer_factory, algorithm_name):\n\n--- a/tests/test_itsdangerous/test_serializer.py\n+++ b/tests/test_itsdangerous/test_serializer.py\n@@ -6,6 +6,7 @@\n \n import pytest\n \n+from itsdangerous import Signer\n from itsdangerous.exc import BadPayload\n from itsdangerous.exc import BadSignature\n from itsdangerous.serializer import Serializer\n@@ -144,6 +145,25 @@\n \n         assert fallback_serializer.loads(signed) == value\n \n+    def test_iter_unsigners(self, serializer, serializer_factory):\n+        class Signer256(serializer.signer):\n+            raise NotImplementedError\n+\n+        serializer = serializer_factory(\n+            secret_key=\"secret_key\",\n+            fallback_signers=[\n+                {\"digest_method\": hashlib.sha256},\n+                (Signer, {\"digest_method\": hashlib.sha256}),\n+                Signer256,\n+            ],\n+        )\n+\n+        unsigners = serializer.iter_unsigners()\n+        assert next(unsigners).digest_method == hashlib.sha1\n+\n+        for signer in unsigners:\n+            assert signer.digest_method == hashlib.sha256\n+\n \n def test_digests():\n     factory = partial(Serializer, secret_key=\"dev key\", salt=\"dev salt\")"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.07,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.91,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.61,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1441,
+      "output_tokens": 116
+    }
+  },
+  "variant": "split"
+}

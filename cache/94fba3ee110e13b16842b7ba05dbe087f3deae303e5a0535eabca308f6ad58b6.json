@@ -1,0 +1,307 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `jinja2/asyncsupport.py::last`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `jinja2/asyncsupport.py::last`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `jinja2/asyncsupport.py::last`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `jinja2/asyncsupport.py::nextitem`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `jinja2/asyncsupport.py::nextitem`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `jinja2/asyncsupport.py::nextitem`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `jinja2/asyncsupport.py::revindex`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `jinja2/asyncsupport.py::revindex`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `jinja2/asyncsupport.py::revindex`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `jinja2/asyncsupport.py::revindex0`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `jinja2/asyncsupport.py::revindex0`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `jinja2/asyncsupport.py::revindex0`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `jinja2/runtime.py::depth`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `jinja2/runtime.py::depth`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `jinja2/runtime.py::depth`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r5_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `jinja2/runtime.py::index`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r5_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `jinja2/runtime.py::index`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r5_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `jinja2/runtime.py::index`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r6_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `jinja2/runtime.py::revindex`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r6_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `jinja2/runtime.py::revindex`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r6_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `jinja2/runtime.py::revindex`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r7_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `jinja2/runtime.py::revindex0`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r7_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `jinja2/runtime.py::revindex0`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r7_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `jinja2/runtime.py::revindex0`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/jinja2/asyncsupport.py\n+++ b/jinja2/asyncsupport.py\n@@ -9,14 +9,17 @@\n     :copyright: (c) 2017 by the Jinja Team.\n     :license: BSD, see LICENSE for more details.\n \"\"\"\n-import sys\n import asyncio\n import inspect\n+import sys\n from functools import update_wrapper\n \n-from jinja2.utils import concat, internalcode, Markup\n from jinja2.environment import TemplateModule\n-from jinja2.runtime import LoopContextBase, _last_iteration\n+from jinja2.runtime import LoopContext\n+from jinja2.utils import concat\n+from jinja2.utils import internalcode\n+from jinja2.utils import Markup\n+from jinja2.utils import missing\n \n \n async def concat_async(async_gen):\n@@ -187,73 +190,80 @@\n         yield item\n \n \n-class AsyncLoopContext(LoopContextBase):\n-\n-    def __init__(self, async_iterator, undefined, after, length, recurse=None,\n-                 depth0=0):\n-        LoopContextBase.__init__(self, undefined, recurse, depth0)\n-        self._async_iterator = async_iterator\n-        self._after = after\n-        self._length = length\n-\n-    @property\n-    def length(self):\n-        if self._length is None:\n-            raise TypeError('Loop length for some iterators cannot be '\n-                            'lazily calculated in async mode')\n+class AsyncLoopContext(LoopContext):\n+    _to_iterator = staticmethod(auto_aiter)\n+\n+    @property\n+    async def length(self):\n+        if self._length is not None:\n+            return self._length\n+\n+        try:\n+            self._length = len(self._iterable)\n+        except TypeError:\n+            iterable = [x async for x in self._iterator]\n+            self._iterator = self._to_iterator(iterable)\n+            self._length = len(iterable) + self.index + (self._after is not missing)\n+\n         return self._length\n \n-    def __aiter__(self):\n-        return AsyncLoopContextIterator(self)\n-\n-\n-class AsyncLoopContextIterator(object):\n-    __slots__ = ('context',)\n-\n-    def __init__(self, context):\n-        self.context = context\n+    @property\n+    async def revindex0(self):\n+        return await self.length - self.index\n+\n+    @property\n+    async def revindex(self):\n+        return await self.length - self.index0\n+\n+    async def _peek_next(self):\n+        if self._after is not missing:\n+            return self._after\n+\n+        try:\n+            self._after = await self._iterator.__anext__()\n+        except StopAsyncIteration:\n+            self._after = missing\n+\n+        return self._after\n+\n+    @property\n+    async def last(self):\n+        return await self._peek_next() is missing\n+\n+    @property\n+    async def nextitem(self):\n+        rv = await self._peek_next()\n+\n+        if rv is missing:\n+            return self._undefined(\"there is no next item\")\n+\n+        return rv\n \n     def __aiter__(self):\n         return self\n \n     async def __anext__(self):\n-        ctx = self.context\n-        ctx.index0 += 1\n-        if ctx._after is _last_iteration:\n-            raise StopAsyncIteration()\n-        ctx._before = ctx._current\n-        ctx._current = ctx._after\n-        try:\n-            ctx._after = await ctx._async_iterator.__anext__()\n-        except StopAsyncIteration:\n-            ctx._after = _last_iteration\n-        return ctx._current, ctx\n+        if self._after is not missing:\n+            rv = self._after\n+            self._after = missing\n+        else:\n+            rv = await self._iterator.__anext__()\n+\n+        self.index0 += 1\n+        self._before = self._current\n+        self._current = rv\n+        return rv, self\n \n \n async def make_async_loop_context(iterable, undefined, recurse=None, depth0=0):\n-    # Length is more complicated and less efficient in async mode.  The\n-    # reason for this is that we cannot know if length will be used\n-    # upfront but because length is a property we cannot lazily execute it\n-    # later.  This means that we need to buffer it up and measure :(\n-    #\n-    # We however only do this for actual iterators, not for async\n-    # iterators as blocking here does not seem like the best idea in the\n-    # world.\n-    try:\n-        length = len(iterable)\n-    except (TypeError, AttributeError):\n-        if not hasattr(iterable, '__aiter__'):\n-            iterable = tuple(iterable)\n-            length = len(iterable)\n-        else:\n-            length = None\n-    async_iterator = auto_aiter(iterable)\n-    try:\n-        after = await async_iterator.__anext__()\n-    except StopAsyncIteration:\n-        after = _last_iteration\n-    return AsyncLoopContext(async_iterator, undefined, after, length, recurse,\n-                            depth0)\n+    import warnings\n+    warnings.warn(\n+        \"This template must be recompiled with at least Jinja 2.11, or\"\n+        \" it will fail in 3.0.\",\n+        DeprecationWarning,\n+        stacklevel=2,\n+    )\n+    return AsyncLoopContext(iterable, undefined, recurse, depth0)\n \n \n patch_all()\n\n--- a/jinja2/compiler.py\n+++ b/jinja2/compiler.py\n@@ -705,7 +705,7 @@\n \n         if self.environment.is_async:\n             self.writeline('from jinja2.asyncsupport import auto_await, '\n-                           'auto_aiter, make_async_loop_context')\n+                           'auto_aiter, AsyncLoopContext')\n \n         # if we want a deferred initialization we cannot move the\n         # environment into a local name\n@@ -1095,7 +1095,7 @@\n         self.visit(node.target, loop_frame)\n         if extended_loop:\n             if self.environment.is_async:\n-                self.write(', %s in await make_async_loop_context(' % loop_ref)\n+                self.write(', %s in AsyncLoopContext(' % loop_ref)\n             else:\n                 self.write(', %s in LoopContext(' % loop_ref)\n         else:\n\n--- a/jinja2/runtime.py\n+++ b/jinja2/runtime.py\n@@ -343,134 +343,197 @@\n         return rv\n \n \n-class LoopContextBase(object):\n-    \"\"\"A loop context for dynamic iteration.\"\"\"\n-\n-    _before = _first_iteration\n-    _current = _first_iteration\n-    _after = _last_iteration\n+@implements_iterator\n+class LoopContext:\n+    \"\"\"A wrapper iterable for dynamic ``for`` loops, with information\n+    about the loop and iteration.\n+    \"\"\"\n+\n+    #: Current iteration of the loop, starting at 0.\n+    index0 = -1\n+\n     _length = None\n-\n-    def __init__(self, undefined, recurse=None, depth0=0):\n+    _after = missing\n+    _current = missing\n+    _before = missing\n+    _last_changed_value = missing\n+\n+    def __init__(self, iterable, undefined, recurse=None, depth0=0):\n+        \"\"\"\n+        :param iterable: Iterable to wrap.\n+        :param undefined: :class:`Undefined` class to use for next and\n+            previous items.\n+        :param recurse: The function to render the loop body when the\n+            loop is marked recursive.\n+        :param depth0: Incremented when looping recursively.\n+        \"\"\"\n+        self._iterable = iterable\n+        self._iterator = self._to_iterator(iterable)\n         self._undefined = undefined\n         self._recurse = recurse\n-        self.index0 = -1\n+        #: How many levels deep a recursive loop currently is, starting at 0.\n         self.depth0 = depth0\n-        self._last_checked_value = missing\n-\n-    def cycle(self, *args):\n-        \"\"\"Cycles among the arguments with the current loop index.\"\"\"\n-        if not args:\n-            raise TypeError('no items for cycling given')\n-        return args[self.index0 % len(args)]\n-\n-    def changed(self, *value):\n-        \"\"\"Checks whether the value has changed since the last call.\"\"\"\n-        if self._last_checked_value != value:\n-            self._last_checked_value = value\n-            return True\n-        return False\n-\n-    first = property(lambda x: x.index0 == 0)\n-    last = property(lambda x: x._after is _last_iteration)\n-    index = property(lambda x: x.index0 + 1)\n-    revindex = property(lambda x: x.length - x.index0)\n-    revindex0 = property(lambda x: x.length - x.index)\n-    depth = property(lambda x: x.depth0 + 1)\n+\n+    @staticmethod\n+    def _to_iterator(iterable):\n+        return iter(iterable)\n+\n+    @property\n+    def length(self):\n+        \"\"\"Length of the iterable.\n+\n+        If the iterable is a generator or otherwise does not have a\n+        size, it is eagerly evaluated to get a size.\n+        \"\"\"\n+        if self._length is not None:\n+            return self._length\n+\n+        try:\n+            self._length = len(self._iterable)\n+        except TypeError:\n+            iterable = list(self._iterator)\n+            self._iterator = self._to_iterator(iterable)\n+            self._length = len(iterable) + self.index + (self._after is not missing)\n+\n+        return self._length\n+\n+    def __len__(self):\n+        return self.length\n+\n+    @property\n+    def depth(self):\n+        \"\"\"How many levels deep a recursive loop currently is, starting at 1.\"\"\"\n+        return self.depth0 + 1\n+\n+    @property\n+    def index(self):\n+        \"\"\"Current iteration of the loop, starting at 1.\"\"\"\n+        return self.index0 + 1\n+\n+    @property\n+    def revindex0(self):\n+        \"\"\"Number of iterations from the end of the loop, ending at 0.\n+\n+        Requires calculating :attr:`length`.\n+        \"\"\"\n+        return self.length - self.index\n+\n+    @property\n+    def revindex(self):\n+        \"\"\"Number of iterations from the end of the loop, ending at 1.\n+\n+        Requires calculating :attr:`length`.\n+        \"\"\"\n+        return self.length - self.index0\n+\n+    @property\n+    def first(self):\n+        \"\"\"Whether this is the first iteration of the loop.\"\"\"\n+        return self.index0 == 0\n+\n+    def _peek_next(self):\n+        \"\"\"Return the next element in the iterable, or :data:`missing`\n+        if the iterable is exhausted. Only peeks one item ahead, caching\n+        the result in :attr:`_last` for use in subsequent checks. The\n+        cache is reset when :meth:`__next__` is called.\n+        \"\"\"\n+        if self._after is not missing:\n+            return self._after\n+\n+        self._after = next(self._iterator, missing)\n+        return self._after\n+\n+    @property\n+    def last(self):\n+        \"\"\"Whether this is the last iteration of the loop.\n+\n+        Causes the iterable to advance early. See\n+        :func:`itertools.groupby` for issues this can cause.\n+        The :func:`groupby` filter avoids that issue.\n+        \"\"\"\n+        return self._peek_next() is missing\n \n     @property\n     def previtem(self):\n-        if self._before is _first_iteration:\n-            return self._undefined('there is no previous item')\n+        \"\"\"The item in the previous iteration. Undefined during the\n+        first iteration.\n+        \"\"\"\n+        if self.first:\n+            return self._undefined(\"there is no previous item\")\n+\n         return self._before\n \n     @property\n     def nextitem(self):\n-        if self._after is _last_iteration:\n-            return self._undefined('there is no next item')\n-        return self._after\n-\n-    def __len__(self):\n-        return self.length\n-\n-    @internalcode\n-    def loop(self, iterable):\n-        if self._recurse is None:\n-            raise TypeError('Tried to call non recursive loop.  Maybe you '\n-                            \"forgot the 'recursive' modifier.\")\n-        return self._recurse(iterable, self._recurse, self.depth0 + 1)\n-\n-    # a nifty trick to enhance the error message if someone tried to call\n-    # the loop without or with too many arguments.\n-    __call__ = loop\n-    del loop\n-\n-    def __repr__(self):\n-        return '<%s %r/%r>' % (\n-            self.__class__.__name__,\n-            self.index,\n-            self.length\n-        )\n-\n-\n-class LoopContext(LoopContextBase):\n-\n-    def __init__(self, iterable, undefined, recurse=None, depth0=0):\n-        LoopContextBase.__init__(self, undefined, recurse, depth0)\n-        self._iterator = iter(iterable)\n-        self._iterations_done_count = 0\n-        self._length = None\n-        self._after = self._safe_next()\n-\n-    @property\n-    def length(self):\n-        \"\"\"\n-        Getting length of an iterator is a costly operation which requires extra memory\n-        and traversing in linear time. So make it an on demand param that iterates from\n-        the point onwards of the iterator and accounts for iterated elements.\n-        \"\"\"\n-        if self._length is None:\n-            # if was not possible to get the length of the iterator when\n-            # the loop context was created (ie: iterating over a generator)\n-            # we have to convert the iterable into a sequence and use the\n-            # length of that + the number of iterations so far.\n-            iterable = tuple(self._iterator)\n-            self._iterator = iter(iterable)\n-            self._length = len(iterable) + self._iterations_done_count\n-        return self._length\n-\n-    def __iter__(self):\n-        return LoopContextIterator(self)\n-\n-    def _safe_next(self):\n-        try:\n-            tmp = next(self._iterator)\n-            self._iterations_done_count += 1\n-            return tmp\n-        except StopIteration:\n-            return _last_iteration\n-\n-\n-@implements_iterator\n-class LoopContextIterator(object):\n-    \"\"\"The iterator for a loop context.\"\"\"\n-    __slots__ = ('context',)\n-\n-    def __init__(self, context):\n-        self.context = context\n+        \"\"\"The item in the next iteration. Undefined during the last\n+        iteration.\n+\n+        Causes the iterable to advance early. See\n+        :func:`itertools.groupby` for issues this can cause.\n+        The :func:`groupby` filter avoids that issue.\n+        \"\"\"\n+        rv = self._peek_next()\n+\n+        if rv is missing:\n+            return self._undefined(\"there is no next item\")\n+\n+        return rv\n+\n+    def cycle(self, *args):\n+        \"\"\"Return a value from the given args, cycling through based on\n+        the current :attr:`index0`.\n+\n+        :param args: One or more values to cycle through.\n+        \"\"\"\n+        if not args:\n+            raise TypeError(\"no items for cycling given\")\n+\n+        return args[self.index0 % len(args)]\n+\n+    def changed(self, *value):\n+        \"\"\"Return ``True`` if previously called with a different value\n+        (including when called for the first time).\n+\n+        :param value: One or more values to compare to the last call.\n+        \"\"\"\n+        if self._last_changed_value != value:\n+            self._last_changed_value = value\n+            return True\n+\n+        return False\n \n     def __iter__(self):\n         return self\n \n+    @internalcode\n     def __next__(self):\n-        ctx = self.context\n-        ctx.index0 += 1\n-        if ctx._after is _last_iteration:\n-            raise StopIteration()\n-        ctx._before = ctx._current\n-        ctx._current = ctx._after\n-        ctx._after = ctx._safe_next()\n-        return ctx._current, ctx\n+        if self._after is not missing:\n+            rv = self._after\n+            self._after = missing\n+        else:\n+            rv = next(self._iterator)\n+\n+        self.index0 += 1\n+        self._before = self._current\n+        self._current = rv\n+        return rv, self\n+\n+    def __call__(self, iterable):\n+        \"\"\"When iterating over nested data, render the body of the loop\n+        recursively with the given inner iterable data.\n+\n+        The loop must have the ``recursive`` marker for this to work.\n+        \"\"\"\n+        if self._recurse is None:\n+            raise TypeError(\n+                \"The loop must have the 'recursive' marker to be\"\n+                \" called recursively.\"\n+            )\n+\n+        return self._recurse(iterable, self._recurse, depth=self.depth)\n+\n+    def __repr__(self):\n+        return \"<%s %d/%d>\" % (self.__class__.__name__, self.index, self.length)\n \n \n class Macro(object):"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.64,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.94,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.3,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.83,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.95,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.2,
+        "type": "noul"
+      },
+      "r2_defined": {
+        "noul": 0.81,
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "noul": 0.94,
+        "type": "noul"
+      },
+      "r2_wired": {
+        "noul": 0.26,
+        "type": "noul"
+      },
+      "r3_defined": {
+        "noul": 0.93,
+        "type": "noul"
+      },
+      "r3_real_body": {
+        "noul": 0.95,
+        "type": "noul"
+      },
+      "r3_wired": {
+        "noul": 0.24,
+        "type": "noul"
+      },
+      "r4_defined": {
+        "noul": 0.71,
+        "type": "noul"
+      },
+      "r4_real_body": {
+        "noul": 0.95,
+        "type": "noul"
+      },
+      "r4_wired": {
+        "noul": 0.66,
+        "type": "noul"
+      },
+      "r5_defined": {
+        "noul": 0.42,
+        "type": "noul"
+      },
+      "r5_real_body": {
+        "noul": 0.92,
+        "type": "noul"
+      },
+      "r5_wired": {
+        "noul": 0.72,
+        "type": "noul"
+      },
+      "r6_defined": {
+        "noul": 0.76,
+        "type": "noul"
+      },
+      "r6_real_body": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r6_wired": {
+        "noul": 0.22,
+        "type": "noul"
+      },
+      "r7_defined": {
+        "noul": 0.76,
+        "type": "noul"
+      },
+      "r7_real_body": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r7_wired": {
+        "noul": 0.32,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 7244,
+      "output_tokens": 452
+    }
+  },
+  "variant": "split"
+}

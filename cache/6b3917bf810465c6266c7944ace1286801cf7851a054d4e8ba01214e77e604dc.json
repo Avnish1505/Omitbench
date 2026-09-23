@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_handler_non_attrs_instance`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_handler_non_attrs_instance`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_make.py::test_handler_non_attrs_instance`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/attr/_make.py\n+++ b/src/attr/_make.py\n@@ -1890,16 +1890,16 @@\n \n def fields(cls):\n     \"\"\"\n-    Return the tuple of *attrs* attributes for a class.\n+    Return the tuple of *attrs* attributes for a class or instance.\n \n     The tuple also allows accessing the fields by their names (see below for\n     examples).\n \n     Args:\n-        cls (type): Class to introspect.\n+        cls (type): Class or instance to introspect.\n \n     Raises:\n-        TypeError: If *cls* is not a class.\n+        TypeError: If *cls* is neither a class nor an *attrs* instance.\n \n         attrs.exceptions.NotAnAttrsClassError:\n             If *cls* is not an *attrs* class.\n@@ -1910,12 +1910,17 @@\n     .. versionchanged:: 16.2.0 Returned tuple allows accessing the fields\n        by name.\n     .. versionchanged:: 23.1.0 Add support for generic classes.\n+    .. versionchanged:: 26.1.0 Add support for instances.\n     \"\"\"\n     generic_base = get_generic_base(cls)\n \n     if generic_base is None and not isinstance(cls, type):\n-        msg = \"Passed object must be a class.\"\n-        raise TypeError(msg)\n+        type_ = type(cls)\n+        if getattr(type_, \"__attrs_attrs__\", None) is None:\n+            msg = \"Passed object must be a class or attrs instance.\"\n+            raise TypeError(msg)\n+\n+        return fields(type_)\n \n     attrs = getattr(cls, \"__attrs_attrs__\", None)\n \n\n--- a/tests/test_make.py\n+++ b/tests/test_make.py\n@@ -1550,12 +1550,12 @@\n     @given(simple_classes())\n     def test_instance(self, C):\n         \"\"\"\n-        Raises `TypeError` on non-classes.\n-        \"\"\"\n-        with pytest.raises(TypeError) as e:\n-            fields(C())\n-\n-        assert \"Passed object must be a class.\" == e.value.args[0]\n+        Returns the class fields for *attrs* instances too.\n+        \"\"\"\n+        assert fields(C()) is fields(C)\n+\n+    def test_handler_non_attrs_instance(self):\n+        raise NotImplementedError\n \n     def test_handler_non_attrs_class(self):\n         \"\"\""
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.95,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.04,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.11,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1176,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

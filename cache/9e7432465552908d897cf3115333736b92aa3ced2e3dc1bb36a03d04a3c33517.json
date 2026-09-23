@@ -1,0 +1,163 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_wsgi.py::FakeRawIOStream`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_wsgi.py::FakeRawIOStream`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_wsgi.py::FakeRawIOStream`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_wsgi.py::read`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_wsgi.py::read`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_wsgi.py::read`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_wsgi.py::readline`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_wsgi.py::readline`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_wsgi.py::readline`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_wsgi.py::test_limited_stream_read_with_raw_io`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_wsgi.py::test_limited_stream_read_with_raw_io`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_wsgi.py::test_limited_stream_read_with_raw_io`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/tests/test_wsgi.py\n+++ b/tests/test_wsgi.py\n@@ -178,6 +178,45 @@\n     stream = wsgi.LimitedStream(io_, 255)\n     with pytest.raises(ClientDisconnected):\n         stream.read()\n+\n+\n+def test_limited_stream_read_with_raw_io():\n+    class FakeRawIOStream:\n+        \"\"\"\n+        Fakes Raw IO behavior where fewer bytes can be returned by ``read`` than what\n+        are asked for through `size`.\n+        \"\"\"\n+\n+        buf: bytes\n+\n+        def __init__(self, buf: bytes):\n+            self.buf = buf\n+            self.pos = 0\n+\n+\n+        def readline(self):\n+            raise NotImplementedError\n+\n+    data = b\"foo\"\n+    stream = wsgi.LimitedStream(FakeRawIOStream(data), 4)  # noqa\n+    assert stream.read(5) == b\"f\"\n+    assert stream.read(5) == b\"o\"\n+    assert stream.read(5) == b\"o\"\n+    # the underlying stream has fewer bytes than the expected limit\n+    with pytest.raises(ClientDisconnected):\n+        stream.read(5)\n+\n+    stream = wsgi.LimitedStream(FakeRawIOStream(data), 3)  # noqa\n+    assert stream.read(5) == b\"f\"\n+    assert stream.read(5) == b\"o\"\n+    assert stream.read(5) == b\"o\"\n+    assert stream.read(5) == b\"\"\n+\n+    stream = wsgi.LimitedStream(FakeRawIOStream(data), 3)  # noqa\n+    assert stream.read() == b\"foo\"\n+\n+    stream = wsgi.LimitedStream(FakeRawIOStream(data), 2)  # noqa\n+    assert stream.read() == b\"fo\"\n \n \n def test_get_host_fallback():"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.63,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.14,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.22,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.56,
+        "type": "noul"
+      },
+      "r2_defined": {
+        "noul": 0.24,
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "noul": 0.1,
+        "type": "noul"
+      },
+      "r2_wired": {
+        "noul": 0.24,
+        "type": "noul"
+      },
+      "r3_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r3_real_body": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r3_wired": {
+        "noul": 0.17,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 2175,
+      "output_tokens": 228
+    }
+  },
+  "variant": "split"
+}

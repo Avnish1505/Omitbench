@@ -1,0 +1,43 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/sansio/test_utils.py::test_get_host_missing` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/sansio/test_utils.py::test_get_host_unix` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/werkzeug/sansio/utils.py\n+++ b/src/werkzeug/sansio/utils.py\n@@ -92,6 +92,10 @@\n     up of valid characters, but this does not check validity beyond that. If a\n     list of trusted domains is given, the domain must match one.\n \n+    If the host header is not available, such as for HTTP/0.9 and 1.0, or it has\n+    invalid characters, the empty string is returned. Subdomain and host\n+    routing, and external URL building, will not work in these cases.\n+\n     :param scheme: The protocol of the request. Used to omit the standard ports\n         80 and 443.\n     :param host_header: The ``Host`` header value.\n@@ -107,7 +111,11 @@\n     :return: Host, with port if necessary.\n     :raise .SecurityError: If the host is not trusted.\n \n-    .. versionchanged:: 3.2\n+    .. versionchanged:: 3.1.8\n+        The empty string is again returned if no host header value is available,\n+        or if the characters are invalid.\n+\n+    .. versionchanged:: 3.1.7\n         The characters of the host value are validated. The empty string is no\n         longer allowed if no header value is available.\n \n@@ -130,7 +138,8 @@\n \n         host = f\"{host}:{server[1]}\"\n     else:\n-        host = \"\"\n+        # Pass through empty host from HTTP/0.9 and 1.0.\n+        return \"\"\n \n     if scheme in {\"http\", \"ws\"}:\n         host = host.removesuffix(\":80\")\n@@ -138,7 +147,11 @@\n         host = host.removesuffix(\":443\")\n \n     if not host_is_trusted(host, trusted_hosts):\n-        raise SecurityError(f\"Host {host!r} is not trusted.\")\n+        if trusted_hosts:\n+            raise SecurityError(f\"Host {host!r} is not trusted.\")\n+\n+        # Invalid characters, treat as empty.\n+        return \"\"\n \n     return host\n \n\n--- a/tests/sansio/test_utils.py\n+++ b/tests/sansio/test_utils.py\n@@ -2,7 +2,6 @@\n \n import pytest\n \n-from werkzeug.exceptions import SecurityError\n from werkzeug.sansio.utils import get_content_length\n from werkzeug.sansio.utils import get_host\n \n@@ -37,23 +36,17 @@\n     assert get_host(scheme, host_header, server) == expected\n \n \n-def test_get_host_unix_invalid() -> None:\n-    with pytest.raises(SecurityError):\n-        get_host(\"http\", None, (\"unix/socket\", None))\n \n \n-def test_get_host_missing_invalid() -> None:\n-    with pytest.raises(SecurityError):\n-        get_host(\"http\", None, None)\n+def test_get_host_missing() -> None:\n+    assert get_host(\"http\", None, None) == \"\"\n \n \n @pytest.mark.parametrize(\n-    \"value\",\n-    [\"\", \"a.test:8080@b.test\", \"a.test:port\", \"[z:443]:8080\"],\n+    \"value\", [\"\", \"a.test:8080@b.test\", \"a.test:port\", \"[z:443]:8080\"]\n )\n def test_get_host_invalid(value: str | None) -> None:\n-    with pytest.raises(SecurityError):\n-        get_host(\"http\", value, None)\n+    assert get_host(\"http\", value, None) == \"\"\n \n \n @pytest.mark.parametrize("
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.21,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.09,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1591,
+      "output_tokens": 38
+    }
+  },
+  "variant": "single"
+}

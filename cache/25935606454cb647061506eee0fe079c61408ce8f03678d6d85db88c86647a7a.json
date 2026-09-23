@@ -1,0 +1,91 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/typing/typing_route.py::hello_json_dict`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/typing/typing_route.py::hello_json_dict`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/typing/typing_route.py::hello_json_dict`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/typing/typing_route.py::hello_json_list`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/typing/typing_route.py::hello_json_list`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/typing/typing_route.py::hello_json_list`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/flask/typing.py\n+++ b/src/flask/typing.py\n@@ -7,7 +7,13 @@\n \n # The possible types that are directly convertible or are a Response object.\n ResponseValue = t.Union[\n-    \"Response\", str, bytes, list, t.Dict[str, t.Any], t.Iterator[str], t.Iterator[bytes]\n+    \"Response\",\n+    str,\n+    bytes,\n+    t.List[t.Any],\n+    t.Dict[str, t.Any],\n+    t.Iterator[str],\n+    t.Iterator[bytes],\n ]\n \n # the possible types for an individual HTTP header\n\n--- a/tests/typing/typing_route.py\n+++ b/tests/typing/typing_route.py\n@@ -25,7 +25,17 @@\n \n @app.route(\"/json\")\n def hello_json() -> Response:\n-    return jsonify({\"response\": \"Hello, World!\"})\n+    return jsonify(\"Hello, World!\")\n+\n+\n+@app.route(\"/json/dict\")\n+def hello_json_dict() -> t.Dict[str, t.Any]:\n+    return {\"response\": \"Hello, World!\"}\n+\n+\n+@app.route(\"/json/dict\")\n+def hello_json_list() -> t.List[t.Any]:\n+    return [{\"message\": \"Hello\"}, {\"message\": \"World\"}]\n \n \n @app.route(\"/generator\")"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.85,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.18,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.86,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.16,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1305,
+      "output_tokens": 116
+    }
+  },
+  "variant": "split"
+}

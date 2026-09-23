@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/client/test_async_client.py::test_async_mock_transport`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/client/test_async_client.py::test_async_mock_transport`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/client/test_async_client.py::test_async_mock_transport`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/httpx/_transports/mock.py\n+++ b/httpx/_transports/mock.py\n@@ -1,3 +1,4 @@\n+import asyncio\n from typing import Callable, List, Optional, Tuple\n \n import httpcore\n@@ -47,7 +48,17 @@\n             stream=stream,\n         )\n         await request.aread()\n+\n         response = self.handler(request)\n+\n+        # Allow handler to *optionally* be an `async` function.\n+        # If it is, then the `response` variable need to be awaited to actually\n+        # return the result.\n+\n+        # https://simonwillison.net/2020/Sep/2/await-me-maybe/\n+        if asyncio.iscoroutine(response):\n+            response = await response\n+\n         return (\n             response.status_code,\n             response.headers.raw,\n\n--- a/tests/client/test_async_client.py\n+++ b/tests/client/test_async_client.py\n@@ -302,3 +302,8 @@\n         assert response.status_code == 200\n         assert response.json() == {\"app\": \"mounted\"}\n \n+\n+@pytest.mark.usefixtures(\"async_environment\")\n+async def test_async_mock_transport():\n+    raise NotImplementedError\n+"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.94,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.04,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.08,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 913,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

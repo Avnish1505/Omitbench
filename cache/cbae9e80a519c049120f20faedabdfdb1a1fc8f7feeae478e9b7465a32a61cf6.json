@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_defaults.py::prefers_green` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_defaults.py::prefers_red` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_defaults.py::test_shared_param_prefers_first_default` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/click/core.py\n+++ b/src/click/core.py\n@@ -1226,6 +1226,12 @@\n         for param in iter_params_for_processing(param_order, self.get_params(ctx)):\n             _, args = param.handle_parse_result(ctx, opts, args)\n \n+        # after handling *all* parameters, do a pass over the params to rewrite\n+        # `UNSET`\n+        for name, value in ctx.params.items():\n+            if value is UNSET:\n+                ctx.params[name] = None\n+\n         if args and not ctx.allow_extra_args and not ctx.resilient_parsing:\n             ctx.fail(\n                 ngettext(\n@@ -2538,17 +2544,17 @@\n             # We skip adding the value if it was previously set by another parameter\n             # targeting the same variable name. This prevents parameters competing for\n             # the same name to override each other.\n-            and self.name not in ctx.params\n+            and (self.name not in ctx.params or ctx.params[self.name] is UNSET)\n         ):\n             # Click is logically enforcing that the name is None if the parameter is\n             # not to be exposed. We still assert it here to please the type checker.\n             assert self.name is not None, (\n                 f\"{self!r} parameter's name should not be None when exposing value.\"\n             )\n-            # Normalize UNSET values to None, as we're about to pass them to the\n-            # command function and move them to the pure-Python realm of user-written\n-            # code.\n-            ctx.params[self.name] = value if value is not UNSET else None\n+            # Do not normalize UNSET values to None at this point\n+            # It needs to be done, but doing so too early impacts multiple parameters\n+            # targeting the same variable name\n+            ctx.params[self.name] = value\n \n         return value, args\n \n\n--- a/tests/test_defaults.py\n+++ b/tests/test_defaults.py\n@@ -85,3 +85,29 @@\n     result = runner.invoke(cli, [\"foo\", \"--help\"], default_map={\"foo\": {\"name\": True}})\n     assert \"default: name\" in result.output\n \n+\n+def test_shared_param_prefers_first_default(runner):\n+    \"\"\"test that the first default is chosen when multiple flags share a param name\"\"\"\n+\n+    @click.command\n+    @click.option(\"--red\", \"color\", flag_value=\"red\")\n+    @click.option(\"--green\", \"color\", flag_value=\"green\", default=True)\n+    def prefers_green(color):\n+        click.echo(color)\n+\n+    @click.command\n+    @click.option(\"--red\", \"color\", flag_value=\"red\", default=True)\n+    @click.option(\"--green\", \"color\", flag_value=\"green\")\n+    def prefers_red(color):\n+        click.echo(color)\n+\n+    result = runner.invoke(prefers_green, [])\n+    assert \"green\" in result.output\n+    result = runner.invoke(prefers_green, [\"--red\"])\n+    assert \"red\" in result.output\n+\n+    result = runner.invoke(prefers_red, [])\n+    assert \"red\" in result.output\n+    result = runner.invoke(prefers_red, [\"--green\"])\n+    assert \"green\" in result.output\n+"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.69,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.95,
+        "type": "noul"
+      },
+      "r2": {
+        "noul": 0.21,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1700,
+      "output_tokens": 55
+    }
+  },
+  "variant": "single"
+}

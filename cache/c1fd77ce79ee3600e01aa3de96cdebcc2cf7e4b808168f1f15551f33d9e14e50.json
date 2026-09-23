@@ -1,0 +1,43 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_compat.py::attribute` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_compat.py::test_attrsinstance_subclass_protocol` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/attr/__init__.py\n+++ b/src/attr/__init__.py\n@@ -9,6 +9,7 @@\n \n from . import converters, exceptions, filters, setters, validators\n from ._cmp import cmp_using\n+from ._compat import Protocol\n from ._config import get_run_validators, set_run_validators\n from ._funcs import asdict, assoc, astuple, evolve, has, resolve_types\n from ._make import (\n@@ -31,7 +32,7 @@\n dataclass = partial(attrs, auto_attribs=True)  # happy Easter ;)\n \n \n-class AttrsInstance:\n+class AttrsInstance(Protocol):\n     pass\n \n \n\n--- a/src/attr/_compat.py\n+++ b/src/attr/_compat.py\n@@ -16,6 +16,15 @@\n PY_3_9_PLUS = sys.version_info[:2] >= (3, 9)\n PY310 = sys.version_info[:2] >= (3, 10)\n PY_3_12_PLUS = sys.version_info[:2] >= (3, 12)\n+\n+\n+if sys.version_info < (3, 8):\n+    try:\n+        from typing_extensions import Protocol\n+    except ImportError:  # pragma: no cover\n+        Protocol = object\n+else:\n+    from typing import Protocol  # noqa: F401\n \n \n def just_warn(*args, **kw):\n\n--- a/tests/test_compat.py\n+++ b/tests/test_compat.py\n@@ -3,6 +3,8 @@\n import types\n \n import pytest\n+\n+import attr\n \n \n @pytest.fixture(name=\"mp\")\n@@ -51,3 +53,13 @@\n         with pytest.raises(AttributeError, match=\"no attribute 'setdefault'\"):\n             mp.setdefault(\"x\")\n \n+\n+def test_attrsinstance_subclass_protocol():\n+    \"\"\"\n+    It's possible to subclass AttrsInstance and Protocol at once.\n+    \"\"\"\n+\n+    class Foo(attr.AttrsInstance, attr._compat.Protocol):\n+        def attribute(self) -> int:\n+            ...\n+"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.03,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.15,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1224,
+      "output_tokens": 38
+    }
+  },
+  "variant": "single"
+}

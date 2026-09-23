@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_filters.py::test_indent_width_string`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_filters.py::test_indent_width_string`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_filters.py::test_indent_width_string`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/jinja2/filters.py\n+++ b/src/jinja2/filters.py\n@@ -748,20 +748,29 @@\n     return rv\n \n \n-def do_indent(s: str, width: int = 4, first: bool = False, blank: bool = False) -> str:\n+def do_indent(\n+    s: str, width: t.Union[int, str] = 4, first: bool = False, blank: bool = False\n+) -> str:\n     \"\"\"Return a copy of the string with each line indented by 4 spaces. The\n     first line and blank lines are not indented by default.\n \n-    :param width: Number of spaces to indent by.\n+    :param width: Number of spaces, or a string, to indent by.\n     :param first: Don't skip indenting the first line.\n     :param blank: Don't skip indenting empty lines.\n \n+    .. versionchanged:: 3.0\n+        ``width`` can be a string.\n+\n     .. versionchanged:: 2.10\n         Blank lines are not indented by default.\n \n         Rename the ``indentfirst`` argument to ``first``.\n     \"\"\"\n-    indention = \" \" * width\n+    if isinstance(width, str):\n+        indention = width\n+    else:\n+        indention = \" \" * width\n+\n     newline = \"\\n\"\n \n     if isinstance(s, Markup):\n\n--- a/tests/test_filters.py\n+++ b/tests/test_filters.py\n@@ -184,6 +184,10 @@\n         Tests cases where the filter input is a Markup type\n         \"\"\"\n         self._test_indent_multiline_template(env, markup=True)\n+\n+    def test_indent_width_string(self, env):\n+        t = env.from_string(\"{{ 'jinja\\nflask'|indent(width='>>> ', first=True) }}\")\n+        assert t.render() == \">>> jinja\\n>>> flask\"\n \n     @pytest.mark.parametrize(\n         (\"value\", \"expect\"),"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.65,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1076,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

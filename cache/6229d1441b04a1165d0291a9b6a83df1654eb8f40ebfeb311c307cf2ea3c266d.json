@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_defaults.py::test_unset_in_default_map`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_defaults.py::test_unset_in_default_map`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_defaults.py::test_unset_in_default_map`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/click/core.py\n+++ b/src/click/core.py\n@@ -685,6 +685,20 @@\n             self.obj = rv = object_type()\n         return rv\n \n+    def _default_map_has(self, name: str | None) -> bool:\n+        \"\"\"Check if :attr:`default_map` contains a real value for ``name``.\n+\n+        Returns ``False`` when the key is absent, the map is ``None``,\n+        ``name`` is ``None``, or the stored value is the internal\n+        :data:`UNSET` sentinel.\n+        \"\"\"\n+        return (\n+            name is not None\n+            and self.default_map is not None\n+            and name in self.default_map\n+            and self.default_map[name] is not UNSET\n+        )\n+\n     @t.overload\n     def lookup_default(\n         self, name: str, call: t.Literal[True] = True\n@@ -705,15 +719,17 @@\n         .. versionchanged:: 8.0\n             Added the ``call`` parameter.\n         \"\"\"\n-        if self.default_map is not None:\n-            value = self.default_map.get(name)\n-\n-            if call and callable(value):\n-                return value()\n-\n-            return value\n-\n-        return None\n+        if not self._default_map_has(name):\n+            return None\n+\n+        # Assert to make the type checker happy.\n+        assert self.default_map is not None\n+        value = self.default_map[name]\n+\n+        if call and callable(value):\n+            return value()\n+\n+        return value\n \n     def fail(self, message: str) -> t.NoReturn:\n         \"\"\"Aborts the execution of the program with a specific error\n@@ -2281,9 +2297,7 @@\n         name = self.name\n         value = ctx.lookup_default(name, call=False) if name is not None else None\n \n-        if value is None and not (\n-            ctx.default_map is not None and name is not None and name in ctx.default_map\n-        ):\n+        if value is None and not ctx._default_map_has(name):\n             value = self.default\n \n         if call and callable(value):\n@@ -2325,9 +2339,7 @@\n \n         if value is UNSET:\n             default_map_value = ctx.lookup_default(self.name)  # type: ignore[arg-type]\n-            if default_map_value is not None or (\n-                ctx.default_map is not None and self.name in ctx.default_map\n-            ):\n+            if default_map_value is not None or ctx._default_map_has(self.name):\n                 value = default_map_value\n                 source = ParameterSource.DEFAULT_MAP\n \n\n--- a/tests/test_defaults.py\n+++ b/tests/test_defaults.py\n@@ -2,6 +2,7 @@\n \n import click\n from click import UNPROCESSED\n+from click._utils import UNSET\n \n \n @pytest.mark.parametrize(\n@@ -355,3 +356,5 @@\n     assert result.exit_code == 0\n     assert result.output == repr(expected)\n \n+\n+"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.08,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.13,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.73,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1324,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

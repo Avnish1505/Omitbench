@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_asgi.py::test_asgi_raw_path_should_not_include_querystring_portion` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/httpx/_transports/asgi.py\n+++ b/httpx/_transports/asgi.py\n@@ -103,7 +103,7 @@\n             \"headers\": [(k.lower(), v) for (k, v) in request.headers.raw],\n             \"scheme\": request.url.scheme,\n             \"path\": request.url.path,\n-            \"raw_path\": request.url.raw_path,\n+            \"raw_path\": request.url.raw_path.split(b\"?\")[0],\n             \"query_string\": request.url.query,\n             \"server\": (request.url.host, request.url.port),\n             \"client\": self.client,\n\n--- a/tests/test_asgi.py\n+++ b/tests/test_asgi.py\n@@ -118,6 +118,9 @@\n \n     assert response.status_code == 200\n     assert response.json() == {\"raw_path\": \"/user@example.org\"}\n+\n+\n+@pytest.mark.anyio\n \n \n @pytest.mark.anyio"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.08,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 717,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

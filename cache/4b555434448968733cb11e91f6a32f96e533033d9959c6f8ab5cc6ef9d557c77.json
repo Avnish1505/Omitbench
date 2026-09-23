@@ -1,0 +1,91 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::response_handler` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_different_connection_pool_for_mtls_settings` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_different_connection_pool_for_tls_settings_verify_True` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_different_connection_pool_for_tls_settings_verify_bundle_expired_cert` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_different_connection_pool_for_tls_settings_verify_bundle_unexpired_cert` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r5": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/testserver/server.py::TLSServer` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/requests/adapters.py\n+++ b/src/requests/adapters.py\n@@ -73,7 +73,9 @@\n \n \n def _urllib3_request_context(\n-    request: \"PreparedRequest\", verify: \"bool | str | None\"\n+    request: \"PreparedRequest\",\n+    verify: \"bool | str | None\",\n+    client_cert: \"typing.Tuple[str, str] | str | None\",\n ) -> \"(typing.Dict[str, typing.Any], typing.Dict[str, typing.Any])\":\n     host_params = {}\n     pool_kwargs = {}\n@@ -86,6 +88,14 @@\n     if isinstance(verify, str):\n         pool_kwargs[\"ca_certs\"] = verify\n     pool_kwargs[\"cert_reqs\"] = cert_reqs\n+    if client_cert is not None:\n+        if isinstance(client_cert, tuple) and len(client_cert) == 2:\n+            pool_kwargs[\"cert_file\"] = client_cert[0]\n+            pool_kwargs[\"key_file\"] = client_cert[1]\n+        else:\n+            # According to our docs, we allow users to specify just the client\n+            # cert path\n+            pool_kwargs[\"cert_file\"] = client_cert\n     host_params = {\n         \"scheme\": scheme,\n         \"host\": parsed_request_url.hostname,\n@@ -354,13 +364,13 @@\n \n         return response\n \n-    def _get_connection(self, request, verify, proxies=None):\n+    def _get_connection(self, request, verify, proxies=None, cert=None):\n         # Replace the existing get_connection without breaking things and\n         # ensure that TLS settings are considered when we interact with\n         # urllib3 HTTP Pools\n         proxy = select_proxy(request.url, proxies)\n         try:\n-            host_params, pool_kwargs = _urllib3_request_context(request, verify)\n+            host_params, pool_kwargs = _urllib3_request_context(request, verify, cert)\n         except ValueError as e:\n             raise InvalidURL(e, request=request)\n         if proxy:\n@@ -509,7 +519,7 @@\n         \"\"\"\n \n         try:\n-            conn = self._get_connection(request, verify, proxies)\n+            conn = self._get_connection(request, verify, proxies=proxies, cert=cert)\n         except LocationValueError as e:\n             raise InvalidURL(e, request=request)\n \n\n--- a/tests/test_requests.py\n+++ b/tests/test_requests.py\n@@ -7,6 +7,7 @@\n import os\n import pickle\n import re\n+import threading\n import warnings\n from unittest import mock\n \n@@ -51,6 +52,7 @@\n \n from . import SNIMissingWarning\n from .compat import StringIO\n+from .testserver.server import TLSServer, consume_socket_content\n from .utils import override_environ\n \n # Requests to this URL should always fail with a connection timeout (nothing\n@@ -2828,12 +2830,104 @@\n         assert r5 == 425\n         assert r6 == 425\n \n-    def test_different_connection_pool_for_tls_settings(self):\n-        s = requests.Session()\n-        r1 = s.get(\"https://invalid.badssl.com\", verify=False)\n-        assert r1.status_code == 421\n-        with pytest.raises(requests.exceptions.SSLError):\n-            s.get(\"https://invalid.badssl.com\")\n+    def test_different_connection_pool_for_tls_settings_verify_True(self):\n+        def response_handler(sock):\n+            consume_socket_content(sock, timeout=0.5)\n+            sock.send(\n+                b\"HTTP/1.1 200 OK\\r\\n\"\n+                b\"Content-Length: 18\\r\\n\\r\\n\"\n+                b'\\xff\\xfe{\\x00\"\\x00K0\"\\x00=\\x00\"\\x00\\xab0\"\\x00\\r\\n'\n+            )\n+\n+        s = requests.Session()\n+        close_server = threading.Event()\n+        server = TLSServer(\n+            handler=response_handler,\n+            wait_to_close_event=close_server,\n+            requests_to_handle=3,\n+            cert_chain=\"tests/certs/expired/server/server.pem\",\n+            keyfile=\"tests/certs/expired/server/server.key\",\n+        )\n+\n+        with server as (host, port):\n+            url = f\"https://{host}:{port}\"\n+            r1 = s.get(url, verify=False)\n+            assert r1.status_code == 200\n+\n+            # Cannot verify self-signed certificate\n+            with pytest.raises(requests.exceptions.SSLError):\n+                s.get(url)\n+\n+            close_server.set()\n+        assert 2 == len(s.adapters[\"https://\"].poolmanager.pools)\n+\n+    def test_different_connection_pool_for_tls_settings_verify_bundle_expired_cert(\n+        self,\n+    ):\n+        def response_handler(sock):\n+            consume_socket_content(sock, timeout=0.5)\n+            sock.send(\n+                b\"HTTP/1.1 200 OK\\r\\n\"\n+                b\"Content-Length: 18\\r\\n\\r\\n\"\n+                b'\\xff\\xfe{\\x00\"\\x00K0\"\\x00=\\x00\"\\x00\\xab0\"\\x00\\r\\n'\n+            )\n+\n+        s = requests.Session()\n+        close_server = threading.Event()\n+        server = TLSServer(\n+            handler=response_handler,\n+            wait_to_close_event=close_server,\n+            requests_to_handle=3,\n+            cert_chain=\"tests/certs/expired/server/server.pem\",\n+            keyfile=\"tests/certs/expired/server/server.key\",\n+        )\n+\n+        with server as (host, port):\n+            url = f\"https://{host}:{port}\"\n+            r1 = s.get(url, verify=False)\n+            assert r1.status_code == 200\n+\n+            # Has right trust bundle, but certificate expired\n+            with pytest.raises(requests.exceptions.SSLError):\n+                s.get(url, verify=\"tests/certs/expired/ca/ca.crt\")\n+\n+            close_server.set()\n+        assert 2 == len(s.adapters[\"https://\"].poolmanager.pools)\n+\n+    def test_different_connection_pool_for_tls_settings_verify_bundle_unexpired_cert(\n+        self,\n+    ):\n+        def response_handler(sock):\n+            consume_socket_content(sock, timeout=0.5)\n+            sock.send(\n+                b\"HTTP/1.1 200 OK\\r\\n\"\n+                b\"Content-Length: 18\\r\\n\\r\\n\"\n+                b'\\xff\\xfe{\\x00\"\\x00K0\"\\x00=\\x00\"\\x00\\xab0\"\\x00\\r\\n'\n+            )\n+\n+        s = requests.Session()\n+        close_server = threading.Event()\n+        server = TLSServer(\n+            handler=response_handler,\n+            wait_to_close_event=close_server,\n+            requests_to_handle=3,\n+            cert_chain=\"tests/certs/valid/server/server.pem\",\n+            keyfile=\"tests/certs/valid/server/server.key\",\n+        )\n+\n+        with server as (host, port):\n+            url = f\"https://{host}:{port}\"\n+            r1 = s.get(url, verify=False)\n+            assert r1.status_code == 200\n+\n+            r2 = s.get(url, verify=\"tests/certs/valid/ca/ca.crt\")\n+            assert r2.status_code == 200\n+\n+            close_server.set()\n+        assert 2 == len(s.adapters[\"https://\"].poolmanager.pools)\n+\n+    def test_different_connection_pool_for_mtls_settings(self):\n+        raise NotImplementedError\n \n \n def test_json_decode_errors_are_serializable_deserializable():\n\n--- a/tests/testserver/server.py\n+++ b/tests/testserver/server.py\n@@ -1,5 +1,6 @@\n import select\n import socket\n+import ssl\n import threading\n \n \n@@ -133,3 +134,44 @@\n         self.join()\n         return False  # allow exceptions to propagate\n \n+\n+class TLSServer(Server):\n+    def __init__(\n+        self,\n+        *,\n+        handler=None,\n+        host=\"localhost\",\n+        port=0,\n+        requests_to_handle=1,\n+        wait_to_close_event=None,\n+        cert_chain=None,\n+        keyfile=None,\n+        mutual_tls=False,\n+        cacert=None,\n+    ):\n+        super().__init__(\n+            handler=handler,\n+            host=host,\n+            port=port,\n+            requests_to_handle=requests_to_handle,\n+            wait_to_close_event=wait_to_close_event,\n+        )\n+        self.cert_chain = cert_chain\n+        self.keyfile = keyfile\n+        self.ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)\n+        self.ssl_context.load_cert_chain(self.cert_chain, keyfile=self.keyfile)\n+        self.mutual_tls = mutual_tls\n+        self.cacert = cacert\n+        if mutual_tls:\n+            # For simplicity, we're going to assume that the client cert is\n+            # issued by the same CA as our Server certificate\n+            self.ssl_context.verify_mode = ssl.CERT_OPTIONAL\n+            self.ssl_context.load_verify_locations(self.cacert)\n+\n+    def _create_socket_and_bind(self):\n+        sock = socket.socket()\n+        sock = self.ssl_context.wrap_socket(sock, server_side=True)\n+        sock.bind((self.host, self.port))\n+        sock.listen()\n+        return sock\n+"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.89,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.02,
+        "type": "noul"
+      },
+      "r2": {
+        "noul": 0.21,
+        "type": "noul"
+      },
+      "r3": {
+        "noul": 0.25,
+        "type": "noul"
+      },
+      "r4": {
+        "noul": 0.21,
+        "type": "noul"
+      },
+      "r5": {
+        "noul": 0.98,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 3912,
+      "output_tokens": 106
+    }
+  },
+  "variant": "single"
+}

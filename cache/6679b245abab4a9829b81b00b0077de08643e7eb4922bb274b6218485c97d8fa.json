@@ -1,0 +1,43 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_api.py::Error` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_api.py::test_undefined_attribute_error` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/jinja2/utils.py\n+++ b/src/jinja2/utils.py\n@@ -165,11 +165,15 @@\n         return \"None\"\n     elif obj is Ellipsis:\n         return \"Ellipsis\"\n+\n+    cls = type(obj)\n+\n     # __builtin__ in 2.x, builtins in 3.x\n-    if obj.__class__.__module__ in (\"__builtin__\", \"builtins\"):\n-        name = obj.__class__.__name__\n+    if cls.__module__ in (\"__builtin__\", \"builtins\"):\n+        name = cls.__name__\n     else:\n-        name = obj.__class__.__module__ + \".\" + obj.__class__.__name__\n+        name = cls.__module__ + \".\" + cls.__name__\n+\n     return \"%s object\" % name\n \n \n\n--- a/tests/test_api.py\n+++ b/tests/test_api.py\n@@ -269,6 +269,21 @@\n         with pytest.raises(AttributeError):\n             Undefined(\"Foo\").__dict__\n \n+    def test_undefined_attribute_error(self):\n+        # Django's LazyObject turns the __class__ attribute into a\n+        # property that resolves the wrapped function. If that wrapped\n+        # function raises an AttributeError, printing the repr of the\n+        # object in the undefined message would cause a RecursionError.\n+        class Error(object):\n+            @property\n+            def __class__(self):\n+                raise AttributeError()\n+\n+        u = Undefined(obj=Error(), name=\"hello\")\n+\n+        with pytest.raises(UndefinedError):\n+            getattr(u, \"recursion\", None)\n+\n     def test_logging_undefined(self):\n         _messages = []\n "
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.94,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.21,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1136,
+      "output_tokens": 38
+    }
+  },
+  "variant": "single"
+}

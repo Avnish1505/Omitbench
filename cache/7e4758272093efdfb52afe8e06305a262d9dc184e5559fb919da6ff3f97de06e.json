@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/conftest.py::nosan_server`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/conftest.py::nosan_server`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/conftest.py::nosan_server`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/tests/conftest.py\n+++ b/tests/conftest.py\n@@ -1,7 +1,19 @@\n # -*- coding: utf-8 -*-\n+\n+try:\n+    from http.server import HTTPServer\n+    from http.server import SimpleHTTPRequestHandler\n+except ImportError:\n+    from BaseHTTPServer import HTTPServer\n+    from SimpleHTTPServer import SimpleHTTPRequestHandler \n+\n+import ssl\n+import tempfile\n+import threading\n \n import pytest\n from requests.compat import urljoin\n+import trustme\n \n \n def prepare_url(value):\n@@ -23,3 +35,25 @@\n def httpbin_secure(httpbin_secure):\n     return prepare_url(httpbin_secure)\n \n+\n+@pytest.fixture\n+def nosan_server(tmp_path_factory):\n+    tmpdir = tmp_path_factory.mktemp(\"certs\")\n+    ca = trustme.CA()\n+    # only commonName, no subjectAltName\n+    server_cert = ca.issue_cert(common_name=u\"localhost\")\n+    ca_bundle = str(tmpdir / \"ca.pem\")\n+    ca.cert_pem.write_to_path(ca_bundle)\n+\n+    context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)\n+    server_cert.configure_cert(context)\n+    server = HTTPServer((\"localhost\", 0), SimpleHTTPRequestHandler)\n+    server.socket = context.wrap_socket(server.socket, server_side=True)\n+    server_thread = threading.Thread(target=server.serve_forever)\n+    server_thread.start()\n+\n+    yield \"localhost\", server.server_address[1], ca_bundle\n+\n+    server.shutdown()\n+    server_thread.join()\n+\n\n--- a/tests/test_requests.py\n+++ b/tests/test_requests.py\n@@ -874,8 +874,9 @@\n         r = requests.get(httpbin(), cert='.')\n         assert r.status_code == 200\n \n-    def test_https_warnings(self, httpbin_secure, httpbin_ca_bundle):\n+    def test_https_warnings(self, nosan_server):\n         \"\"\"warnings are emitted with requests.get\"\"\"\n+        host, port, ca_bundle = nosan_server\n         if HAS_MODERN_SSL or HAS_PYOPENSSL:\n             warnings_expected = ('SubjectAltNameWarning', )\n         else:\n@@ -885,8 +886,7 @@\n \n         with pytest.warns(None) as warning_records:\n             warnings.simplefilter('always')\n-            requests.get(httpbin_secure('status', '200'),\n-                         verify=httpbin_ca_bundle)\n+            requests.get(\"https://localhost:{}/\".format(port), verify=ca_bundle)\n \n         warning_records = [item for item in warning_records\n                            if item.category.__name__ != 'ResourceWarning']"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.84,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.96,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1260,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

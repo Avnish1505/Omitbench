@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `src/jinja2/environment.py::to_list`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `src/jinja2/environment.py::to_list`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `src/jinja2/environment.py::to_list`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/jinja2/environment.py\n+++ b/src/jinja2/environment.py\n@@ -2,6 +2,7 @@\n options.\n \"\"\"\n import os\n+import sys\n import typing\n import typing as t\n import weakref\n@@ -1278,8 +1279,22 @@\n         if self.environment.is_async:\n             import asyncio\n \n-            loop = asyncio.get_event_loop()\n-            return loop.run_until_complete(self.render_async(*args, **kwargs))\n+            close = False\n+\n+            if sys.version_info < (3, 7):\n+                loop = asyncio.get_event_loop()\n+            else:\n+                try:\n+                    loop = asyncio.get_running_loop()\n+                except RuntimeError:\n+                    loop = asyncio.new_event_loop()\n+                    close = True\n+\n+            try:\n+                return loop.run_until_complete(self.render_async(*args, **kwargs))\n+            finally:\n+                if close:\n+                    loop.close()\n \n         ctx = self.new_context(dict(*args, **kwargs))\n \n@@ -1326,14 +1341,15 @@\n         if self.environment.is_async:\n             import asyncio\n \n-            loop = asyncio.get_event_loop()\n-            async_gen = self.generate_async(*args, **kwargs)\n-\n-            try:\n-                while True:\n-                    yield loop.run_until_complete(async_gen.__anext__())\n-            except StopAsyncIteration:\n-                return\n+\n+            if sys.version_info < (3, 7):\n+                loop = asyncio.get_event_loop()\n+                out = loop.run_until_complete(to_list())\n+            else:\n+                out = asyncio.run(to_list())\n+\n+            yield from out\n+            return\n \n         ctx = self.new_context(dict(*args, **kwargs))\n \n\n--- a/tests/test_async.py\n+++ b/tests/test_async.py\n@@ -1,4 +1,5 @@\n import asyncio\n+import sys\n \n import pytest\n \n@@ -13,9 +14,17 @@\n from jinja2.nativetypes import NativeEnvironment\n \n \n-def run(coro):\n-    loop = asyncio.get_event_loop()\n-    return loop.run_until_complete(coro)\n+if sys.version_info < (3, 7):\n+\n+    def run(coro):\n+        loop = asyncio.get_event_loop()\n+        return loop.run_until_complete(coro)\n+\n+\n+else:\n+\n+    def run(coro):\n+        return asyncio.run(coro)\n \n \n def test_basic_async():"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.1,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.16,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.79,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1172,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

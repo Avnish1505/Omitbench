@@ -1,0 +1,31 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_nativetypes.py::test_block` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/jinja2/runtime.py\n+++ b/src/jinja2/runtime.py\n@@ -367,7 +367,7 @@\n \n     @internalcode\n     async def _async_call(self) -> str:\n-        rv = concat(\n+        rv = self._context.environment.concat(  # type: ignore\n             [x async for x in self._stack[self._depth](self._context)]  # type: ignore\n         )\n \n@@ -381,7 +381,9 @@\n         if self._context.environment.is_async:\n             return self._async_call()  # type: ignore\n \n-        rv = concat(self._stack[self._depth](self._context))\n+        rv = self._context.environment.concat(  # type: ignore\n+            self._stack[self._depth](self._context)\n+        )\n \n         if self._context.eval_ctx.autoescape:\n             return Markup(rv)\n\n--- a/tests/test_nativetypes.py\n+++ b/tests/test_nativetypes.py\n@@ -161,3 +161,5 @@\n     assert result == 2\n     assert isinstance(result, int)\n \n+\n+"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.03,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 756,
+      "output_tokens": 21
+    }
+  },
+  "variant": "single"
+}

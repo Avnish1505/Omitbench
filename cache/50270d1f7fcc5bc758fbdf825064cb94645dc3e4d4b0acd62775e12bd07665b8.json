@@ -1,0 +1,199 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_respect_proxy_env_on_get`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_respect_proxy_env_on_get`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_respect_proxy_env_on_get`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_respect_proxy_env_on_request`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_respect_proxy_env_on_request`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_respect_proxy_env_on_request`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_respect_proxy_env_on_send_self_prepared_request`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_respect_proxy_env_on_send_self_prepared_request`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_respect_proxy_env_on_send_self_prepared_request`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_respect_proxy_env_on_send_session_prepared_request`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_respect_proxy_env_on_send_session_prepared_request`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_respect_proxy_env_on_send_session_prepared_request`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_respect_proxy_env_on_send_with_redirects`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_respect_proxy_env_on_send_with_redirects`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_requests.py::test_respect_proxy_env_on_send_with_redirects`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/requests/sessions.py\n+++ b/requests/sessions.py\n@@ -633,7 +633,7 @@\n         kwargs.setdefault('stream', self.stream)\n         kwargs.setdefault('verify', self.verify)\n         kwargs.setdefault('cert', self.cert)\n-        kwargs.setdefault('proxies', self.proxies)\n+        kwargs.setdefault('proxies', self.rebuild_proxies(request, self.proxies))\n \n         # It's possible that users might accidentally send a Request object.\n         # Guard against that specific failure case.\n\n--- a/tests/test_requests.py\n+++ b/tests/test_requests.py\n@@ -40,6 +40,9 @@\n # listening on that port)\n TARPIT = 'http://10.255.255.1'\n \n+# This is to avoid waiting the timeout of using TARPIT\n+INVALID_PROXY='http://localhost:1'\n+\n try:\n     from ssl import SSLContext\n     del SSLContext\n@@ -550,6 +553,42 @@\n \n         with pytest.raises(InvalidProxyURL):\n             requests.get(httpbin(), proxies={'http': 'http:///example.com:8080'})\n+\n+    def test_respect_proxy_env_on_send_self_prepared_request(self, httpbin):\n+        with override_environ(http_proxy=INVALID_PROXY):\n+            with pytest.raises(ProxyError):\n+                session = requests.Session()\n+                request = requests.Request('GET', httpbin())\n+                session.send(request.prepare())\n+\n+    def test_respect_proxy_env_on_send_session_prepared_request(self, httpbin):\n+        with override_environ(http_proxy=INVALID_PROXY):\n+            with pytest.raises(ProxyError):\n+                session = requests.Session()\n+                request = requests.Request('GET', httpbin())\n+                prepared = session.prepare_request(request)\n+                session.send(prepared)\n+\n+    def test_respect_proxy_env_on_send_with_redirects(self, httpbin):\n+        with override_environ(http_proxy=INVALID_PROXY):\n+            with pytest.raises(ProxyError):\n+                session = requests.Session()\n+                url = httpbin('redirect/1')\n+                print(url)\n+                request = requests.Request('GET', url)\n+                session.send(request.prepare())\n+\n+    def test_respect_proxy_env_on_get(self, httpbin):\n+        with override_environ(http_proxy=INVALID_PROXY):\n+            with pytest.raises(ProxyError):\n+                session = requests.Session()\n+                session.get(httpbin())\n+\n+    def test_respect_proxy_env_on_request(self, httpbin):\n+        with override_environ(http_proxy=INVALID_PROXY):\n+            with pytest.raises(ProxyError):\n+                session = requests.Session()\n+                session.request(method='GET', url=httpbin())\n \n     def test_basicauth_with_netrc(self, httpbin):\n         auth = ('user', 'pass')"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.69,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.37,
+        "type": "noul"
+      },
+      "r2_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r2_wired": {
+        "noul": 0.8,
+        "type": "noul"
+      },
+      "r3_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r3_real_body": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r3_wired": {
+        "noul": 0.47,
+        "type": "noul"
+      },
+      "r4_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r4_real_body": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r4_wired": {
+        "noul": 0.57,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 2808,
+      "output_tokens": 284
+    }
+  },
+  "variant": "split"
+}

@@ -1,0 +1,43 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_regression.py::is_foo` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_regression.py::test_pass_context_with_select` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/jinja2/filters.py\n+++ b/src/jinja2/filters.py\n@@ -1780,7 +1780,7 @@\n         args = args[1 + off :]\n \n         def func(item: t.Any) -> t.Any:\n-            return context.environment.call_test(name, item, args, kwargs)\n+            return context.environment.call_test(name, item, args, kwargs, context)\n \n     except LookupError:\n         func = bool  # type: ignore\n\n--- a/tests/test_regression.py\n+++ b/tests/test_regression.py\n@@ -737,6 +737,9 @@\n         )\n         assert tmpl.render() == \"hellohellohello\"\n \n+    def test_pass_context_with_select(self, env):\n+        raise NotImplementedError\n+\n \n @pytest.mark.parametrize(\"unicode_char\", [\"\\N{FORM FEED}\", \"\\x85\"])\n def test_unicode_whitespace(env, unicode_char):"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.03,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.01,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 958,
+      "output_tokens": 38
+    }
+  },
+  "variant": "single"
+}

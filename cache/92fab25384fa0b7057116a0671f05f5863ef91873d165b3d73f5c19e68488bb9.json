@@ -1,0 +1,199 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `src/flask/app.py::redirect`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `src/flask/app.py::redirect`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `src/flask/app.py::redirect`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `src/flask/helpers.py::redirect`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `src/flask/helpers.py::redirect`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `src/flask/helpers.py::redirect`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_helpers.py::redirect`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_helpers.py::redirect`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_helpers.py::redirect`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_helpers.py::test_redirect_no_app`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_helpers.py::test_redirect_no_app`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_helpers.py::test_redirect_no_app`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_helpers.py::test_redirect_with_app`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_helpers.py::test_redirect_with_app`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r4_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_helpers.py::test_redirect_with_app`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/flask/__init__.py\n+++ b/src/flask/__init__.py\n@@ -1,7 +1,6 @@\n from markupsafe import escape\n from markupsafe import Markup\n from werkzeug.exceptions import abort as abort\n-from werkzeug.utils import redirect as redirect\n \n from . import json as json\n from .app import Flask as Flask\n@@ -23,6 +22,7 @@\n from .helpers import get_flashed_messages as get_flashed_messages\n from .helpers import get_template_attribute as get_template_attribute\n from .helpers import make_response as make_response\n+from .helpers import redirect as redirect\n from .helpers import send_file as send_file\n from .helpers import send_from_directory as send_from_directory\n from .helpers import stream_with_context as stream_with_context\n\n--- a/src/flask/app.py\n+++ b/src/flask/app.py\n@@ -22,6 +22,7 @@\n from werkzeug.routing import RequestRedirect\n from werkzeug.routing import RoutingException\n from werkzeug.routing import Rule\n+from werkzeug.utils import redirect as _wz_redirect\n from werkzeug.wrappers import Response as BaseResponse\n \n from . import cli\n@@ -1630,6 +1631,16 @@\n \n         return asgiref_async_to_sync(func)\n \n+    def redirect(self, location: str, code: int = 302) -> BaseResponse:\n+        \"\"\"Create a redirect response object.\n+\n+        :param location: the url of the redirect\n+        :param code: http return code\n+\n+        .. versionadded:: 2.2\n+        \"\"\"\n+        return _wz_redirect(location, code=code, Response=self.response_class)\n+\n     def make_response(self, rv: ResponseReturnValue) -> Response:\n         \"\"\"Convert the return value from a view function to an instance of\n         :attr:`response_class`.\n\n--- a/src/flask/helpers.py\n+++ b/src/flask/helpers.py\n@@ -12,6 +12,7 @@\n import werkzeug.utils\n from werkzeug.routing import BuildError\n from werkzeug.urls import url_quote\n+from werkzeug.utils import redirect as _wz_redirect\n \n from .globals import _app_ctx_stack\n from .globals import _request_ctx_stack\n@@ -21,6 +22,7 @@\n from .signals import message_flashed\n \n if t.TYPE_CHECKING:  # pragma: no cover\n+    from werkzeug.wrappers import Response as BaseResponse\n     from .wrappers import Response\n \n \n@@ -338,6 +340,28 @@\n     if anchor is not None:\n         rv += f\"#{url_quote(anchor)}\"\n     return rv\n+\n+\n+def redirect(\n+    location: str, code: int = 302, Response: t.Optional[t.Type[\"BaseResponse\"]] = None\n+) -> \"BaseResponse\":\n+    \"\"\"Create a redirect response object.\n+\n+    If :data:`~flask.current_app` is available, it will use\n+    :meth:`~flask.app.Flask.redirect`, otherwise it will use\n+    :func:`werkzeug.utils.redirect`.\n+\n+    :param location: The URL to redirect to.\n+    :param code: The status code for the redirect.\n+    :param Response: The response class to use. Not used when\n+        ``current_app`` is active, which uses ``app.response_class``.\n+\n+    .. versionadded:: 2.2\n+    \"\"\"\n+    if current_app:\n+        return current_app.redirect(location, code=code)\n+\n+    return _wz_redirect(location, code=code, Response=Response)\n \n \n def get_template_attribute(template_name: str, attribute: str) -> t.Any:\n\n--- a/tests/test_helpers.py\n+++ b/tests/test_helpers.py\n@@ -156,6 +156,22 @@\n         assert flask.url_for(\"myview\", _method=\"GET\") == \"/myview/\"\n         assert flask.url_for(\"myview\", id=42, _method=\"GET\") == \"/myview/42\"\n         assert flask.url_for(\"myview\", _method=\"POST\") == \"/myview/create\"\n+\n+\n+def test_redirect_no_app():\n+    response = flask.redirect(\"https://localhost\", 307)\n+    assert response.location == \"https://localhost\"\n+    assert response.status_code == 307\n+\n+\n+def test_redirect_with_app(app):\n+    def redirect(location, code=302):\n+        raise ValueError\n+\n+    app.redirect = redirect\n+\n+    with app.app_context(), pytest.raises(ValueError):\n+        flask.redirect(\"other\")\n \n \n class TestNoImports:"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.99,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.8,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.99,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.66,
+        "type": "noul"
+      },
+      "r2_defined": {
+        "noul": 0.25,
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "noul": 0.21,
+        "type": "noul"
+      },
+      "r2_wired": {
+        "noul": 0.74,
+        "type": "noul"
+      },
+      "r3_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r3_real_body": {
+        "noul": 0.95,
+        "type": "noul"
+      },
+      "r3_wired": {
+        "noul": 0.69,
+        "type": "noul"
+      },
+      "r4_defined": {
+        "noul": 0.95,
+        "type": "noul"
+      },
+      "r4_real_body": {
+        "noul": 0.95,
+        "type": "noul"
+      },
+      "r4_wired": {
+        "noul": 0.59,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 3123,
+      "output_tokens": 284
+    }
+  },
+  "variant": "split"
+}

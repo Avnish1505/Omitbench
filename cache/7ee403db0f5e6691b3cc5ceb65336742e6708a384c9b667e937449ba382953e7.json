@@ -1,0 +1,43 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_itsdangerous/test_serializer.py::Signer256` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_itsdangerous/test_serializer.py::test_iter_unsigners` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/tests/test_itsdangerous/test_jws.py\n+++ b/tests/test_itsdangerous/test_jws.py\n@@ -22,6 +22,7 @@\n     test_signer_cls = None\n     test_signer_kwargs = None\n     test_fallback_signers = None\n+    test_iter_unsigners = None\n \n     @pytest.mark.parametrize(\"algorithm_name\", (\"HS256\", \"HS384\", \"HS512\", \"none\"))\n     def test_algorithm(self, serializer_factory, algorithm_name):\n\n--- a/tests/test_itsdangerous/test_serializer.py\n+++ b/tests/test_itsdangerous/test_serializer.py\n@@ -6,6 +6,7 @@\n \n import pytest\n \n+from itsdangerous import Signer\n from itsdangerous.exc import BadPayload\n from itsdangerous.exc import BadSignature\n from itsdangerous.serializer import Serializer\n@@ -144,6 +145,25 @@\n \n         assert fallback_serializer.loads(signed) == value\n \n+    def test_iter_unsigners(self, serializer, serializer_factory):\n+        class Signer256(serializer.signer):\n+            default_digest_method = hashlib.sha256\n+\n+        serializer = serializer_factory(\n+            secret_key=\"secret_key\",\n+            fallback_signers=[\n+                {\"digest_method\": hashlib.sha256},\n+                (Signer, {\"digest_method\": hashlib.sha256}),\n+                Signer256,\n+            ],\n+        )\n+\n+        unsigners = serializer.iter_unsigners()\n+        assert next(unsigners).digest_method == hashlib.sha1\n+\n+        for signer in unsigners:\n+            assert signer.digest_method == hashlib.sha256\n+\n \n def test_digests():\n     factory = partial(Serializer, secret_key=\"dev key\", salt=\"dev salt\")"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.93,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.29,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1167,
+      "output_tokens": 38
+    }
+  },
+  "variant": "single"
+}

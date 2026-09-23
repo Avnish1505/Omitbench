@@ -186,8 +186,18 @@ closed and branch deleted after confirming.
 
 ## T7 — B7: TypeSafe Jev as a probabilistic judge, and its calibration
 
-**Status:** harness built, tests pass, pre-registered (ASSUMPTIONS.md §13).
-Real sweep not yet run.
+**Status: DONE (2026-09-23).** Pre-registered (ASSUMPTIONS.md §13), then
+swept under Python 3.12.14 against `jev-1.13.0`. Both shards cover 310/310
+iids, 919 variants and 2184 requirements (the same key set as B5), with 0
+parse failures and 0 errors. Estimated spend $0.1707 for the sweep, plus
+$0.0001 for the single call re-sent after the 520 retry fix. Outcome, read
+only against the four pre-registered rules (README "B7" section,
+`results/b7_analyze.txt`, `results/b7_calibration.txt`): **B7 loses to B5 in
+both variants (rule 1), and "calibrated on this task" is NOT SUPPORTED for
+either (rule 2).** Its probabilities do beat its own 0/1 labels (rule 3).
+Abstain-band coverage and confident-subset MCC are reported (rule 4). Four
+harness fixes are recorded in the §13 harness notes: interpreter pin,
+User-Agent, 520-524 retry, and the calibration-script tie rule.
 
 **Why this is not the "fifth detector" the list below rules out.** That line
 is about adding *proposed* detectors until one beats the baselines. B7 is a

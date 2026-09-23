@@ -1,0 +1,67 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_cli.py::check` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_cli.py::test_app_cli_has_app_context` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_cli.py::test_appgroup_app_context` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r3": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_cli.py::test_flaskgroup_app_context` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/examples/tutorial/flaskr/db.py\n+++ b/examples/tutorial/flaskr/db.py\n@@ -3,7 +3,6 @@\n import click\n from flask import current_app\n from flask import g\n-from flask.cli import with_appcontext\n \n \n def get_db():\n@@ -39,7 +38,6 @@\n \n \n @click.command(\"init-db\")\n-@with_appcontext\n def init_db_command():\n     \"\"\"Clear existing data and create new tables.\"\"\"\n     init_db()\n\n--- a/src/flask/cli.py\n+++ b/src/flask/cli.py\n@@ -410,15 +410,25 @@\n \n def with_appcontext(f):\n     \"\"\"Wraps a callback so that it's guaranteed to be executed with the\n-    script's application context.  If callbacks are registered directly\n-    to the ``app.cli`` object then they are wrapped with this function\n-    by default unless it's disabled.\n+    script's application context.\n+\n+    Custom commands (and their options) registered under ``app.cli`` or\n+    ``blueprint.cli`` will always have an app context available, this\n+    decorator is not required in that case.\n+\n+    .. versionchanged:: 2.2\n+        The app context is active for subcommands as well as the\n+        decorated callback. The app context is always available to\n+        ``app.cli`` command and parameter callbacks.\n     \"\"\"\n \n     @click.pass_context\n     def decorator(__ctx, *args, **kwargs):\n-        with __ctx.ensure_object(ScriptInfo).load_app().app_context():\n-            return __ctx.invoke(f, *args, **kwargs)\n+        if not current_app:\n+            app = __ctx.ensure_object(ScriptInfo).load_app()\n+            __ctx.with_resource(app.app_context())\n+\n+        return __ctx.invoke(f, *args, **kwargs)\n \n     return update_wrapper(decorator, f)\n \n@@ -587,6 +597,10 @@\n         Added the ``-A/--app``, ``-E/--env``, ``--debug/--no-debug``,\n         and ``-e/--env-file`` options.\n \n+    .. versionchanged:: 2.2\n+        An app context is pushed when running ``app.cli`` commands, so\n+        ``@with_appcontext`` is no longer required for those commands.\n+\n     .. versionchanged:: 1.0\n         If installed, python-dotenv will be used to load environment variables\n         from :file:`.env` and :file:`.flaskenv` files.\n@@ -660,9 +674,18 @@\n         # Look up commands provided by the app, showing an error and\n         # continuing if the app couldn't be loaded.\n         try:\n-            return info.load_app().cli.get_command(ctx, name)\n+            app = info.load_app()\n         except NoAppException as e:\n             click.secho(f\"Error: {e.format_message()}\\n\", err=True, fg=\"red\")\n+            return None\n+\n+        # Push an app context for the loaded app unless it is already\n+        # active somehow. This makes the context available to parameter\n+        # and command callbacks without needing @with_appcontext.\n+        if not current_app or current_app._get_current_object() is not app:\n+            ctx.with_resource(app.app_context())\n+\n+        return app.cli.get_command(ctx, name)\n \n     def list_commands(self, ctx):\n         self._load_plugin_commands()\n\n--- a/tests/test_cli.py\n+++ b/tests/test_cli.py\n@@ -13,6 +13,7 @@\n from _pytest.monkeypatch import notset\n from click.testing import CliRunner\n \n+from flask import _app_ctx_stack\n from flask import Blueprint\n from flask import current_app\n from flask import Flask\n@@ -310,6 +311,10 @@\n             lazy._flush_bg_loading_exception()\n \n \n+def test_app_cli_has_app_context(app, runner):\n+    raise NotImplementedError\n+\n+\n def test_with_appcontext(runner):\n     @click.command()\n     @with_appcontext\n@@ -323,12 +328,12 @@\n     assert result.output == \"testapp\\n\"\n \n \n-def test_appgroup(runner):\n+def test_appgroup_app_context(runner):\n     @click.group(cls=AppGroup)\n     def cli():\n         pass\n \n-    @cli.command(with_appcontext=True)\n+    @cli.command()\n     def test():\n         click.echo(current_app.name)\n \n@@ -336,7 +341,7 @@\n     def subgroup():\n         pass\n \n-    @subgroup.command(with_appcontext=True)\n+    @subgroup.command()\n     def test2():\n         click.echo(current_app.name)\n \n@@ -351,7 +356,7 @@\n     assert result.output == \"testappgroup\\n\"\n \n \n-def test_flaskgroup(runner):\n+def test_flaskgroup_app_context(runner):\n     def create_app():\n         return Flask(\"flaskgroup\")\n "
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.02,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.01,
+        "type": "noul"
+      },
+      "r2": {
+        "noul": 0.27,
+        "type": "noul"
+      },
+      "r3": {
+        "noul": 0.17,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 2369,
+      "output_tokens": 72
+    }
+  },
+  "variant": "single"
+}

@@ -1,0 +1,91 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/sansio/test_utils.py::test_get_host_missing`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/sansio/test_utils.py::test_get_host_missing`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/sansio/test_utils.py::test_get_host_missing`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/sansio/test_utils.py::test_get_host_unix`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/sansio/test_utils.py::test_get_host_unix`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/sansio/test_utils.py::test_get_host_unix`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/werkzeug/sansio/utils.py\n+++ b/src/werkzeug/sansio/utils.py\n@@ -92,6 +92,10 @@\n     up of valid characters, but this does not check validity beyond that. If a\n     list of trusted domains is given, the domain must match one.\n \n+    If the host header is not available, such as for HTTP/0.9 and 1.0, or it has\n+    invalid characters, the empty string is returned. Subdomain and host\n+    routing, and external URL building, will not work in these cases.\n+\n     :param scheme: The protocol of the request. Used to omit the standard ports\n         80 and 443.\n     :param host_header: The ``Host`` header value.\n@@ -107,7 +111,11 @@\n     :return: Host, with port if necessary.\n     :raise .SecurityError: If the host is not trusted.\n \n-    .. versionchanged:: 3.2\n+    .. versionchanged:: 3.1.8\n+        The empty string is again returned if no host header value is available,\n+        or if the characters are invalid.\n+\n+    .. versionchanged:: 3.1.7\n         The characters of the host value are validated. The empty string is no\n         longer allowed if no header value is available.\n \n@@ -130,7 +138,8 @@\n \n         host = f\"{host}:{server[1]}\"\n     else:\n-        host = \"\"\n+        # Pass through empty host from HTTP/0.9 and 1.0.\n+        return \"\"\n \n     if scheme in {\"http\", \"ws\"}:\n         host = host.removesuffix(\":80\")\n@@ -138,7 +147,11 @@\n         host = host.removesuffix(\":443\")\n \n     if not host_is_trusted(host, trusted_hosts):\n-        raise SecurityError(f\"Host {host!r} is not trusted.\")\n+        if trusted_hosts:\n+            raise SecurityError(f\"Host {host!r} is not trusted.\")\n+\n+        # Invalid characters, treat as empty.\n+        return \"\"\n \n     return host\n \n\n--- a/tests/sansio/test_utils.py\n+++ b/tests/sansio/test_utils.py\n@@ -2,7 +2,6 @@\n \n import pytest\n \n-from werkzeug.exceptions import SecurityError\n from werkzeug.sansio.utils import get_content_length\n from werkzeug.sansio.utils import get_host\n \n@@ -37,23 +36,19 @@\n     assert get_host(scheme, host_header, server) == expected\n \n \n-def test_get_host_unix_invalid() -> None:\n-    with pytest.raises(SecurityError):\n-        get_host(\"http\", None, (\"unix/socket\", None))\n+def test_get_host_unix() -> None:\n+    raise NotImplementedError\n \n \n-def test_get_host_missing_invalid() -> None:\n-    with pytest.raises(SecurityError):\n-        get_host(\"http\", None, None)\n+def test_get_host_missing() -> None:\n+    assert get_host(\"http\", None, None) == \"\"\n \n \n @pytest.mark.parametrize(\n-    \"value\",\n-    [\"\", \"a.test:8080@b.test\", \"a.test:port\", \"[z:443]:8080\"],\n+    \"value\", [\"\", \"a.test:8080@b.test\", \"a.test:port\", \"[z:443]:8080\"]\n )\n def test_get_host_invalid(value: str | None) -> None:\n-    with pytest.raises(SecurityError):\n-        get_host(\"http\", value, None)\n+    assert get_host(\"http\", value, None) == \"\"\n \n \n @pytest.mark.parametrize("
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.93,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.16,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.04,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.12,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1875,
+      "output_tokens": 116
+    }
+  },
+  "variant": "split"
+}

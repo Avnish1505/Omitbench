@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_ext.py::test_context_block` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_ext.py::test_context_plural` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_ext.py::test_context_plural_block` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/jinja2/ext.py\n+++ b/src/jinja2/ext.py\n@@ -354,13 +354,19 @@\n     def parse(self, parser: \"Parser\") -> t.Union[nodes.Node, t.List[nodes.Node]]:\n         \"\"\"Parse a translatable tag.\"\"\"\n         lineno = next(parser.stream).lineno\n-        num_called_num = False\n+\n+        context = None\n+        context_token = parser.stream.next_if(\"string\")\n+\n+        if context_token is not None:\n+            context = context_token.value\n \n         # find all the variables referenced.  Additionally a variable can be\n         # defined in the body of the trans block too, but this is checked at\n         # a later state.\n         plural_expr: t.Optional[nodes.Expr] = None\n         plural_expr_assignment: t.Optional[nodes.Assign] = None\n+        num_called_num = False\n         variables: t.Dict[str, nodes.Expr] = {}\n         trimmed = None\n         while parser.stream.current.type != \"block_end\":\n@@ -455,6 +461,7 @@\n         node = self._make_node(\n             singular,\n             plural,\n+            context,\n             variables,\n             plural_expr,\n             bool(referenced),\n@@ -510,6 +517,7 @@\n         self,\n         singular: str,\n         plural: t.Optional[str],\n+        context: t.Optional[str],\n         variables: t.Dict[str, nodes.Expr],\n         plural_expr: t.Optional[nodes.Expr],\n         vars_referenced: bool,\n@@ -526,21 +534,18 @@\n             if plural:\n                 plural = plural.replace(\"%%\", \"%\")\n \n-        # singular only:\n-        if plural_expr is None:\n-            gettext = nodes.Name(\"gettext\", \"load\")\n-            node = nodes.Call(gettext, [nodes.Const(singular)], [], None, None)\n-\n-        # singular and plural\n-        else:\n-            ngettext = nodes.Name(\"ngettext\", \"load\")\n-            node = nodes.Call(\n-                ngettext,\n-                [nodes.Const(singular), nodes.Const(plural), plural_expr],\n-                [],\n-                None,\n-                None,\n-            )\n+        func_name = \"gettext\"\n+        func_args: t.List[nodes.Expr] = [nodes.Const(singular)]\n+\n+        if context is not None:\n+            func_args.insert(0, nodes.Const(context))\n+            func_name = f\"p{func_name}\"\n+\n+        if plural_expr is not None:\n+            func_name = f\"n{func_name}\"\n+            func_args.extend((nodes.Const(plural), plural_expr))\n+\n+        node = nodes.Call(nodes.Name(func_name, \"load\"), func_args, [], None, None)\n \n         # in case newstyle gettext is used, the method is powerful\n         # enough to handle the variable expansion and autoescape\n\n--- a/tests/test_ext.py\n+++ b/tests/test_ext.py\n@@ -43,6 +43,9 @@\n     \"pgettext.html\": '{{ pgettext(\"fruit\", \"Apple\") }}',\n     \"npgettext.html\": '{{ npgettext(\"fruit\", \"%(num)s apple\", \"%(num)s apples\",'\n     \" apples) }}\",\n+    \"pgettext_block\": \"{% trans 'fruit' num=apples %}Apple{% endtrans %}\",\n+    \"npgettext_block\": \"{% trans 'fruit' num=apples %}{{ num }} apple\"\n+    \"{% pluralize %}{{ num }} apples{% endtrans %}\",\n     \"transvars1.html\": \"{% trans %}User: {{ num }}{% endtrans %}\",\n     \"transvars2.html\": \"{% trans num=count %}User: {{ num }}{% endtrans %}\",\n     \"transvars3.html\": \"{% trans count=num %}User: {{ count }}{% endtrans %}\",\n@@ -593,8 +596,14 @@\n         tmpl = newstyle_i18n_env.get_template(\"pgettext.html\")\n         assert tmpl.render(LANGUAGE=\"de\") == \"Apple\"\n \n-    def test_context_newstyle_plural(self):\n+    def test_context_plural(self):\n         tmpl = newstyle_i18n_env.get_template(\"npgettext.html\")\n+        assert tmpl.render(LANGUAGE=\"de\", apples=1) == \"1 Apple\"\n+        assert tmpl.render(LANGUAGE=\"de\", apples=5) == \"5 Apples\"\n+\n+\n+    def test_context_plural_block(self):\n+        tmpl = newstyle_i18n_env.get_template(\"npgettext_block\")\n         assert tmpl.render(LANGUAGE=\"de\", apples=1) == \"1 Apple\"\n         assert tmpl.render(LANGUAGE=\"de\", apples=5) == \"5 Apples\"\n "
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.03,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.34,
+        "type": "noul"
+      },
+      "r2": {
+        "noul": 0.46,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 2040,
+      "output_tokens": 55
+    }
+  },
+  "variant": "single"
+}

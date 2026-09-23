@@ -1,0 +1,55 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_routing.py::test_path_weighting`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_routing.py::test_path_weighting`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_routing.py::test_path_weighting`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/werkzeug/routing/rules.py\n+++ b/src/werkzeug/routing/rules.py\n@@ -592,8 +592,12 @@\n \n             data = match.groupdict()\n             if data[\"static\"]:\n-                static_weights.append((static_parts, -len(data[\"static\"])))\n-                static_parts += 1\n+                # Only static parts beyond the `/` count towards the\n+                # weighting (more static parts mean the rule should be\n+                # weighted first).\n+                if data[\"static\"] != \"/\":\n+                    static_weights.append((static_parts, -len(data[\"static\"])))\n+                    static_parts += 1\n                 self._trace.append((False, data[\"static\"]))\n \n             if data[\"variable\"] is not None:\n\n--- a/tests/test_routing.py\n+++ b/tests/test_routing.py\n@@ -1394,6 +1394,18 @@\n     r.Rule(\"/ws\", endpoint=\"ws\", websocket=True, methods=[\"get\", \"head\", \"options\"])\n \n \n+def test_path_weighting():\n+    m = r.Map(\n+        [\n+            r.Rule(\"/<path:path>/c\", endpoint=\"simple\"),\n+            r.Rule(\"/<path:path>/<a>/<b>\", endpoint=\"complex\"),\n+        ]\n+    )\n+    a = m.bind(\"localhost\", path_info=\"/a/b/c\")\n+\n+    assert a.match() == (\"simple\", {\"path\": \"a/b\"})\n+\n+\n def test_newline_match():\n     m = r.Map([r.Rule(\"/hello\", endpoint=\"hello\")])\n     a = m.bind(\"localhost\")"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.23,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 989,
+      "output_tokens": 60
+    }
+  },
+  "variant": "split"
+}

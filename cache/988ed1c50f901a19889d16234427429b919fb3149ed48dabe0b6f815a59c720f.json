@@ -1,0 +1,43 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_routing.py::TwoConverter` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_routing.py::test_part_isolating_default` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/werkzeug/routing/converters.py\n+++ b/src/werkzeug/routing/converters.py\n@@ -15,11 +15,23 @@\n \n \n class BaseConverter:\n-    \"\"\"Base class for all converters.\"\"\"\n+    \"\"\"Base class for all converters.\n+\n+    .. versionchanged:: 2.3\n+        ``part_isolating`` defaults to ``False`` if ``regex`` contains a ``/``.\n+    \"\"\"\n \n     regex = \"[^/]+\"\n     weight = 100\n     part_isolating = True\n+\n+    def __init_subclass__(cls, **kwargs: t.Any) -> None:\n+        super().__init_subclass__(**kwargs)\n+\n+        # If the converter isn't inheriting its regex, disable part_isolating by default\n+        # if the regex contains a / character.\n+        if \"regex\" in cls.__dict__ and \"part_isolating\" not in cls.__dict__:\n+            cls.part_isolating = \"/\" not in cls.regex\n \n     def __init__(self, map: \"Map\", *args: t.Any, **kwargs: t.Any) -> None:\n         self.map = map\n@@ -50,8 +62,6 @@\n     :param maxlength: the maximum length of the string.\n     :param length: the exact length of the string.\n     \"\"\"\n-\n-    part_isolating = True\n \n     def __init__(\n         self,\n@@ -86,8 +96,6 @@\n         Value is validated when building a URL.\n     \"\"\"\n \n-    part_isolating = True\n-\n     def __init__(self, map: \"Map\", *items: str) -> None:\n         super().__init__(map)\n         self.items = set(items)\n@@ -113,7 +121,6 @@\n \n     regex = \"[^/].*?\"\n     weight = 200\n-    part_isolating = False\n \n \n class NumberConverter(BaseConverter):\n@@ -124,7 +131,6 @@\n \n     weight = 50\n     num_convert: t.Callable = int\n-    part_isolating = True\n \n     def __init__(\n         self,\n@@ -186,7 +192,6 @@\n     \"\"\"\n \n     regex = r\"\\d+\"\n-    part_isolating = True\n \n \n class FloatConverter(NumberConverter):\n@@ -210,7 +215,6 @@\n \n     regex = r\"\\d+\\.\\d+\"\n     num_convert = float\n-    part_isolating = True\n \n     def __init__(\n         self,\n@@ -236,7 +240,6 @@\n         r\"[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-\"\n         r\"[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}\"\n     )\n-    part_isolating = True\n \n     def to_python(self, value: str) -> uuid.UUID:\n         return uuid.UUID(value)\n\n--- a/src/werkzeug/routing/rules.py\n+++ b/src/werkzeug/routing/rules.py\n@@ -42,16 +42,16 @@\n _part_re = re.compile(\n     r\"\"\"\n     (?:\n-        (?P<slash>\\/)                                 # a slash\n+        (?P<slash>/)                                 # a slash\n       |\n-        (?P<static>[^<\\/]+)                           # static rule data\n+        (?P<static>[^</]+)                           # static rule data\n       |\n         (?:\n           <\n             (?:\n               (?P<converter>[a-zA-Z_][a-zA-Z0-9_]*)   # converter name\n               (?:\\((?P<arguments>.*?)\\))?             # converter arguments\n-              \\:                                      # variable delimiter\n+              :                                       # variable delimiter\n             )?\n             (?P<variable>[a-zA-Z_][a-zA-Z0-9_]*)      # variable name\n            >\n\n--- a/tests/test_routing.py\n+++ b/tests/test_routing.py\n@@ -800,6 +800,15 @@\n     assert str(exc.value) == \"'invalid' is not one of 'patient', 'provider'\"\n \n \n+def test_part_isolating_default() -> None:\n+\n+    m = r.Map(\n+        [r.Rule(\"/<two:values>/\", endpoint=\"two\")], converters={\"two\": TwoConverter}\n+    )\n+    a = m.bind(\"localhost\")\n+    assert a.match(\"/a/b/\") == (\"two\", {\"values\": [\"a\", \"b\"]})\n+\n+\n @pytest.mark.parametrize(\n     (\"endpoint\", \"value\", \"expect\"),\n     ["
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.38,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.17,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1848,
+      "output_tokens": 38
+    }
+  },
+  "variant": "single"
+}

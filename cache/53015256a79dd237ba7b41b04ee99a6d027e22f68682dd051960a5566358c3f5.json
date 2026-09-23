@@ -1,0 +1,91 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `src/werkzeug/sansio/request.py::content_md5`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `src/werkzeug/sansio/request.py::content_md5`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `src/werkzeug/sansio/request.py::content_md5`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `src/werkzeug/sansio/response.py::content_md5`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `src/werkzeug/sansio/response.py::content_md5`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `src/werkzeug/sansio/response.py::content_md5`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/werkzeug/sansio/request.py\n+++ b/src/werkzeug/sansio/request.py\n@@ -284,18 +284,11 @@\n         .. versionadded:: 0.9\"\"\",\n         read_only=True,\n     )\n-    content_md5 = header_property[str](\n-        \"Content-MD5\",\n-        doc=\"\"\"The Content-MD5 entity-header field, as defined in\n-        RFC 1864, is an MD5 digest of the entity-body for the purpose of\n-        providing an end-to-end message integrity check (MIC) of the\n-        entity-body. (Note: a MIC is good for detecting accidental\n-        modification of the entity-body in transit, but is not proof\n-        against malicious attacks.)\n-\n-        .. versionadded:: 0.9\"\"\",\n-        read_only=True,\n-    )\n+\n+    @property\n+    def content_md5(self) -> str | None:\n+        raise NotImplementedError\n+\n     referrer = header_property[str](\n         \"Referer\",\n         doc=\"\"\"The Referer[sic] request-header field allows the client\n\n--- a/src/werkzeug/sansio/response.py\n+++ b/src/werkzeug/sansio/response.py\n@@ -376,15 +376,53 @@\n         in order to obtain the media-type referenced by the Content-Type\n         header field.\"\"\",\n     )\n-    content_md5 = header_property[str](\n-        \"Content-MD5\",\n-        doc=\"\"\"The Content-MD5 entity-header field, as defined in\n-        RFC 1864, is an MD5 digest of the entity-body for the purpose of\n-        providing an end-to-end message integrity check (MIC) of the\n-        entity-body. (Note: a MIC is good for detecting accidental\n-        modification of the entity-body in transit, but is not proof\n-        against malicious attacks.)\"\"\",\n-    )\n+\n+    @property\n+    def content_md5(self) -> str | None:\n+        \"\"\"The ``Content-MD5`` header, an MD5 digest of the response body.\n+\n+        .. deprecated:: 3.2\n+            The header has not been used for a long time. Will be removed\n+            in Werkzeug 3.3.\n+        \"\"\"\n+        import warnings\n+\n+        warnings.warn(\n+            \"The 'content_md5' attribute is deprecated and will be removed in\"\n+            \" Werkzeug 3.3. The header has not been used for a long time.\",\n+            DeprecationWarning,\n+            stacklevel=2,\n+        )\n+        return self.headers.get(\"Content-MD5\")\n+\n+    @content_md5.setter\n+    def content_md5(self, value: str | None) -> None:\n+        import warnings\n+\n+        warnings.warn(\n+            \"The 'content_md5' attribute is deprecated and will be removed in\"\n+            \" Werkzeug 3.3. The header has not been used for a long time.\",\n+            DeprecationWarning,\n+            stacklevel=2,\n+        )\n+\n+        if value is None:\n+            del self.headers[\"Content-MD5\"]\n+        else:\n+            self.headers[\"Content-MD5\"] = value\n+\n+    @content_md5.deleter\n+    def content_md5(self) -> None:\n+        import warnings\n+\n+        warnings.warn(\n+            \"The 'content_md5' attribute is deprecated and will be removed in\"\n+            \" Werkzeug 3.3. The header has not been used for a long time.\",\n+            DeprecationWarning,\n+            stacklevel=2,\n+        )\n+        del self.headers[\"Content-MD5\"]\n+\n     date = header_property(\n         \"Date\",\n         None,\n\n--- a/tests/test_wrappers.py\n+++ b/tests/test_wrappers.py\n@@ -781,7 +781,6 @@\n             \"Max-Forwards\": \"10\",\n             \"Pragma\": \"no-cache\",\n             \"Content-Encoding\": \"gzip\",\n-            \"Content-MD5\": \"9a3bc6dbc47a70db25b84c6e5867a072\",\n         },\n     )\n \n@@ -794,7 +793,6 @@\n     assert request.max_forwards == 10\n     assert \"no-cache\" in request.pragma\n     assert request.content_encoding == \"gzip\"\n-    assert request.content_md5 == \"9a3bc6dbc47a70db25b84c6e5867a072\"\n \n \n def test_request_mimetype_always_lowercase():"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.91,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.04,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.49,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.91,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.96,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.21,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 2073,
+      "output_tokens": 116
+    }
+  },
+  "variant": "split"
+}

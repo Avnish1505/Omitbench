@@ -1,0 +1,91 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_converters.py::MyConv`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_converters.py::MyConv`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_converters.py::MyConv`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_converters.py::test_falsey_converter`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_converters.py::test_falsey_converter`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_converters.py::test_falsey_converter`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/attr/_make.py\n+++ b/src/attr/_make.py\n@@ -2021,7 +2021,7 @@\n         has_factory = isinstance(a.default, Factory)\n         maybe_self = \"self\" if has_factory and a.default.takes_self else \"\"\n \n-        if a.converter and not isinstance(a.converter, Converter):\n+        if a.converter is not None and not isinstance(a.converter, Converter):\n             converter = Converter(a.converter)\n         else:\n             converter = a.converter\n\n--- a/tests/test_converters.py\n+++ b/tests/test_converters.py\n@@ -112,6 +112,21 @@\n         assert float is c.__call__.__annotations__[\"return\"]\n         assert None is c2.__call__.__annotations__.get(\"return\")\n \n+    def test_falsey_converter(self):\n+        \"\"\"\n+        Passing a false-y instance still produces a valid converter.\n+        \"\"\"\n+\n+        class MyConv:\n+            raise NotImplementedError\n+\n+        @attr.s\n+        class C:\n+            a = attrib(converter=MyConv())\n+\n+        c = C(21)\n+        assert 42 == c.a\n+\n \n class TestOptional:\n     \"\"\""
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.91,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.15,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.91,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.95,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.34,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1266,
+      "output_tokens": 116
+    }
+  },
+  "variant": "split"
+}

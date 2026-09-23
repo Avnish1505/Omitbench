@@ -1,0 +1,43 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_config.py::test_config_from_file_json` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_config.py::test_config_from_file_toml` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/flask/config.py\n+++ b/src/flask/config.py\n@@ -234,6 +234,7 @@\n         filename: str,\n         load: t.Callable[[t.IO[t.Any]], t.Mapping],\n         silent: bool = False,\n+        text: bool = True,\n     ) -> bool:\n         \"\"\"Update the values in the config from a file that is loaded\n         using the ``load`` parameter. The loaded data is passed to the\n@@ -244,8 +245,8 @@\n             import json\n             app.config.from_file(\"config.json\", load=json.load)\n \n-            import toml\n-            app.config.from_file(\"config.toml\", load=toml.load)\n+            import tomllib\n+            app.config.from_file(\"config.toml\", load=tomllib.load, text=False)\n \n         :param filename: The path to the data file. This can be an\n             absolute path or relative to the config root path.\n@@ -254,14 +255,18 @@\n         :type load: ``Callable[[Reader], Mapping]`` where ``Reader``\n             implements a ``read`` method.\n         :param silent: Ignore the file if it doesn't exist.\n+        :param text: Open the file in text or binary mode.\n         :return: ``True`` if the file was loaded successfully.\n \n+        .. versionchanged:: 2.3\n+            The ``text`` parameter was added.\n+\n         .. versionadded:: 2.0\n         \"\"\"\n         filename = os.path.join(self.root_path, filename)\n \n         try:\n-            with open(filename) as f:\n+            with open(filename, \"r\" if text else \"rb\") as f:\n                 obj = load(f)\n         except OSError as e:\n             if silent and e.errno in (errno.ENOENT, errno.EISDIR):\n\n--- a/tests/test_config.py\n+++ b/tests/test_config.py\n@@ -5,7 +5,6 @@\n import pytest\n \n import flask\n-\n \n # config keys used for the TestConfig\n TEST_KEY = \"foo\"\n@@ -30,10 +29,15 @@\n     common_object_test(app)\n \n \n-def test_config_from_file():\n+\n+\n+def test_config_from_file_toml():\n+    tomllib = pytest.importorskip(\"tomllib\", reason=\"tomllib added in 3.11\")\n     app = flask.Flask(__name__)\n     current_dir = os.path.dirname(os.path.abspath(__file__))\n-    app.config.from_file(os.path.join(current_dir, \"static\", \"config.json\"), json.load)\n+    app.config.from_file(\n+        os.path.join(current_dir, \"static\", \"config.toml\"), tomllib.load, text=False\n+    )\n     common_object_test(app)\n \n "
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.06,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.26,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1361,
+      "output_tokens": 38
+    }
+  },
+  "variant": "single"
+}

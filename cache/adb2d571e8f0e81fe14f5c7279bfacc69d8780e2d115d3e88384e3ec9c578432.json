@@ -1,0 +1,43 @@
+{
+  "judge_id": "B7 Jev (single)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_commands.py::test_deprecated_empty_help_no_leading_space` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1": {
+        "criteria": {
+          "false": "The definition is missing, or nothing else in the diff uses it, or its body is a stub, or it does not appear in the diff.",
+          "true": "The symbol is defined in the named file, used elsewhere in the diff, and has a real body."
+        },
+        "instructions": "Requirement: `tests/test_options.py::test_deprecated_empty_help_no_leading_space` (a function or class, written as path/to/file.py::SymbolName). Is this requirement fully implemented by the code change in the state? Fully implemented means all three hold: (1) DEFINED: its def/class statement exists in that file; (2) WIRED: something else in the diff calls, instantiates or otherwise uses it (its own definition, a docstring, a comment or an import line do not count); (3) NOT A STUB: its body does real work, not only `pass`, `...`, a bare docstring or `raise NotImplementedError`. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/src/click/core.py\n+++ b/src/click/core.py\n@@ -1189,7 +1189,8 @@\n             text = \"\"\n \n         if self.deprecated:\n-            text = f\"{_(text)} {_format_deprecated_label(self.deprecated)}\"\n+            label = _format_deprecated_label(self.deprecated)\n+            text = f\"{_(text)} {label}\" if text else label\n \n         if text:\n             formatter.write_paragraph()\n@@ -2826,7 +2827,7 @@\n \n         if deprecated:\n             label = _format_deprecated_label(deprecated)\n-            help = f\"{help} {label}\" if help is not None else label\n+            help = f\"{help} {label}\" if help else label\n \n         self.prompt = prompt_text\n         self.confirmation_prompt = confirmation_prompt\n\n--- a/tests/test_commands.py\n+++ b/tests/test_commands.py\n@@ -492,6 +492,12 @@\n \n \n @pytest.mark.parametrize(\"deprecated\", [True, \"USE OTHER COMMAND INSTEAD\"])\n+@pytest.mark.parametrize(\"doc\", [\"\", None])\n+def test_deprecated_empty_help_no_leading_space(runner, doc, deprecated):\n+    raise NotImplementedError\n+\n+\n+@pytest.mark.parametrize(\"deprecated\", [True, \"USE OTHER COMMAND INSTEAD\"])\n def test_deprecated_in_invocation(runner, deprecated):\n     @click.command(deprecated=deprecated)\n     def deprecated_cmd():\n\n--- a/tests/test_options.py\n+++ b/tests/test_options.py\n@@ -56,6 +56,20 @@\n \n     if isinstance(deprecated, str):\n         assert deprecated in result.output\n+\n+\n+@pytest.mark.parametrize(\n+    (\"deprecated\", \"expected\"),\n+    [(True, \"(DEPRECATED)\"), (\"USE B INSTEAD\", \"(DEPRECATED: USE B INSTEAD)\")],\n+)\n+@pytest.mark.parametrize(\"help_text\", [\"\", None])\n+def test_deprecated_empty_help_no_leading_space(help_text, deprecated, expected):\n+    \"\"\"An option with empty or missing help text must not gain a stray leading\n+    space before the deprecation label.\n+    \"\"\"\n+    opt = click.Option([\"--foo\"], help=help_text, deprecated=deprecated)\n+    ctx = click.Context(click.Command(\"cli\"))\n+    assert opt.get_help_record(ctx)[1] == expected\n \n \n @pytest.mark.parametrize(\"deprecated\", [True, \"USE B INSTEAD\"])"
+  },
+  "response": {
+    "answers": {
+      "r0": {
+        "noul": 0.01,
+        "type": "noul"
+      },
+      "r1": {
+        "noul": 0.27,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1313,
+      "output_tokens": 38
+    }
+  },
+  "variant": "single"
+}

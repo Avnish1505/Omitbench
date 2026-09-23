@@ -1,0 +1,127 @@
+{
+  "judge_id": "B7 Jev (split)",
+  "payload": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "r0_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_urlparse.py::test_fragment_percent_encoding`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_urlparse.py::test_fragment_percent_encoding`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r0_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_urlparse.py::test_fragment_percent_encoding`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_urlparse.py::test_path_percent_encoding`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_urlparse.py::test_path_percent_encoding`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r1_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_urlparse.py::test_path_percent_encoding`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_defined": {
+        "criteria": {
+          "false": "No def/class statement for this symbol in that file.",
+          "true": "A def/class statement for this symbol exists in that file."
+        },
+        "instructions": "Requirement: `tests/test_urlparse.py::test_query_percent_encoding`. Does the diff show a def or class statement for this exact symbol name inside that exact file? A call site, import, comment or docstring mentioning the name is not a definition. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "criteria": {
+          "false": "The body is a stub, or the symbol is not in the diff.",
+          "true": "The body contains real logic."
+        },
+        "instructions": "Requirement: `tests/test_urlparse.py::test_query_percent_encoding`. Does this symbol's body do real work? A body that is only `pass`, `...`, a bare docstring or `raise NotImplementedError` is a stub, so the answer is no. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      },
+      "r2_wired": {
+        "criteria": {
+          "false": "Nothing else in the diff uses this symbol.",
+          "true": "Other code in the diff calls or uses this symbol."
+        },
+        "instructions": "Requirement: `tests/test_urlparse.py::test_query_percent_encoding`. Does something in the diff other than the symbol's own definition call, instantiate or otherwise use it? Its own def line, docstrings, comments and import lines do not count. If the symbol does not visibly appear anywhere in the diff, the answer is no: the diff is the entire change.",
+        "type": "noul"
+      }
+    },
+    "state": "--- a/httpx/_urlparse.py\n+++ b/httpx/_urlparse.py\n@@ -253,12 +253,19 @@\n     if has_authority:\n         path = normalize_path(path)\n \n-    parsed_path: str = quote(path, safe=SUB_DELIMS + \":@/\")\n+    # The GEN_DELIMS set is... : / ? # [ ] @\n+    # These do not need to be percent-quoted unless they serve as delimiters for the\n+    # specific component.\n+\n+    # For 'path' we need to drop ? and # from the GEN_DELIMS set.\n+    parsed_path: str = quote(path, safe=SUB_DELIMS + \":/[]@\")\n+    # For 'query' we need to drop '#' from the GEN_DELIMS set.\n     parsed_query: typing.Optional[str] = (\n-        None if query is None else quote(query, safe=SUB_DELIMS + \"/?\")\n-    )\n+        None if query is None else quote(query, safe=SUB_DELIMS + \":/?[]@\")\n+    )\n+    # For 'fragment' we can include all of the GEN_DELIMS set.\n     parsed_fragment: typing.Optional[str] = (\n-        None if fragment is None else quote(fragment, safe=SUB_DELIMS + \"/?\")\n+        None if fragment is None else quote(fragment, safe=SUB_DELIMS + \":/?#[]@\")\n     )\n \n     # The parsed ASCII bytestrings are our canonical form.\n\n--- a/tests/test_urlparse.py\n+++ b/tests/test_urlparse.py\n@@ -248,3 +248,28 @@\n     url = url.copy_with(path=\"/abc\")\n     assert str(url) == \"http://example.com/abc\"\n \n+\n+# Tests for percent encoding across path, query, and fragement...\n+\n+\n+def test_path_percent_encoding():\n+    # Test percent encoding for SUB_DELIMS ALPHA NUM and allowable GEN_DELIMS\n+    url = httpx.URL(\"https://example.com/!$&'()*+,;= abc ABC 123 :/[]@\")\n+    assert url.raw_path == b\"/!$&'()*+,;=%20abc%20ABC%20123%20:/[]@\"\n+    assert url.path == \"/!$&'()*+,;= abc ABC 123 :/[]@\"\n+    assert url.query == b\"\"\n+    assert url.fragment == \"\"\n+\n+\n+def test_query_percent_encoding():\n+    raise NotImplementedError\n+\n+\n+def test_fragment_percent_encoding():\n+    # Test percent encoding for SUB_DELIMS ALPHA NUM and allowable GEN_DELIMS\n+    url = httpx.URL(\"https://example.com/#!$&'()*+,;= abc ABC 123 :/[]@\" + \"?#\")\n+    assert url.raw_path == b\"/\"\n+    assert url.path == \"/\"\n+    assert url.query == b\"\"\n+    assert url.fragment == \"!$&'()*+,;= abc ABC 123 :/[]@?#\"\n+"
+  },
+  "response": {
+    "answers": {
+      "r0_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r0_real_body": {
+        "noul": 0.92,
+        "type": "noul"
+      },
+      "r0_wired": {
+        "noul": 0.31,
+        "type": "noul"
+      },
+      "r1_defined": {
+        "noul": 0.98,
+        "type": "noul"
+      },
+      "r1_real_body": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r1_wired": {
+        "noul": 0.5,
+        "type": "noul"
+      },
+      "r2_defined": {
+        "noul": 0.97,
+        "type": "noul"
+      },
+      "r2_real_body": {
+        "noul": 0.04,
+        "type": "noul"
+      },
+      "r2_wired": {
+        "noul": 0.09,
+        "type": "noul"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 2034,
+      "output_tokens": 172
+    }
+  },
+  "variant": "split"
+}
