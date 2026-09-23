@@ -160,12 +160,14 @@ def test_post_sends_bearer_retries_429_and_parses(monkeypatch):
     import json
     import threading
 
-    seen = {"n": 0, "auth": None, "body": None}
+    seen = {"n": 0, "auth": None, "body": None, "ua": None, "accept": None}
 
     class H(http.server.BaseHTTPRequestHandler):
         def do_POST(self):
             seen["n"] += 1
             seen["auth"] = self.headers.get("Authorization")
+            seen["ua"] = self.headers.get("User-Agent")
+            seen["accept"] = self.headers.get("Accept")
             seen["body"] = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
             if seen["n"] == 1:
                 self.send_response(429)
@@ -194,6 +196,10 @@ def test_post_sends_bearer_retries_429_and_parses(monkeypatch):
         srv.shutdown()
     assert seen["n"] == 2, "429 must be retried"
     assert seen["auth"] == "Bearer sk-test"
+    # Cloudflare answers urllib's default UA with 403 / error code 1010.
+    assert seen["ua"] == V.USER_AGENT
+    assert not seen["ua"].startswith("Python-urllib")
+    assert seen["accept"] == "application/json"
     assert seen["body"] == payload
     assert resp["answers"]["r0"]["noul"] == 0.7
 

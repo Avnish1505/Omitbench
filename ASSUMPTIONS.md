@@ -780,3 +780,14 @@ They are one model on one hard, out-of-domain classification task.
   exits on Python >= 3.14 and prints the interpreter version in its stderr
   output (`tests/test_jev.py::test_run_jev_refuses_python_314_plus`).
   `build_base` itself is unchanged in this branch.
+- *2026-09-23, transport.* Cloudflare 1010 on urllib's default User-Agent;
+  fixed before any scored call. The first smoke request got HTTP 403
+  `error code: 1010` (a signature block ahead of the API, so the key was
+  never checked) and the run aborted with no response, cache entry or
+  record. One unscored probe with `User-Agent: omitbench/0.3
+  (+https://github.com/Avnish1505/Omitbench)` and `Accept:
+  application/json` returned HTTP 200 (896 input tokens, not cached, not
+  scored). `jev._post` now sends both headers
+  (`tests/test_jev.py::test_post_sends_bearer_retries_429_and_parses`).
+  Headers are not part of the cache key. Question text, threshold,
+  min-combination and parsing are unchanged.
