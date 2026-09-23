@@ -30,6 +30,7 @@ import argparse
 import importlib.util
 import json
 import os
+import platform
 import sys
 
 sys.path.insert(0, ".")
@@ -48,6 +49,22 @@ _spec.loader.exec_module(RJ)
 PER_REPO, SCAN_CAP, SEED = 40, 600, 0
 
 SHORT = {"single": "B7 Jev (single)", "split": "B7 Jev (split)"}
+
+# Python 3.14 (PEP 758) accepts unparenthesized `except A, B:`, so Python 2
+# `except X, e:` now parses and experiment.build_base's ast.parse gate admits
+# 5 extra itsdangerous commits (35 instances, not the shards' 30). The shards
+# were built under <=3.13; a newer interpreter silently changes the corpus
+# and fails the alignment check. Refuse up front. ASSUMPTIONS.md section 13.
+MAX_PYTHON = (3, 14)
+
+
+def check_interpreter(version_info=sys.version_info) -> None:
+    if tuple(version_info[:2]) >= MAX_PYTHON:
+        sys.exit(f"run_jev.py: Python {platform.python_version()} is not "
+                 f"supported. Run under Python <=3.13: on 3.14+ PEP 758 makes "
+                 f"Python 2 `except X, e:` parse, which changes corpus "
+                 f"eligibility (itsdangerous 30 -> 35 instances) and breaks "
+                 f"alignment with results/shards. See ASSUMPTIONS.md section 13.")
 
 
 def _slug(judge_id: str) -> str:
@@ -83,6 +100,8 @@ def main():
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--out-dir", default="results/shards")
     a = ap.parse_args()
+    check_interpreter()
+    print(f"python {platform.python_version()}", file=sys.stderr)
 
     # black is excluded everywhere else (ASSUMPTIONS.md); exclude it here too
     repos = [r for r in a.repos if os.path.basename(r.rstrip("/")) != "black"]
@@ -145,7 +164,8 @@ def main():
               f"cache hits {s.cache_hits} | parse failures {s.parse_failures} | "
               f"truncated {s.truncated} | errors {errors} | "
               f"input tokens {s.input_tokens}", file=sys.stderr)
-    print(f"\nretries {V._RETRIES[0]} | est. spend this run ${spent:.4f}", file=sys.stderr)
+    print(f"\npython {platform.python_version()} | retries {V._RETRIES[0]} | "
+          f"est. spend this run ${spent:.4f}", file=sys.stderr)
 
 
 if __name__ == "__main__":

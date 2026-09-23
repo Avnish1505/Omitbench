@@ -212,3 +212,27 @@ def test_post_does_not_retry_422(monkeypatch):
     with pytest.raises(RuntimeError, match="HTTP 422"):
         V._post({"model": V.PINNED_MODEL, "state": "", "questions": {}})
     assert n["c"] == 1
+
+
+# ---------------- interpreter guard --------------------------------------
+
+def _load_run_jev():
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("run_jev", "scripts/run_jev.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+@pytest.mark.parametrize("ver", [(3, 14, 0), (3, 15, 1)])
+def test_run_jev_refuses_python_314_plus(ver):
+    # PEP 758: on 3.14+ Python 2 `except X, e:` parses, itsdangerous grows
+    # from 30 to 35 instances and B7 no longer aligns with the shards.
+    RJEV = _load_run_jev()
+    with pytest.raises(SystemExit, match="PEP 758"):
+        RJEV.check_interpreter(ver)
+
+
+@pytest.mark.parametrize("ver", [(3, 11, 9), (3, 12, 14), (3, 13, 5)])
+def test_run_jev_accepts_python_up_to_313(ver):
+    _load_run_jev().check_interpreter(ver)

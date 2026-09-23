@@ -756,6 +756,27 @@ Expected total for both variants is well under $0.25 at list price. The
 exact figure comes from `--dry-run` over the real corpus and is recorded
 here after the dry run, before the sweep.
 
+*Dry run, 2026-09-23, Python 3.12.14, before any real call* (`make
+jev-dry-run`, 310 instances, alignment check passed 310/310):
+
+| variant | calls | input tokens (chars/4 estimate) | est. cost | truncated diffs |
+|---|---|---|---|---|
+| B7 Jev (single) | 919 | ~1.73M | $0.073 | 32 |
+| B7 Jev (split) | 919 | ~2.06M | $0.087 | 32 |
+
+Total: 1838 calls, est. $0.160, under the $1.00 hard stop.
+
 **Not claimed.** B7 results say nothing about real agent trajectories
 (§1, §10). They also say nothing about Jev on tasks it was built for.
 They are one model on one hard, out-of-domain classification task.
+
+**Harness notes (fixes to plumbing, not to decision rules).**
+- *2026-09-23, interpreter pin.* Shards and B7 are built under Python
+  <=3.13 (3.11 and 3.12.14 both verified at 30 itsdangerous instances).
+  Cause: PEP 758 in Python 3.14 makes Python 2 `except X, e:` parse, so
+  `build_base`'s `ast.parse` gate admits 5 extra Python 2 commits
+  (itsdangerous 30 -> 35, total 315 vs the shards' 310), which the
+  alignment check caught on the first dry run. `scripts/run_jev.py` now
+  exits on Python >= 3.14 and prints the interpreter version in its stderr
+  output (`tests/test_jev.py::test_run_jev_refuses_python_314_plus`).
+  `build_base` itself is unchanged in this branch.
